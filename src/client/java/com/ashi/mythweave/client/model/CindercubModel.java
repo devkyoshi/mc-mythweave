@@ -10,7 +10,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import com.ashi.mythweave.client.render.CindercubRenderState;
+
 import net.minecraft.util.Mth;
 
 /**
@@ -22,9 +23,10 @@ import net.minecraft.util.Mth;
  * Texture sheet is 64 x 32; the layout is documented in
  * {@code tools/generate_cindercub_texture.ps1}, which paints the matching PNG.
  */
-public class CindercubModel extends EntityModel<LivingEntityRenderState> {
+public class CindercubModel extends EntityModel<CindercubRenderState> {
 	public static final ModelLayerLocation LAYER = new ModelLayerLocation(Mythweave.id("cindercub"), "main");
 
+	private final ModelPart body;
 	private final ModelPart head;
 	private final ModelPart tail;
 	private final ModelPart rightHindLeg;
@@ -34,8 +36,9 @@ public class CindercubModel extends EntityModel<LivingEntityRenderState> {
 
 	public CindercubModel(ModelPart root) {
 		super(root);
+		this.body = root.getChild("body");
 		this.head = root.getChild("head");
-		this.tail = root.getChild("body").getChild("tail");
+		this.tail = this.body.getChild("tail");
 		this.rightHindLeg = root.getChild("right_hind_leg");
 		this.leftHindLeg = root.getChild("left_hind_leg");
 		this.rightFrontLeg = root.getChild("right_front_leg");
@@ -86,7 +89,7 @@ public class CindercubModel extends EntityModel<LivingEntityRenderState> {
 	}
 
 	@Override
-	public void setupAnim(LivingEntityRenderState state) {
+	public void setupAnim(CindercubRenderState state) {
 		// super.setupAnim resets every part to its default pose before we apply this frame's pose.
 		super.setupAnim(state);
 
@@ -104,5 +107,27 @@ public class CindercubModel extends EntityModel<LivingEntityRenderState> {
 
 		// Gentle idle tail sway, a little livelier while walking.
 		this.tail.yRot = Mth.cos(state.ageInTicks * 0.15F) * (0.15F + speed * 0.3F);
+
+		if (state.isSitting) {
+			this.setSittingPose();
+		}
+	}
+
+	/**
+	 * Sitting: the body tilts back so the chest is up and the rump touches the ground,
+	 * the hind legs fold forward flat, the front legs stay straight, and the tail rests low.
+	 * Offsets were worked out from the rest pose so the parts stay connected.
+	 */
+	private void setSittingPose() {
+		this.body.xRot = -0.5F;            // tilt: front up, back down
+		this.body.y += 2.0F;               // lower so the rump meets the ground
+		this.head.z += 1.5F;               // follow the chest, which moves back as it rises
+		this.tail.xRot = 0.3F;             // relative to the tilted body: lies along the ground
+		this.rightHindLeg.xRot = -1.4F;    // fold forward, nearly flat
+		this.leftHindLeg.xRot = -1.4F;
+		this.rightHindLeg.y += 2.0F;
+		this.leftHindLeg.y += 2.0F;
+		this.rightFrontLeg.xRot = 0.0F;    // no walk swing while sitting
+		this.leftFrontLeg.xRot = 0.0F;
 	}
 }

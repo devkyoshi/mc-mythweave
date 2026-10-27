@@ -1,4 +1,9 @@
 {
   "entity.mythweave.cindercub": "Cindercub",
-  "item.mythweave.cindercub_spawn_egg": "Cindercub Spawn Egg"
+  "item.mythweave.cindercub_spawn_egg": "Cindercub Spawn Egg",
+  "message.mythweave.cindercub.bonded": "Cindercub has bonded with you!",
+  "message.mythweave.cindercub.wants_item": "This Cindercub sniffs at you curiously. Maybe it would like some %s?",
+  "message.mythweave.cindercub.not_yours": "This Cindercub is already bonded to another player.",
+  "message.mythweave.cindercub.sitting": "Cindercub sits and waits.",
+  "message.mythweave.cindercub.following": "Cindercub is following you."
 }
