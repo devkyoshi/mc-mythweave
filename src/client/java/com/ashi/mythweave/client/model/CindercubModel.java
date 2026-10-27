@@ -127,6 +127,10 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 		this.leftHindLeg.xRot = -1.4F;
 		this.rightHindLeg.y += 2.0F;
 		this.leftHindLeg.y += 2.0F;
+		// Folded legs would sit exactly flush with the body's sides (both at x = +/-2) and
+		// flicker where the faces overlap; half a pixel outward reads as haunches instead.
+		this.rightHindLeg.x -= 0.5F;
+		this.leftHindLeg.x += 0.5F;
 		this.rightFrontLeg.xRot = 0.0F;    // no walk swing while sitting
 		this.leftFrontLeg.xRot = 0.0F;
 	}

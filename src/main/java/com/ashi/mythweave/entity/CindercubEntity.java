@@ -1,8 +1,11 @@
 package com.ashi.mythweave.entity;
 
 import com.ashi.mythweave.ability.EmberSpark;
+import com.ashi.mythweave.registry.ModSounds;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -172,6 +175,27 @@ public class CindercubEntity extends TamableAnimal {
 		this.setOrderedToSit(false);
 		this.level().broadcastEntityEvent(this, EVENT_HEART_PARTICLES);
 		player.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.bonded"));
+	}
+
+	// Sounds: Mythweave's own events (see ModSounds), pitched up because it's small.
+	@Override
+	protected @Nullable SoundEvent getAmbientSound() {
+		return ModSounds.CINDERCUB_AMBIENT;
+	}
+
+	@Override
+	protected @Nullable SoundEvent getHurtSound(DamageSource source) {
+		return ModSounds.CINDERCUB_HURT;
+	}
+
+	@Override
+	protected @Nullable SoundEvent getDeathSound() {
+		return ModSounds.CINDERCUB_DEATH;
+	}
+
+	@Override
+	public float getVoicePitch() {
+		return super.getVoicePitch() * 1.25F;
 	}
 
 	public int getEmberCooldown() {

@@ -206,11 +206,11 @@ function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting) {
 
 	# Rest pose, from CindercubModel#createBodyLayer.
 	$bodyY = 19.0; $bodyXRot = 0.0; $headZ = -3.5; $tailXRot = 0.6
-	$hindY = 21.0; $hindXRot = 0.0
+	$hindY = 21.0; $hindXRot = 0.0; $hindSpread = 0.0
 	if ($sitting) {
 		# From CindercubModel#setSittingPose.
 		$bodyY += 2.0; $bodyXRot = -0.5; $headZ += 1.5; $tailXRot = 0.3
-		$hindY += 2.0; $hindXRot = -1.4
+		$hindY += 2.0; $hindXRot = -1.4; $hindSpread = 0.5
 	}
 
 	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
@@ -225,9 +225,9 @@ function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting) {
 	$p.Box($head, 32, 0, -2.5, -7, -2, 2, 3, 1)
 	$p.Box($head, 40, 0, 0.5, -7, -2, 2, 3, 1)
 
-	# Folded hind legs sit flush with the body's sides when sitting; let the body win.
+	# Legs touch the body where they join; a small bias lets the body win those edges.
 	$p.DepthBias = 0.05
-	foreach ($leg in @(@(-1, $hindY, 2.5, $hindXRot), @(1, $hindY, 2.5, $hindXRot), @(-1, 21, -2.5, 0), @(1, 21, -2.5, 0))) {
+	foreach ($leg in @(@((-1 - $hindSpread), $hindY, 2.5, $hindXRot), @((1 + $hindSpread), $hindY, 2.5, $hindXRot), @(-1, 21, -2.5, 0), @(1, 21, -2.5, 0))) {
 		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 24, -1, 0, -1, 2, 3, 2)
 	}
 	return $p

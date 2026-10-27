@@ -1,0 +1,20 @@
+{
+  "entity.cindercub.ambient": {
+    "subtitle": "subtitles.mythweave.entity.cindercub.ambient",
+    "sounds": [
+      { "name": "minecraft:entity.fox.ambient", "type": "event" }
+    ]
+  },
+  "entity.cindercub.hurt": {
+    "subtitle": "subtitles.mythweave.entity.cindercub.hurt",
+    "sounds": [
+      { "name": "minecraft:entity.fox.hurt", "type": "event" }
+    ]
+  },
+  "entity.cindercub.death": {
+    "subtitle": "subtitles.mythweave.entity.cindercub.death",
+    "sounds": [
+      { "name": "minecraft:entity.fox.death", "type": "event" }
+    ]
+  }
+}

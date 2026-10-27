@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <b>Minecraft Java 26.3</b> · <b>Fabric</b> · <b>Java 25</b> · <i>Early development: first creature playable</i>
+  <b>Minecraft Java 26.3</b> Â· <b>Fabric</b> Â· <b>Java 25</b> Â· <i>First Mythling complete: find, bond, command, Ember Spark</i>
 </p>
 
 ---
@@ -16,7 +16,7 @@ abilities.
 
 > Mythweave is a **single mod**, not a modpack. It needs only Fabric Loader and Fabric API.
 
-All creatures, models, and textures are original. Mythweave does not use any Pokémon names,
+All creatures, models, and textures are original. Mythweave does not use any PokÃ©mon names,
 designs, or assets.
 
 ## Contents
@@ -50,7 +50,7 @@ its fluffy tail. It's curious, playful, and a little mischievous.
 | **Element** | Fire / Ember |
 | **Rarity** | Common |
 | **Health** | 12 (6 hearts) |
-| **Size** | 0.5 × 0.65 blocks (ears stick out above, like a fox's) |
+| **Size** | 0.5 Ã— 0.65 blocks (ears stick out above, like a fox's) |
 | **Temperament** | Passive. Wanders, watches nearby players, runs away when hurt. Never attacks. |
 | **Bonds with** | Blaze Powder |
 | **Habitat (planned)** | Savannas, badlands, warm caves |
@@ -61,7 +61,7 @@ its fluffy tail. It's curious, playful, and a little mischievous.
 ## How to play
 
 > **Finding one:** natural spawning isn't in yet. For now, use the **Cindercub Spawn Egg**
-> (Creative inventory → Spawn Eggs) or the command `/summon mythweave:cindercub`.
+> (Creative inventory â†’ Spawn Eggs) or the command `/summon mythweave:cindercub`.
 
 1. **Approach a wild Cindercub.** Right-click it with an empty hand and it'll hint at what it wants.
 2. **Bond with it:** right-click it holding **Blaze Powder**. One powder is used, hearts appear,
@@ -99,7 +99,7 @@ so it never spreads fire, burns nearby blocks, or hurts anyone who touches it.
 | Anyone (wild Cindercub) | Empty hand | A hint about what it likes. |
 | Owner | Blaze Powder | **Ember Spark:** lights the nearest visible unlit Ember Brazier within 8 blocks. 15 s cooldown. No powder used. |
 | Owner | Empty hand (or an item with no other use on it) | Toggles sit / follow. |
-| Owner | Lead, name tag, … | Works like on any vanilla animal. |
+| Owner | Lead, name tag, â€¦ | Works like on any vanilla animal. |
 | Another player | Blaze Powder or empty hand | *"This Cindercub is already bonded to another player."* Nothing changes. |
 
 ### Good to know
@@ -108,6 +108,16 @@ so it never spreads fire, burns nearby blocks, or hurts anyone who touches it.
 - **If you log out or change dimension**, your Cindercub sits and waits, then follows again when you're back.
 - **If you die**, it stays bonded and follows you after you respawn.
 - **Breeding isn't supported** (on purpose, for now).
+- **Its tail tip glows**, so you can spot your Cindercub in the dark.
+
+### Known limitations
+
+- **No natural spawning yet.** Use the spawn egg or `/summon` (see above).
+- **Sounds are borrowed.** Cindercub has its own sound events and subtitles ("Cindercub
+  yips"), but for now they play vanilla fox sounds at a higher pitch. Original audio can be
+  dropped in later by editing `assets/mythweave/sounds.json`, with no code changes.
+- **Another player can put a lead on your Cindercub**, like a vanilla wolf. They still can't
+  bond with it, command it, or use its ability.
 
 ## Features and roadmap
 
@@ -122,7 +132,8 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
   one-command dev launcher.
 - [x] **Phase 6: Signature ability.** *Ember Spark* lights an Ember Brazier block on
   command, with a cooldown. It can't set the world on fire.
-- [ ] **Phase 7: Polish.** True glowing ember tip, sounds, custom spawn egg, finer texture.
+- [x] **Phase 7: Polish.** Glowing ember tail tip, Cindercub sounds with subtitles, its own
+  spawn egg, cleaner sitting pose.
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
 the *Aether Shard* bonding item, branching evolutions (*Ashenox*, a combat-focused volcanic
@@ -234,50 +245,59 @@ A quick in-game test of everything that works so far. Use a Creative world with 
 10. Put the brazier behind a wall: the Cindercub won't light it. Put it out with an empty
     hand and relight it after the cooldown. Nothing around it ever catches fire.
 
+11. At night (or `/time set midnight`), the tail tip glows. Turn on subtitles (Options â†’
+    Accessibility): you see "Cindercub yips"/"hurts". The spawn egg is an orange egg with
+    dark spots and an ember fleck. A sitting Cindercub's hind legs don't flicker.
+
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
 ## Project structure
 
 ```text
 src/main/java/com/ashi/mythweave/           Common code (runs on client and server)
-├── Mythweave.java                          Mod entry point: runs all registrations
-├── ability/EmberSpark.java                 Ember Spark: target search, cooldown, effects
-├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
-├── entity/CindercubEntity.java             Cindercub: stats, AI goals, bonding and sit logic
-└── registry/
-    ├── ModBlocks.java                      Blocks
-    ├── ModEntityTypes.java                 Entity types and their attributes
-    └── ModItems.java                       Items (spawn egg, block items), creative tabs
+â”œâ”€â”€ Mythweave.java                          Mod entry point: runs all registrations
+â”œâ”€â”€ ability/EmberSpark.java                 Ember Spark: target search, cooldown, effects
+â”œâ”€â”€ block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
+â”œâ”€â”€ entity/CindercubEntity.java             Cindercub: stats, AI goals, bonding and sit logic
+â””â”€â”€ registry/
+    â”œâ”€â”€ ModBlocks.java                      Blocks
+    â”œâ”€â”€ ModEntityTypes.java                 Entity types and their attributes
+    â”œâ”€â”€ ModItems.java                       Items (spawn egg, block items), creative tabs
+    â””â”€â”€ ModSounds.java                      Sound events (what they play: sounds.json)
 
 src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a server)
-├── MythweaveClient.java                    Client entry point: registers model + renderer
-├── model/CindercubModel.java               Cube layout, walk/look/tail animation, sit pose
-└── render/
-    ├── CindercubRenderer.java              Connects model + texture to the entity
-    └── CindercubRenderState.java           Per-frame data the model reads (e.g. sitting)
+â”œâ”€â”€ MythweaveClient.java                    Client entry point: registers model + renderer
+â”œâ”€â”€ model/CindercubModel.java               Cube layout, walk/look/tail animation, sit pose
+â””â”€â”€ render/
+    â”œâ”€â”€ CindercubRenderer.java              Connects model + texture to the entity
+    â”œâ”€â”€ CindercubGlowLayer.java             Draws the ember tip full-bright (glows in the dark)
+    â””â”€â”€ CindercubRenderState.java           Per-frame data the model reads (e.g. sitting)
 
 src/main/resources/
-├── fabric.mod.json                         Mod metadata, entry points, dependencies
-├── assets/mythweave/
-│   ├── textures/entity/cindercub.png       Cindercub texture (64×32)
-│   ├── textures/block/ember_brazier_*.png  Brazier textures (flame is animated)
-│   ├── blockstates/, models/block/         Brazier unlit/lit models
-│   ├── items/                              Item appearances (spawn egg, brazier)
-│   └── lang/en_us.json                     English names and messages
-└── data/
-    ├── mythweave/recipe/, loot_table/      Brazier recipe and drop
-    └── minecraft/tags/block/mineable/      Brazier mines faster with a pickaxe
+â”œâ”€â”€ fabric.mod.json                         Mod metadata, entry points, dependencies
+â”œâ”€â”€ assets/mythweave/
+â”‚   â”œâ”€â”€ textures/entity/cindercub*.png      Cindercub texture (64Ã—32) and its glow map
+â”‚   â”œâ”€â”€ textures/block/ember_brazier_*.png  Brazier textures (flame is animated)
+â”‚   â”œâ”€â”€ textures/item/                      Spawn egg texture
+â”‚   â”œâ”€â”€ blockstates/, models/               Brazier unlit/lit models, spawn egg model
+â”‚   â”œâ”€â”€ items/                              Item appearances (spawn egg, brazier)
+â”‚   â”œâ”€â”€ sounds.json                         What Cindercub's sound events play
+â”‚   â””â”€â”€ lang/en_us.json                     English names, messages, subtitles
+â””â”€â”€ data/
+    â”œâ”€â”€ mythweave/recipe/, loot_table/      Brazier recipe and drop
+    â””â”€â”€ minecraft/tags/block/mineable/      Brazier mines faster with a pickaxe
 
 dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
 
 tools/
-├── generate_cindercub_texture.ps1          Paints cindercub.png; documents the UV layout
-├── generate_brazier_textures.ps1           Paints the Ember Brazier textures
-└── render_cindercub_preview.ps1            Renders the README images in docs/images/
+â”œâ”€â”€ generate_cindercub_texture.ps1          Paints cindercub.png + glow map; documents the UV layout
+â”œâ”€â”€ generate_brazier_textures.ps1           Paints the Ember Brazier textures
+â”œâ”€â”€ generate_spawn_egg_texture.ps1          Paints the Cindercub spawn egg
+â””â”€â”€ render_cindercub_preview.ps1            Renders the README images in docs/images/
 
 docs/
-├── Mythweave_Project_Specification.md      Design document and phase plan
-└── PHASE0_NOTES.md                         Toolchain versions and setup notes
+â”œâ”€â”€ Mythweave_Project_Specification.md      Design document and phase plan
+â””â”€â”€ PHASE0_NOTES.md                         Toolchain versions and setup notes
 ```
 
 ### The texture
@@ -286,7 +306,7 @@ docs/
   <img src="docs/images/cindercub_texture.png" width="512" alt="Cindercub texture sheet, scaled 8x">
 </p>
 
-The 64 × 32 texture, scaled 8× (the checkerboard is transparent). Each rectangle is one
+The 64 Ã— 32 texture, scaled 8Ã— (the checkerboard is transparent). Each rectangle is one
 body part unfolded flat: head, snout, ears, body, tail, ember tip, and legs. Edit it in any
 pixel editor or Blockbench, or change the colors in `tools/generate_cindercub_texture.ps1` and
 run:

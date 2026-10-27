@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/fox_spawn_egg"
+    "model": "mythweave:item/cindercub_spawn_egg"
   }
 }

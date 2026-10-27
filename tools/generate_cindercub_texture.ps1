@@ -18,6 +18,10 @@
 #   body      (0,  10, 4, 4, 7)    tail      (24, 10, 3, 3, 5)
 #   ember tip (42, 10, 2, 2, 2)    legs      (0,  24, 2, 3, 2)
 
+#
+# Also writes cindercub_glow.png next to it: same layout, transparent except the ember tip.
+# CindercubGlowLayer draws it full-bright, so the tip glows in the dark.
+
 param(
 	[string]$Out = (Join-Path $PSScriptRoot '..\src\main\resources\assets\mythweave\textures\entity\cindercub.png')
 )
@@ -98,5 +102,14 @@ Fill 4 24 2 2 $charcoal                  # paw pads (bottom face)
 
 New-Item -ItemType Directory -Force (Split-Path $Out) | Out-Null
 $bmp.Save($Out, [System.Drawing.Imaging.ImageFormat]::Png)
-$bmp.Dispose()
 Write-Output "Wrote $((Resolve-Path $Out).Path)"
+
+# Glow map: copy only the ember tip's texture region (42,10 to 50,14); everything else stays
+# fully transparent so only the tip lights up.
+$glow = New-Object System.Drawing.Bitmap 64, 32, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+for ($x = 42; $x -lt 50; $x++) { for ($y = 10; $y -lt 14; $y++) { $glow.SetPixel($x, $y, $bmp.GetPixel($x, $y)) } }
+$glowOut = Join-Path (Split-Path $Out) 'cindercub_glow.png'
+$glow.Save($glowOut, [System.Drawing.Imaging.ImageFormat]::Png)
+$glow.Dispose()
+$bmp.Dispose()
+Write-Output "Wrote $((Resolve-Path $glowOut).Path)"

@@ -21,6 +21,7 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 	public CindercubRenderer(EntityRendererProvider.Context context) {
 		// 0.3 = shadow radius in blocks, sized for the 0.5-wide hitbox.
 		super(context, new CindercubModel(context.bakeLayer(CindercubModel.LAYER)), 0.3F);
+		this.addLayer(new CindercubGlowLayer(this));
 	}
 
 	@Override
