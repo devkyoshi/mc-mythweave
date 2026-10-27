@@ -10,6 +10,7 @@
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $texturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub.png'
+$glowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -65,11 +66,12 @@ public class Preview {
 	List<Quad> quads = new List<Quad>();
 	// Pushes the next boxes slightly back so they lose depth ties against flush surfaces.
 	public double DepthBias = 0;
-	Bitmap tex;
+	Bitmap tex, glow;
 	double yaw, pitch;
 
-	public Preview(string texturePath, double yawDeg, double pitchDeg) {
+	public Preview(string texturePath, string glowPath, double yawDeg, double pitchDeg) {
 		tex = new Bitmap(texturePath);
+		glow = new Bitmap(glowPath);
 		yaw = yawDeg * Math.PI / 180; pitch = pitchDeg * Math.PI / 180;
 	}
 
@@ -112,11 +114,13 @@ public class Preview {
 			for (int j = 0; j < h; j++) {
 				Color t = tex.GetPixel(u + i, v + j);
 				if (t.A == 0) continue;
+				// Glowing texels (runes, eyes, crystals, flames) ignore lighting, like in game.
+				double s = glow.GetPixel(u + i, v + j).A > 0 ? 1.0 : shade;
 				double[][] c = texel(i, j);
 				Quad q = new Quad();
 				q.p = new double[4][];
 				for (int k = 0; k < 4; k++) q.p[k] = View(pose.Apply(c[k][0], c[k][1], c[k][2]));
-				q.c = Color.FromArgb(255, (int)(t.R * shade), (int)(t.G * shade), (int)(t.B * shade));
+				q.c = Color.FromArgb(255, (int)(t.R * s), (int)(t.G * s), (int)(t.B * s));
 				q.bias = DepthBias;
 				quads.Add(q);
 			}
@@ -200,35 +204,51 @@ public class Preview {
 }
 '@
 
-function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting) {
-	$p = New-Object Preview $texturePath, $yaw, $pitch
+function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting, [bool]$tame) {
+	$p = New-Object Preview $texturePath, $glowPath, $yaw, $pitch
 	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
 
-	# Rest pose, from CindercubModel#createBodyLayer.
-	$bodyY = 19.0; $bodyXRot = 0.0; $headZ = -3.5; $tailXRot = 0.6
+	# Rest pose, from CindercubModel#createBodyLayer (flames at their resting size).
+	$bodyY = 19.0; $bodyXRot = 0.0; $headY = 18.0; $headZ = -3.0; $tailXRot = 0.6
 	$hindY = 21.0; $hindXRot = 0.0; $hindSpread = 0.0
 	if ($sitting) {
 		# From CindercubModel#setSittingPose.
-		$bodyY += 2.0; $bodyXRot = -0.5; $headZ += 1.5; $tailXRot = 0.3
+		$bodyY += 2.0; $bodyXRot = -0.5; $headY += 0.8; $headZ += 1.3; $tailXRot = 0.3
 		$hindY += 2.0; $hindXRot = -1.4; $hindSpread = 0.5
 	}
 
 	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
-	$p.Box($body, 0, 10, -2, -2, -3.5, 4, 4, 7)
-	$tail = $body.Then([Mat]::Pose(0, -1, 3.5, $tailXRot, 0.15, 0))
-	$p.Box($tail, 24, 10, -1.5, -1.5, 0, 3, 3, 5)
-	$p.Box($tail, 42, 10, -1, -1, 5, 2, 2, 2)
+	$p.Box($body, 0, 11, -2, -2, -3, 4, 4, 6)
+	foreach ($z in -0.5, 1.5) { $p.Box($body.Then([Mat]::Pose(0, -2, $z, -0.4, 0, 0)), 54, 0, -0.5, -2, -0.5, 1, 2, 1) }
+	$tail = $body.Then([Mat]::Pose(0, -1, 3, $tailXRot, 0.15, 0))
+	if (-not $tame) {
+		$p.Box($tail, 22, 11, -1.5, -1.5, 0, 3, 3, 5)                          # wild: fur tail
+	} else {
+		# Bonded: fire tail at rest (segment curl from CindercubModel#animateFireTail).
+		$p.Box($tail, 22, 20, -1.5, -1.5, 0, 3, 3, 3)
+		$p.Box($tail.Then([Mat]::Pose(0, -1.5, 1.5, -($bodyXRot + $tailXRot), 0, 0)), 48, 11, -0.5, -2, -0.5, 1, 2, 1)
+		$mid = $tail.Then([Mat]::Pose(0, 0, 3, 0.2, 0, 0))
+		$p.Box($mid, 36, 20, -1, -1, 0, 2, 2, 3)
+		$p.Box($mid.Then([Mat]::Pose(0, -1, 1.5, -($bodyXRot + $tailXRot + 0.2), 0, 0)), 48, 11, -0.5, -2, -0.5, 1, 2, 1)
+		$tip = $mid.Then([Mat]::Pose(0, 0, 3, 0.3, 0, 0))
+		$p.Box($tip, 40, 11, -1, -1, 0, 2, 2, 2)
+		$p.Box($tip.Then([Mat]::Pose(0, -1, 1, -($bodyXRot + $tailXRot + 0.5), 0, 0)), 58, 0, -0.5, -2, -0.5, 1, 2, 1)
+	}
 
-	$head = $id.Then([Mat]::Pose(0, 17.5, $headZ, 0, 0, 0))
-	$p.Box($head, 0, 0, -2.5, -4, -4, 5, 4, 4)
-	$p.Box($head, 20, 0, -1.5, -1.5, -6, 3, 2, 2)
-	$p.Box($head, 32, 0, -2.5, -7, -2, 2, 3, 1)
-	$p.Box($head, 40, 0, 0.5, -7, -2, 2, 3, 1)
+	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
+	$p.Box($head, 0, 0, -3.5, -5, -4, 7, 5, 5)
+	$p.Box($head, 24, 0, -1.5, -2, -5, 3, 2, 1)
+	foreach ($ear in @(@(-2.5, -0.2, 34), @(2.5, 0.2, 40))) {
+		$p.Box($head.Then([Mat]::Pose($ear[0], -5, -2, 0, 0, $ear[1])), $ear[2], 0, -1, -4, 0, 2, 4, 1)
+	}
+	foreach ($horn in @(@(-1.0, -0.35), @(1.0, 0.35))) {
+		$p.Box($head.Then([Mat]::Pose($horn[0], -5, -3, -0.6, 0, $horn[1])), 50, 0, -0.5, -2, -0.5, 1, 2, 1)
+	}
 
 	# Legs touch the body where they join; a small bias lets the body win those edges.
 	$p.DepthBias = 0.05
-	foreach ($leg in @(@((-1 - $hindSpread), $hindY, 2.5, $hindXRot), @((1 + $hindSpread), $hindY, 2.5, $hindXRot), @(-1, 21, -2.5, 0), @(1, 21, -2.5, 0))) {
-		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 24, -1, 0, -1, 2, 3, 2)
+	foreach ($leg in @(@((-1 - $hindSpread), $hindY, 2, $hindXRot), @((1 + $hindSpread), $hindY, 2, $hindXRot), @(-1, 21, -2, 0), @(1, 21, -2, 0))) {
+		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 23, -1, 0, -1, 2, 3, 2)
 	}
 	return $p
 }
@@ -240,11 +260,12 @@ function Save([System.Drawing.Bitmap]$bmp, [string]$name) {
 }
 
 # Yaw 0 looks at the face; 180 looks at the tail.
-$standing = (New-Cindercub 35 25 $false).Render(640, $true)
+# Standing = wild (fur tail); sitting and back = bonded (fire tail).
+$standing = (New-Cindercub 35 25 $false $false).Render(640, $true)
 Save $standing 'cindercub_standing.png'
-$sitting = (New-Cindercub 60 15 $true).Render(640, $true)
+$sitting = (New-Cindercub 60 15 $true $true).Render(640, $true)
 Save $sitting 'cindercub_sitting.png'
-$back = (New-Cindercub 215 25 $false).Render(640, $true)
+$back = (New-Cindercub 215 25 $false $true).Render(640, $true)
 Save $back 'cindercub_back.png'
 
 # Texture sheet, scaled 8x with nearest-neighbour on a dark checkerboard.
@@ -279,7 +300,7 @@ $smallFont = New-Object System.Drawing.Font 'Segoe UI', 20, ([System.Drawing.Fon
 $g.DrawString('Mythweave', $titleFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 255, 214, 140))), 64, 112)
 $g.DrawString('Discover, bond with, and raise magical Mythlings', $subFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 243, 211, 163))), 70, 200)
 $g.DrawString('A Fabric mod for Minecraft Java 26.3', $smallFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(200, 243, 211, 163))), 70, 246)
-$hero = (New-Cindercub 35 25 $false).Render(400, $true)
+$hero = (New-Cindercub 35 25 $false $true).Render(400, $true)
 $g.DrawImage($hero, 840, 0, 400, 400)
 $g.Dispose()
 Save $banner 'banner.png'

@@ -33,6 +33,7 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 	public void extractRenderState(CindercubEntity entity, CindercubRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isSitting = entity.isInSittingPose();
+		state.isTame = entity.isTame();
 	}
 
 	@Override

@@ -3,8 +3,11 @@ package com.ashi.mythweave.entity;
 import com.ashi.mythweave.ability.EmberSpark;
 import com.ashi.mythweave.registry.ModSounds;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -167,13 +170,23 @@ public class CindercubEntity extends TamableAnimal {
 		return InteractionResult.SUCCESS.withoutItem();
 	}
 
-	/** Server-side. Records the owner (UUID), shows hearts, and starts following right away. */
+	/**
+	 * Server-side. Records the owner (UUID), shows hearts, and starts following right away.
+	 * The tail ignites (clients switch to the fire tail as the tame flag syncs) with a burst
+	 * of flame and a whoosh.
+	 */
 	private void bondWith(Player player) {
 		this.tame(player);
 		this.getNavigation().stop();
 		this.setTarget(null);
 		this.setOrderedToSit(false);
 		this.level().broadcastEntityEvent(this, EVENT_HEART_PARTICLES);
+		if (this.level() instanceof ServerLevel serverLevel) {
+			float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
+			serverLevel.sendParticles(ParticleTypes.FLAME, this.getX() + Mth.sin(yaw) * 0.45, this.getY() + 0.6,
+					this.getZ() - Mth.cos(yaw) * 0.45, 24, 0.15, 0.15, 0.15, 0.04);
+			this.playSound(SoundEvents.FIRECHARGE_USE, 0.6F, 1.4F);
+		}
 		player.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.bonded"));
 	}
 
@@ -211,6 +224,43 @@ public class CindercubEntity extends TamableAnimal {
 		super.tick();
 		if (!this.level().isClientSide() && this.emberCooldown > 0) {
 			this.emberCooldown--;
+		}
+	}
+
+	@Override
+	public void aiStep() {
+		super.aiStep();
+		// Only a bonded Cindercub's tail is fire; a wild one has a plain fur tail.
+		if (this.level().isClientSide() && this.isTame()) {
+			this.spawnTailEmbers();
+		}
+	}
+
+	/**
+	 * Client-side visuals only: embers stream up from the fire tail, more while running. In
+	 * rain or water they turn into puffs of steam instead. Each client spawns its own, so this
+	 * sends nothing over the network.
+	 */
+	private void spawnTailEmbers() {
+		boolean moving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4;
+		if (this.random.nextInt(moving ? 2 : 4) != 0) {
+			return;
+		}
+		// A random point along the fire tail: behind the body and up (lower when sitting).
+		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite.
+		boolean sitting = this.isInSittingPose();
+		double along = this.random.nextDouble();
+		double back = (sitting ? 0.35 : 0.3) + along * 0.3;
+		double up = (sitting ? 0.3 : 0.55) + along * (sitting ? 0.2 : 0.25);
+		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
+		double x = this.getX() + Mth.sin(yaw) * back + (this.random.nextDouble() - 0.5) * 0.15;
+		double y = this.getY() + up;
+		double z = this.getZ() - Mth.cos(yaw) * back + (this.random.nextDouble() - 0.5) * 0.15;
+		if (this.isInWaterOrRain()) {
+			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
+		} else {
+			this.level().addParticle(this.random.nextInt(4) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMALL_FLAME,
+					x, y, z, 0.0, 0.015 + this.random.nextDouble() * 0.02, 0.0);
 		}
 	}
 
