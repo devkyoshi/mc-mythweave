@@ -1,7 +1,7 @@
 package com.ashi.mythweave.registry;
 
 import com.ashi.mythweave.Mythweave;
-import com.ashi.mythweave.entity.CindercubEntity;
+import com.ashi.mythweave.creature.cindercub.CindercubEntity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 

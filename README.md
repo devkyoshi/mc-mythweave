@@ -31,6 +31,9 @@ designs, or assets.
 - [Technical notes](#technical-notes)
 - [License and credits](#license-and-credits)
 
+**Want to help build it?** Read [CONTRIBUTING.md](CONTRIBUTING.md): setup, where things go,
+and step-by-step checklists for adding creatures, evolution forms, blocks and abilities.
+
 ## Meet Cindercub
 
 <table>
@@ -60,7 +63,7 @@ playful, and a little mischievous.
 | **Habitat (planned)** | Savannas, badlands, warm caves |
 
 <sub>The images above are generated from the mod's real model layout and texture by
-<code>tools/render_cindercub_preview.ps1</code>. Lighting is approximate.</sub>
+<code>tools/previews/cindercub.ps1</code>. Lighting is approximate.</sub>
 
 ## How to play
 
@@ -93,7 +96,7 @@ Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
 - **Check progress:** sneak and right-click your Cindercub with an empty hand to see, for
   example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
 - At **150 Kindle** its flame flares up and it's ready to evolve. The evolution itself
-  arrives in the next update (see [docs/EVOLUTION_PLAN.md](docs/EVOLUTION_PLAN.md)).
+  arrives in the next update (see [docs/design/evolution.md](docs/design/evolution.md)).
 
 ### The Ember Brazier
 
@@ -162,7 +165,7 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
   fire animations (flicker, breathing glow, embers), idle head tilt and ear twitches.
   *(Built; awaiting in-game test.)*
 - [ ] **Evolution.** Bond XP ("Kindle") evolves Cindercub → Emberlynx → Ashenox or Solflare.
-  See [docs/EVOLUTION_PLAN.md](docs/EVOLUTION_PLAN.md).
+  See [docs/design/evolution.md](docs/design/evolution.md).
   - [ ] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
     *(Built; awaiting in-game test.)*
   - [ ] E2: evolution moment + Emberlynx · E3: Ashenox · E4: Solflare · E5: balance
@@ -185,7 +188,8 @@ The mod is required on both the client and the server when playing multiplayer.
 
 ## Building from source (developers)
 
-**You need:** JDK 25 and Git. Gradle downloads itself through the wrapper.
+**You need:** JDK 25 and Git. Gradle downloads itself through the wrapper. If you're going to
+change code, start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 git clone <this repository>
@@ -294,57 +298,51 @@ Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
 ## Project structure
 
+Code is organised **by feature**: shared Mythling code in `mythling/`, everything for one
+creature in `creature/<name>/`. Adding a creature or an evolution form means adding a folder
+and following the checklist in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ```text
 src/main/java/com/ashi/mythweave/           Common code (runs on client and server)
 ├── Mythweave.java                          Mod entry point: runs all registrations
-├── ability/EmberSpark.java                 Ember Spark: target search, cooldown, effects
+├── registry/                               Everything registered, in one place
+│   ├── ModEntityTypes.java                 Entity types and their attributes
+│   ├── ModBlocks.java, ModItems.java       Blocks; items, spawn eggs, creative tabs
+│   └── ModSounds.java                      Sound events (what they play: sounds.json)
+├── mythling/                               Shared by every creature
+│   ├── MythlingEntity.java                 Base class: bonding, owner controls, sit, AI, Kindle
+│   ├── Mythling.java                       Interface: kindle(), evolutionLine()
+│   └── evolution/
+│       ├── EvolutionRules.java             Thresholds, Kindle sources, branch logic
+│       ├── EvolutionLine.java              One species' forms (stage 1 → 2 → two stage-3s)
+│       ├── Kindle.java                     One Mythling's Kindle: earning, saving, status
+│       └── KindleEvents.java               Kindle from fights nearby (Fabric events)
+├── creature/cindercub/                     Everything Cindercub-specific
+│   ├── CindercubEntity.java                Stats, sounds, Ember Spark hook, embers
+│   ├── CindercubLine.java                  Cindercub → Emberlynx → Ashenox | Solflare
+│   └── EmberSpark.java                     Its ability: target search, cooldown, effects
 ├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
-├── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
-├── evolution/                              Evolution: rules in one place
-│   ├── EvolutionRules.java                 Thresholds, Kindle sources, branch logic
-│   ├── Kindle.java                         One Mythling's Kindle: earning, saving, status
-│   ├── KindleEvents.java                   Kindle from fights nearby (Fabric events)
-│   └── Mythling.java                       Interface every evolvable creature implements
-├── entity/CindercubEntity.java             Cindercub: stats, AI goals, bonding and sit logic
-└── registry/
-    ├── ModBlocks.java                      Blocks
-    ├── ModEntityTypes.java                 Entity types and their attributes
-    ├── ModItems.java                       Items (spawn egg, block items), creative tabs
-    └── ModSounds.java                      Sound events (what they play: sounds.json)
+└── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
 
 src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a server)
-├── MythweaveClient.java                    Client entry point: registers model + renderer
-├── model/CindercubModel.java               Cube layout, walk/look/tail animation, sit pose
-└── render/
-    ├── CindercubRenderer.java              Connects model + texture to the entity
-    ├── CindercubGlowLayer.java             Draws runes, eyes, crystals, flames full-bright, pulsing
-    └── CindercubRenderState.java           Per-frame data the model reads (e.g. sitting)
+├── MythweaveClient.java                    Client entry point: registers models + renderers
+├── mythling/PulsingGlowLayer.java          Any creature's glow map, full-bright and breathing
+└── creature/cindercub/                     CindercubModel, CindercubRenderer, CindercubRenderState
 
 src/main/resources/
 ├── fabric.mod.json                         Mod metadata, entry points, dependencies
 ├── assets/mythweave/
-│   ├── textures/entity/cindercub*.png      Cindercub texture (64×32) and its glow map
-│   ├── textures/block/ember_brazier_*.png  Brazier textures (flame is animated)
-│   ├── textures/item/                      Spawn egg texture
-│   ├── blockstates/, models/               Brazier unlit/lit models, spawn egg model
-│   ├── items/                              Item appearances (spawn egg, brazier)
-│   ├── sounds.json                         What Cindercub's sound events play
+│   ├── textures/entity/<creature>/         Per creature: texture + glow map
+│   ├── textures/block/, textures/item/     Block and item textures
+│   ├── blockstates/, models/, items/       Block and item models and appearances
+│   ├── sounds.json                         What the sound events play
 │   └── lang/en_us.json                     English names, messages, subtitles
-└── data/
-    ├── mythweave/recipe/, loot_table/      Brazier recipe and drop
-    └── minecraft/tags/block/mineable/      Brazier mines faster with a pickaxe
+└── data/                                   Recipes, loot tables, tags
 
+tools/textures/, tools/previews/            Scripts that paint textures and render README images
+docs/design/                                Specification and evolution design
+docs/dev/                                   Setup notes
 dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
-
-tools/
-├── generate_cindercub_texture.ps1          Paints cindercub.png + glow map; documents the UV layout
-├── generate_brazier_textures.ps1           Paints the Ember Brazier textures
-├── generate_spawn_egg_texture.ps1          Paints the Cindercub spawn egg
-└── render_cindercub_preview.ps1            Renders the README images in docs/images/
-
-docs/
-├── Mythweave_Project_Specification.md      Design document and phase plan
-└── PHASE0_NOTES.md                         Toolchain versions and setup notes
 ```
 
 ### The texture
@@ -356,11 +354,11 @@ docs/
 The 64 × 32 texture, scaled 8× (the checkerboard is transparent). Each rectangle is one
 body part unfolded flat: head, snout, ears, horns, spine shards, body, tail, tail flame, and
 legs. The glowing pixels are also written to a separate glow map (`cindercub_glow.png`). Edit it in any
-pixel editor or Blockbench, or change the colors in `tools/generate_cindercub_texture.ps1` and
+pixel editor or Blockbench, or change the colors in `tools/textures/cindercub.ps1` and
 run:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File tools/generate_cindercub_texture.ps1
+powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 ```
 
 ## Technical notes
@@ -371,7 +369,7 @@ powershell -ExecutionPolicy Bypass -File tools/generate_cindercub_texture.ps1
   (e.g. `net.minecraft.resources.Identifier`) and the plugin is `net.fabricmc.fabric-loom`.
 - **Client/server split.** `splitEnvironmentSourceSets()` keeps rendering code in `src/client`,
   so a dedicated server never loads it.
-- **Bonding reuses vanilla.** `CindercubEntity` extends `TamableAnimal`, which stores the owner
+- **Bonding reuses vanilla.** Every Mythling extends `MythlingEntity`, a `TamableAnimal`, which stores the owner
   as a UUID, saves `Owner` and `Sitting` with the entity, and syncs both to clients. No custom
   save code or network packets.
 - **Server-authoritative.** Every bond, sit toggle, and message is decided on the server.
@@ -382,7 +380,7 @@ powershell -ExecutionPolicy Bypass -File tools/generate_cindercub_texture.ps1
   `EntityRenderers.register`; action-bar messages use `Player#sendOverlayMessage`.
 
 The full design (pillars, phase plan, and acceptance criteria) is in
-[docs/Mythweave_Project_Specification.md](docs/Mythweave_Project_Specification.md).
+[docs/design/specification.md](docs/design/specification.md).
 
 ## License and credits
 

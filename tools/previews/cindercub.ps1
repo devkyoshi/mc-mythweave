@@ -2,15 +2,15 @@
 # as CindercubModel.java (no game needed). Outputs to docs/images/.
 #
 # Usage (from the project root):
-#   powershell -ExecutionPolicy Bypass -File tools\render_cindercub_preview.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\previews\cindercub.ps1
 #
 # The cube list below duplicates CindercubModel#createBodyLayer and #setSittingPose. If you
 # change the model, update it here too. In-game screenshots (F2) are always the real truth.
 
 $ErrorActionPreference = 'Stop'
-$root = Resolve-Path (Join-Path $PSScriptRoot '..')
-$texturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub.png'
-$glowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub_glow.png'
+$root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
+$texturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub.png'
+$glowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 

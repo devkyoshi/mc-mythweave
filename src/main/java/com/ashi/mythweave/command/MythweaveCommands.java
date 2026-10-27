@@ -1,7 +1,7 @@
 package com.ashi.mythweave.command;
 
-import com.ashi.mythweave.evolution.EvolutionRules.Branch;
-import com.ashi.mythweave.evolution.Mythling;
+import com.ashi.mythweave.mythling.MythlingEntity;
+import com.ashi.mythweave.mythling.evolution.EvolutionRules.Branch;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -15,7 +15,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.TamableAnimal;
 
 /**
  * Testing and admin commands, for operators only (same permission as /kill):
@@ -54,21 +53,21 @@ public final class MythweaveCommands {
 
 	private static int get(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		Entity entity = EntityArgument.getEntity(context, "target");
-		if (!(entity instanceof TamableAnimal mythling) || !(entity instanceof Mythling holder)) {
+		if (!(entity instanceof MythlingEntity mythling)) {
 			context.getSource().sendFailure(Component.translatable("commands.mythweave.not_a_mythling"));
 			return 0;
 		}
-		context.getSource().sendSuccess(() -> holder.kindle().status(mythling), false);
-		return holder.kindle().points();
+		context.getSource().sendSuccess(() -> mythling.kindle().status(mythling), false);
+		return mythling.kindle().points();
 	}
 
 	private static int add(CommandContext<CommandSourceStack> context, Branch affinity) throws CommandSyntaxException {
 		int amount = IntegerArgumentType.getInteger(context, "amount");
 		int changed = 0;
 		for (Entity entity : EntityArgument.getEntities(context, "targets")) {
-			if (entity instanceof TamableAnimal mythling && entity instanceof Mythling holder && mythling.isTame()) {
-				holder.kindle().add(mythling, amount, affinity);
-				context.getSource().sendSuccess(() -> holder.kindle().status(mythling), true);
+			if (entity instanceof MythlingEntity mythling && mythling.isTame()) {
+				mythling.kindle().add(mythling, amount, affinity);
+				context.getSource().sendSuccess(() -> mythling.kindle().status(mythling), true);
 				changed++;
 			}
 		}

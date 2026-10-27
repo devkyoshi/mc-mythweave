@@ -2,13 +2,13 @@
 # src/main/resources/assets/mythweave/textures/item/cindercub_spawn_egg.png
 #
 # Usage (from the project root):
-#   powershell -ExecutionPolicy Bypass -File tools\generate_spawn_egg_texture.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\textures\cindercub_spawn_egg.ps1
 #
 # An orange egg in Cindercub's colors: dark outline, highlight on the upper left,
 # charcoal and burnt-red spots, and one glowing ember fleck.
 
 param(
-	[string]$Out = (Join-Path $PSScriptRoot '..\src\main\resources\assets\mythweave\textures\item\cindercub_spawn_egg.png')
+	[string]$Out = (Join-Path $PSScriptRoot '..\..\src\main\resources\assets\mythweave\textures\item\cindercub_spawn_egg.png')
 )
 
 $ErrorActionPreference = 'Stop'

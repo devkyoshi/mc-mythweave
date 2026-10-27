@@ -1,8 +1,7 @@
-package com.ashi.mythweave.ability;
+package com.ashi.mythweave.creature.cindercub;
 
 import com.ashi.mythweave.block.EmberBrazierBlock;
-import com.ashi.mythweave.entity.CindercubEntity;
-import com.ashi.mythweave.evolution.EvolutionRules;
+import com.ashi.mythweave.mythling.evolution.EvolutionRules;
 import com.ashi.mythweave.registry.ModBlocks;
 
 import net.minecraft.core.BlockPos;

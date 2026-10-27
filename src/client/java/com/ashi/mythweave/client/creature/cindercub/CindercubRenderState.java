@@ -1,4 +1,4 @@
-package com.ashi.mythweave.client.render;
+package com.ashi.mythweave.client.creature.cindercub;
 
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 

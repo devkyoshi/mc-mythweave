@@ -1,7 +1,7 @@
 package com.ashi.mythweave.client;
 
-import com.ashi.mythweave.client.model.CindercubModel;
-import com.ashi.mythweave.client.render.CindercubRenderer;
+import com.ashi.mythweave.client.creature.cindercub.CindercubModel;
+import com.ashi.mythweave.client.creature.cindercub.CindercubRenderer;
 import com.ashi.mythweave.registry.ModEntityTypes;
 
 import net.fabricmc.api.ClientModInitializer;

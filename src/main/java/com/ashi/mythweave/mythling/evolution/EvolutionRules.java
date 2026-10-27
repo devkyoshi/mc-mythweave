@@ -1,11 +1,13 @@
-package com.ashi.mythweave.evolution;
+package com.ashi.mythweave.mythling.evolution;
 
 /**
  * Every evolution number and rule, in one place (spec: evolution conditions must not be
  * scattered through entity code). Entities only report what happened; {@link Kindle} applies
- * these rules. See docs/EVOLUTION_PLAN.md.
+ * these rules. See docs/design/evolution.md.
  *
- * <p>Line: Cindercub -> Emberlynx (stage 2) -> Ashenox (combat) or Solflare (exploration).
+ * <p>These rules are shared by every species. Which forms a species evolves into is its
+ * {@link EvolutionLine} (e.g. {@code CindercubLine}): stage 1 -> stage 2 -> one of two
+ * stage-3 forms, picked by {@link Branch}.
  */
 public final class EvolutionRules {
 	/** Kindle needed for stage 2, and for stage 3 (counted from zero, not on top of stage 2). */
@@ -26,9 +28,9 @@ public final class EvolutionRules {
 	/** Which stage-3 form the Mythling is drawn toward. */
 	public enum Branch {
 		NONE,
-		/** Ashenox. */
+		/** Earned by fighting together; leads to {@link EvolutionLine#combatForm()} (e.g. Ashenox). */
 		COMBAT,
-		/** Solflare. */
+		/** Earned by exploring together; leads to {@link EvolutionLine#explorationForm()} (e.g. Solflare). */
 		EXPLORATION
 	}
 

@@ -2,12 +2,12 @@
 # plus its glow map.
 #
 # Usage (from the project root):
-#   powershell -ExecutionPolicy Bypass -File tools\generate_cindercub_texture.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\textures\cindercub.ps1
 #
 # Outputs (in src/main/resources/assets/mythweave/textures/entity/):
 #   cindercub.png       the main texture
 #   cindercub_glow.png  same layout, transparent except the glowing parts (rune markings,
-#                       eye shine, crystals, flames). CindercubGlowLayer draws it full-bright
+#                       eye shine, crystals, flames). PulsingGlowLayer draws it full-bright
 #                       with a slow pulse, so those parts light up in the dark.
 #
 # How Minecraft maps a box (width w, height h, depth d) at texOffs(u, v):
@@ -27,7 +27,7 @@
 #   legs        (0,  23, 2, 3, 2)
 
 param(
-	[string]$Out = (Join-Path $PSScriptRoot '..\src\main\resources\assets\mythweave\textures\entity\cindercub.png')
+	[string]$Out = (Join-Path $PSScriptRoot '..\..\src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub.png')
 )
 
 $ErrorActionPreference = 'Stop'

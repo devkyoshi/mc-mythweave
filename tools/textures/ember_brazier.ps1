@@ -2,7 +2,7 @@
 # src/main/resources/assets/mythweave/textures/block/.
 #
 # Usage (from the project root):
-#   powershell -ExecutionPolicy Bypass -File tools\generate_brazier_textures.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\textures\ember_brazier.ps1
 #
 # Files and where the block models use them:
 #   ember_brazier_metal.png      base plate, post, bowl underside (dark iron, rivets)
@@ -16,7 +16,7 @@
 # cutout automatically (it picks the render layer from the texture's transparency).
 
 param(
-	[string]$OutDir = (Join-Path $PSScriptRoot '..\src\main\resources\assets\mythweave\textures\block')
+	[string]$OutDir = (Join-Path $PSScriptRoot '..\..\src\main\resources\assets\mythweave\textures\block')
 )
 
 $ErrorActionPreference = 'Stop'

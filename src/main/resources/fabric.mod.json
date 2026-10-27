@@ -8,8 +8,9 @@
 		"ashi"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/devkyoshi/mc-mythweave",
+		"sources": "https://github.com/devkyoshi/mc-mythweave",
+		"issues": "https://github.com/devkyoshi/mc-mythweave/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/mythweave/icon.png",

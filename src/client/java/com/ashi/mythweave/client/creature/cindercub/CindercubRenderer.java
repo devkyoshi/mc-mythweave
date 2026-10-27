@@ -1,8 +1,8 @@
-package com.ashi.mythweave.client.render;
+package com.ashi.mythweave.client.creature.cindercub;
 
 import com.ashi.mythweave.Mythweave;
-import com.ashi.mythweave.client.model.CindercubModel;
-import com.ashi.mythweave.entity.CindercubEntity;
+import com.ashi.mythweave.client.mythling.PulsingGlowLayer;
+import com.ashi.mythweave.creature.cindercub.CindercubEntity;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -16,12 +16,14 @@ import net.minecraft.resources.Identifier;
  * and the model animates from that.
  */
 public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRenderState, CindercubModel> {
-	private static final Identifier TEXTURE = Mythweave.id("textures/entity/cindercub.png");
+	private static final Identifier TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub.png");
+	/** Transparent except the parts that glow (runes, eye shine, crystals, ember tips, fire tail). */
+	private static final Identifier GLOW_TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub_glow.png");
 
 	public CindercubRenderer(EntityRendererProvider.Context context) {
 		// 0.3 = shadow radius in blocks, sized for the 0.5-wide hitbox.
 		super(context, new CindercubModel(context.bakeLayer(CindercubModel.LAYER)), 0.3F);
-		this.addLayer(new CindercubGlowLayer(this));
+		this.addLayer(new PulsingGlowLayer<>(this, GLOW_TEXTURE));
 	}
 
 	@Override

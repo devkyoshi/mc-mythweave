@@ -1,6 +1,9 @@
 # Phase 0 — Project inspection notes
 
-Recorded 2026-10-27.
+Recorded 2026-10-27, when the project was created from the Fabric template. The toolchain
+table and the gotchas below still apply. The source tree shown here is the original
+template's. The current layout is in the README's *Project structure* section and in
+[CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Toolchain (from the generated template — do not change silently)
 
@@ -31,8 +34,9 @@ version or build-logic changes:
 - Assets folder → `assets/mythweave/`.
 - `fabric.mod.json`: name, description, author updated. License is still the
   template's `CC0-1.0` (and `LICENSE` file) — choose your own license later.
-- The two example mixins (`ExampleMixin`, `ExampleClientMixin`) are empty no-op
-  injections kept from the template. They can be removed once real code exists.
+- The two example mixins (`ExampleMixin`, `ExampleClientMixin`) were empty no-op
+  injections kept from the template. They were removed in the restructure; the mixin
+  configs remain, with empty lists, ready for real mixins.
 
 ## Source tree
 
