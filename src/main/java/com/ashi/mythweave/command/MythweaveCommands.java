@@ -1,0 +1,80 @@
+package com.ashi.mythweave.command;
+
+import com.ashi.mythweave.evolution.EvolutionRules.Branch;
+import com.ashi.mythweave.evolution.Mythling;
+
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.TamableAnimal;
+
+/**
+ * Testing and admin commands, for operators only (same permission as /kill):
+ *
+ * <pre>
+ * /mythweave kindle get &lt;mythling&gt;
+ * /mythweave kindle add &lt;mythlings&gt; &lt;amount&gt; [combat|exploration]
+ * </pre>
+ *
+ * Example: {@code /mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 50 combat}
+ */
+public final class MythweaveCommands {
+	private MythweaveCommands() {
+	}
+
+	/** Called from {@link com.ashi.mythweave.Mythweave#onInitialize()}. */
+	public static void register() {
+		CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> dispatcher.register(
+				Commands.literal("mythweave")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.then(Commands.literal("kindle")
+								.then(Commands.literal("get")
+										.then(Commands.argument("target", EntityArgument.entity())
+												.executes(MythweaveCommands::get)))
+								.then(Commands.literal("add")
+										.then(Commands.argument("targets", EntityArgument.entities())
+												.then(addAmount()))))));
+	}
+
+	private static ArgumentBuilder<CommandSourceStack, ?> addAmount() {
+		return Commands.argument("amount", IntegerArgumentType.integer(1, 1000))
+				.executes(c -> add(c, Branch.NONE))
+				.then(Commands.literal("combat").executes(c -> add(c, Branch.COMBAT)))
+				.then(Commands.literal("exploration").executes(c -> add(c, Branch.EXPLORATION)));
+	}
+
+	private static int get(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		Entity entity = EntityArgument.getEntity(context, "target");
+		if (!(entity instanceof TamableAnimal mythling) || !(entity instanceof Mythling holder)) {
+			context.getSource().sendFailure(Component.translatable("commands.mythweave.not_a_mythling"));
+			return 0;
+		}
+		context.getSource().sendSuccess(() -> holder.kindle().status(mythling), false);
+		return holder.kindle().points();
+	}
+
+	private static int add(CommandContext<CommandSourceStack> context, Branch affinity) throws CommandSyntaxException {
+		int amount = IntegerArgumentType.getInteger(context, "amount");
+		int changed = 0;
+		for (Entity entity : EntityArgument.getEntities(context, "targets")) {
+			if (entity instanceof TamableAnimal mythling && entity instanceof Mythling holder && mythling.isTame()) {
+				holder.kindle().add(mythling, amount, affinity);
+				context.getSource().sendSuccess(() -> holder.kindle().status(mythling), true);
+				changed++;
+			}
+		}
+		if (changed == 0) {
+			context.getSource().sendFailure(Component.translatable("commands.mythweave.no_bonded_mythling"));
+		}
+		return changed;
+	}
+}

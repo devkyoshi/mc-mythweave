@@ -2,6 +2,7 @@ package com.ashi.mythweave.ability;
 
 import com.ashi.mythweave.block.EmberBrazierBlock;
 import com.ashi.mythweave.entity.CindercubEntity;
+import com.ashi.mythweave.evolution.EvolutionRules;
 import com.ashi.mythweave.registry.ModBlocks;
 
 import net.minecraft.core.BlockPos;
@@ -63,6 +64,7 @@ public final class EmberSpark {
 		level.sendParticles(ParticleTypes.LAVA, to.x, to.y + 0.3, to.z, 6, 0.2, 0.1, 0.2, 0.0);
 
 		cub.setEmberCooldown(COOLDOWN_TICKS);
+		cub.kindle().gain(cub, EvolutionRules.KindleSource.EMBER_SPARK);
 		owner.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.ember_lit"));
 	}
 

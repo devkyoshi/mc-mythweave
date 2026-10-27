@@ -12,5 +12,13 @@
   "message.mythweave.cindercub.following": "Cindercub is following you.",
   "message.mythweave.cindercub.ember_lit": "Cindercub flicks an ember spark and lights the brazier!",
   "message.mythweave.cindercub.ember_recharging": "Cindercub's ember is still recharging (%s s).",
-  "message.mythweave.cindercub.ember_no_brazier": "Cindercub looks around, but it can't see an unlit Ember Brazier within %s blocks."
+  "message.mythweave.kindle.status": "%s · Kindle %s/%s · %s",
+  "message.mythweave.kindle.leaning.none": "no leaning yet",
+  "message.mythweave.kindle.leaning.combat": "leaning toward Ashenox (battle)",
+  "message.mythweave.kindle.leaning.exploration": "leaning toward Solflare (exploration)",
+  "message.mythweave.kindle.new_biome": "%s sniffs the air of a new place! (+%s Kindle)",
+  "message.mythweave.kindle.ready": "%s's flame burns brighter: it's ready to evolve! (Evolution arrives in a future version.)",
+  "commands.mythweave.not_a_mythling": "That isn't a Mythling.",
+  "commands.mythweave.no_bonded_mythling": "No bonded Mythling found. Only bonded Mythlings earn Kindle.",
+  "message.mythweave.cindercub.ember_no_brazier":"Cindercub looks around, but it can't see an unlit Ember Brazier within %s blocks."
 }

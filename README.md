@@ -78,6 +78,23 @@ playful, and a little mischievous.
    holding **Blaze Powder**. It flicks a spark at the closest unlit brazier it can see
    (within 8 blocks) and lights it. Then it needs **15 seconds** to recharge.
 
+### Kindle: growing your bond
+
+A bonded Cindercub earns **Kindle**, the bond energy that will let it evolve. It earns it by:
+- spending time near you (+1 a minute),
+- travelling with you (+3 per 100 blocks),
+- discovering a new biome (+10, with a message),
+- using Ember Spark (+5),
+- seeing hostile mobs defeated nearby (+8),
+- surviving hits from them (+2, at most once every 10 s).
+
+Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
+
+- **Check progress:** sneak and right-click your Cindercub with an empty hand to see, for
+  example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
+- At **150 Kindle** its flame flares up and it's ready to evolve. The evolution itself
+  arrives in the next update (see [docs/EVOLUTION_PLAN.md](docs/EVOLUTION_PLAN.md)).
+
 ### The Ember Brazier
 
 An iron bowl of coals that only a Cindercub can light. Lit, it glows at full brightness
@@ -103,6 +120,7 @@ so it never spreads fire, burns nearby blocks, or hurts anyone who touches it.
 | Anyone (wild Cindercub) | Empty hand | A hint about what it likes. |
 | Owner | Blaze Powder | **Ember Spark:** lights the nearest visible unlit Ember Brazier within 8 blocks. 15 s cooldown. No powder used. |
 | Owner | Empty hand (or an item with no other use on it) | Toggles sit / follow. |
+| Owner, sneaking | Empty hand | Shows its Kindle (evolution progress) and which way it's leaning. |
 | Owner | Lead, name tag, … | Works like on any vanilla animal. |
 | Another player | Blaze Powder or empty hand | *"This Cindercub is already bonded to another player."* Nothing changes. |
 
@@ -145,6 +163,9 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
   *(Built; awaiting in-game test.)*
 - [ ] **Evolution.** Bond XP ("Kindle") evolves Cindercub → Emberlynx → Ashenox or Solflare.
   See [docs/EVOLUTION_PLAN.md](docs/EVOLUTION_PLAN.md).
+  - [ ] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
+    *(Built; awaiting in-game test.)*
+  - [ ] E2: evolution moment + Emberlynx · E3: Ashenox · E4: Solflare · E5: balance
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
 the *Aether Shard* bonding item, branching evolutions (*Ashenox*, a combat-focused volcanic
@@ -261,6 +282,14 @@ A quick in-game test of everything that works so far. Use a Creative world with 
     Accessibility): you see "Cindercub yips"/"hurts". The spawn egg is an orange egg with
     dark spots and an ember fleck. A sitting Cindercub's hind legs don't flicker.
 
+12. *(Kindle)* Sneak + right-click your bonded Cindercub with an empty hand: you see its
+    Kindle status. Use Ember Spark and check again: +5, leaning Solflare. Walk into a new
+    biome together: "+10 Kindle" message. Kill a zombie next to it: +8, leaning shifts.
+    Save, quit, reload: the numbers are unchanged. A wild one earns nothing.
+13. *(Test command, operators)* `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150`
+    triggers the "ready to evolve" flare. `/mythweave kindle get @e[type=mythweave:cindercub,limit=1,sort=nearest]`
+    prints the status. Add `combat` or `exploration` to the `add` command to push the leaning.
+
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
 ## Project structure
@@ -270,6 +299,12 @@ src/main/java/com/ashi/mythweave/           Common code (runs on client and serv
 ├── Mythweave.java                          Mod entry point: runs all registrations
 ├── ability/EmberSpark.java                 Ember Spark: target search, cooldown, effects
 ├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
+├── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
+├── evolution/                              Evolution: rules in one place
+│   ├── EvolutionRules.java                 Thresholds, Kindle sources, branch logic
+│   ├── Kindle.java                         One Mythling's Kindle: earning, saving, status
+│   ├── KindleEvents.java                   Kindle from fights nearby (Fabric events)
+│   └── Mythling.java                       Interface every evolvable creature implements
 ├── entity/CindercubEntity.java             Cindercub: stats, AI goals, bonding and sit logic
 └── registry/
     ├── ModBlocks.java                      Blocks

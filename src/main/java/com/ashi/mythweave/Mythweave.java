@@ -1,5 +1,7 @@
 package com.ashi.mythweave;
 
+import com.ashi.mythweave.command.MythweaveCommands;
+import com.ashi.mythweave.evolution.KindleEvents;
 import com.ashi.mythweave.registry.ModBlocks;
 import com.ashi.mythweave.registry.ModEntityTypes;
 import com.ashi.mythweave.registry.ModItems;
@@ -31,6 +33,8 @@ public class Mythweave implements ModInitializer {
 		ModEntityTypes.initialize();
 		ModBlocks.initialize();
 		ModItems.initialize();
+		KindleEvents.register();
+		MythweaveCommands.register();
 
 		LOGGER.info("Mythweave initialized");
 	}

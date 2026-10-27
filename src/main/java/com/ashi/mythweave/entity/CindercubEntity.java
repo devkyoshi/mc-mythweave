@@ -1,6 +1,8 @@
 package com.ashi.mythweave.entity;
 
 import com.ashi.mythweave.ability.EmberSpark;
+import com.ashi.mythweave.evolution.Kindle;
+import com.ashi.mythweave.evolution.Mythling;
 import com.ashi.mythweave.registry.ModSounds;
 
 import net.minecraft.core.particles.ParticleTypes;
@@ -50,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * makes it sit and wait, and it stands up again when the owner is back. Owner death:
  * it keeps the bond and follows the respawned player, like a vanilla wolf.
  */
-public class CindercubEntity extends TamableAnimal {
+public class CindercubEntity extends TamableAnimal implements Mythling {
 	/** Prototype bonding item (spec §5). A custom Aether Shard can replace it later. */
 	public static final Item BONDING_ITEM = Items.BLAZE_POWDER;
 
@@ -62,6 +64,9 @@ public class CindercubEntity extends TamableAnimal {
 	 * can't change it) and saved with the entity, so relogging doesn't reset it.
 	 */
 	private int emberCooldown;
+
+	/** Evolution progress; server-side, saved with the entity (see {@link Kindle}). */
+	private final Kindle kindle = new Kindle();
 
 	public CindercubEntity(EntityType<? extends CindercubEntity> type, Level level) {
 		super(type, level);
@@ -104,9 +109,9 @@ public class CindercubEntity extends TamableAnimal {
 	 * client call only predicts the arm swing, so every state change and message below is
 	 * guarded by {@code !isClientSide()} and decided by the server.
 	 *
-	 * <p>Priority: bonding a wild Cindercub; for the owner, {@link #BONDING_ITEM} triggers
-	 * Ember Spark, then vanilla interactions (leads, etc.), then the sit toggle. A non-owner
-	 * can never change an owned Cindercub.
+	 * <p>Priority: bonding a wild Cindercub; for the owner, sneaking with an empty hand shows
+	 * its Kindle status, {@link #BONDING_ITEM} triggers Ember Spark, then vanilla interactions
+	 * (leads, etc.), then the sit toggle. A non-owner can never change an owned Cindercub.
 	 */
 	@Override
 	public InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -143,6 +148,14 @@ public class CindercubEntity extends TamableAnimal {
 				return InteractionResult.SUCCESS.withoutItem();
 			}
 			return super.mobInteract(player, hand);
+		}
+
+		// Owner, sneaking, empty main hand: show Kindle (evolution progress) instead of sitting.
+		if (player.isSecondaryUseActive() && stack.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+			if (server) {
+				player.sendOverlayMessage(this.kindle.status(this));
+			}
+			return InteractionResult.SUCCESS.withoutItem();
 		}
 
 		// Owner + Blaze Powder: Ember Spark (works sitting or standing; no powder is used).
@@ -182,6 +195,7 @@ public class CindercubEntity extends TamableAnimal {
 		this.setOrderedToSit(false);
 		this.level().broadcastEntityEvent(this, EVENT_HEART_PARTICLES);
 		if (this.level() instanceof ServerLevel serverLevel) {
+			this.kindle.markBiomeVisited(this, serverLevel); // its home biome doesn't pay out
 			float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
 			serverLevel.sendParticles(ParticleTypes.FLAME, this.getX() + Mth.sin(yaw) * 0.45, this.getY() + 0.6,
 					this.getZ() - Mth.cos(yaw) * 0.45, 24, 0.15, 0.15, 0.15, 0.04);
@@ -220,10 +234,20 @@ public class CindercubEntity extends TamableAnimal {
 	}
 
 	@Override
+	public Kindle kindle() {
+		return this.kindle;
+	}
+
+	@Override
 	public void tick() {
 		super.tick();
-		if (!this.level().isClientSide() && this.emberCooldown > 0) {
-			this.emberCooldown--;
+		if (this.level() instanceof ServerLevel serverLevel) {
+			if (this.emberCooldown > 0) {
+				this.emberCooldown--;
+			}
+			if (this.isTame()) {
+				this.kindle.tick(this, serverLevel);
+			}
 		}
 	}
 
@@ -268,6 +292,7 @@ public class CindercubEntity extends TamableAnimal {
 	protected void addAdditionalSaveData(ValueOutput output) {
 		super.addAdditionalSaveData(output);
 		output.putInt("EmberCooldown", this.emberCooldown);
+		this.kindle.save(output);
 	}
 
 	@Override
@@ -275,6 +300,7 @@ public class CindercubEntity extends TamableAnimal {
 		super.readAdditionalSaveData(input);
 		// Clamp so a hand-edited or corrupt value can't lock the ability for ages.
 		this.emberCooldown = Math.clamp(input.getIntOr("EmberCooldown", 0), 0, EmberSpark.COOLDOWN_TICKS);
+		this.kindle.load(input);
 	}
 
 	// Breeding is out of scope (spec §5), so nothing counts as food and no offspring is made.
