@@ -1,5 +1,8 @@
 package com.ashi.mythweave;
 
+import com.ashi.mythweave.registry.ModEntityTypes;
+import com.ashi.mythweave.registry.ModItems;
+
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
@@ -20,6 +23,10 @@ public class Mythweave implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+
+		// Entity types first: the spawn egg item refers to CINDERCUB.
+		ModEntityTypes.initialize();
+		ModItems.initialize();
 
 		LOGGER.info("Mythweave initialized");
 	}
