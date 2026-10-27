@@ -137,7 +137,11 @@ it its own `entity/<form>/` package. Then:
   owner, sit state and Kindle) is handled by `evolution/Evolution`, so the form needs no
   extra code for it. Copy any extra per-creature state you add in `Evolution.copyBond`.
   See [docs/design/evolution.md](docs/design/evolution.md).
-- Use `EmberlynxEntity` and `EmberlynxModel` as the template for a later form.
+- **Fighting forms** override `defendsOwner()` to return `true` (the base class then adds the
+  bite and defend-owner goals with the vanilla wolf's target rules) and add an `ATTACK_DAMAGE`
+  attribute. Passive combat effects go in a helper like `ability/MagmaBite`, called from
+  `doHurtTarget` / `hurtServer`.
+- Use `EmberlynxEntity` / `AshenoxEntity` and their models as the template for a later form.
 
 ## Checklist: blocks and abilities
 

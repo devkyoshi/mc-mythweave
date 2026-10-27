@@ -1,6 +1,7 @@
 package com.ashi.mythweave.registry;
 
 import com.ashi.mythweave.Mythweave;
+import com.ashi.mythweave.entity.ashenox.AshenoxEntity;
 import com.ashi.mythweave.entity.base.MythlingEntity;
 import com.ashi.mythweave.entity.cindercub.CindercubEntity;
 import com.ashi.mythweave.entity.emberlynx.EmberlynxEntity;
@@ -41,6 +42,17 @@ public final class ModEntities {
 					.eyeHeight(0.84f)
 	);
 
+	public static final EntityType<AshenoxEntity> ASHENOX = register(
+			"ashenox",
+			// Stage 3 (combat) of the Cindercub line: heavy and armored. 0.8 wide x 1.1 tall
+			// covers the body and head (top at 17 of 16 pixels); horns and mane stick out above.
+			// Eyes are 14.5 pixels up. Fire-immune: a volcanic creature doesn't burn in lava.
+			EntityType.Builder.of(AshenoxEntity::new, MobCategory.CREATURE)
+					.sized(0.8f, 1.1f)
+					.eyeHeight(0.9f)
+					.fireImmune()
+	);
+
 	/**
 	 * Every Mythling form that exists, by the id its {@link com.ashi.mythweave.evolution.EvolutionLine}
 	 * uses. Evolution turns a form id into an entity type through this; a form that isn't here
@@ -48,7 +60,8 @@ public final class ModEntities {
 	 */
 	private static final Map<String, EntityType<? extends MythlingEntity>> MYTHLING_FORMS = Map.of(
 			"cindercub", CINDERCUB,
-			"emberlynx", EMBERLYNX
+			"emberlynx", EMBERLYNX,
+			"ashenox", ASHENOX
 	);
 
 	private ModEntities() {
@@ -71,5 +84,6 @@ public final class ModEntities {
 		// Every LivingEntity needs default attributes, or the game crashes when one spawns.
 		FabricDefaultAttributeRegistry.register(CINDERCUB, CindercubEntity.createAttributes());
 		FabricDefaultAttributeRegistry.register(EMBERLYNX, EmberlynxEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(ASHENOX, AshenoxEntity.createAttributes());
 	}
 }

@@ -2,11 +2,12 @@
 # src/main/resources/assets/mythweave/textures/item/:
 #   cindercub_spawn_egg.png  orange egg, charcoal and burnt-red spots, an ember fleck
 #   emberlynx_spawn_egg.png  deeper red egg, gold spots, a brighter ember fleck
+#   ashenox_spawn_egg.png    obsidian egg with magma-orange and red spots
 #
 # Usage (from the project root):
 #   powershell -ExecutionPolicy Bypass -File tools\textures\spawn_eggs.ps1
 #
-# Both use the same egg shape (dark outline, a shine on the upper left) and spot layout, so
+# All use the same egg shape (dark outline, a shine on the upper left) and spot layout, so
 # every form of the line reads as one family; only the colors change.
 
 param(
@@ -57,3 +58,4 @@ function New-Egg([string]$name, $outline, $base, $light, $spotA, $spotB) {
 #          name                   outline         base             shine            spots A          spots B
 New-Egg 'cindercub_spawn_egg' @(74, 34, 20) @(232, 118, 43) @(246, 160, 86) @(46, 42, 43)  @(181, 64, 30)
 New-Egg 'emberlynx_spawn_egg' @(60, 20, 14) @(178, 52, 28)  @(222, 104, 60) @(255, 200, 80) @(44, 36, 38)
+New-Egg 'ashenox_spawn_egg'   @(16, 10, 18) @(48, 36, 56)   @(84, 68, 96)   @(255, 140, 40) @(220, 70, 26)

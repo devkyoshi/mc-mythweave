@@ -13,6 +13,8 @@ $texturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\ent
 $glowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub_glow.png'
 $lynxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx.png'
 $lynxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx_glow.png'
+$oxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox.png'
+$oxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -310,6 +312,60 @@ function New-Emberlynx([double]$yaw, [double]$pitch, [bool]$sitting) {
 	return $p
 }
 
+# Ashenox, from AshenoxModel#createBodyLayer and #setSittingPose (flames at rest).
+function New-Ashenox([double]$yaw, [double]$pitch, [bool]$sitting) {
+	$p = New-Object Preview $oxTexturePath, $oxGlowPath, $yaw, $pitch
+	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
+
+	$bodyY = 15.0; $bodyXRot = 0.0; $headY = 13.0; $headZ = -6.0; $tailXRot = 0.35
+	$hindY = 18.0; $hindZ = 4.0; $hindXRot = 0.0; $hindSpread = 0.0
+	if ($sitting) {
+		$bodyY += 4.0; $bodyXRot = -0.4; $headY += 1.9; $headZ += 1.6; $tailXRot = 0.1
+		$hindY += 4.0; $hindZ -= 0.5; $hindXRot = -1.45; $hindSpread = 0.6
+	}
+
+	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
+	$p.Box($body, 0, 13, -3.5, -3, -6, 7, 6, 12)
+	foreach ($z in -0.5, 3.5) { $p.Box($body.Then([Mat]::Pose(0, -2.5, $z, -0.12, 0, 0)), 38, 13, -4, -2, -2, 8, 2, 4) }
+	$mane = $body.Then([Mat]::Pose(0, -3, -4.5, 0, 0, 0))
+	$p.Box($mane, 38, 19, -4, -3, -2, 8, 4, 4)
+	for ($i = 0; $i -lt 4; $i++) {
+		$tz = if ($i % 2 -eq 0) { 0 } else { -0.5 }
+		$p.Box($mane.Then([Mat]::Pose(-3 + $i * 2, -3, $tz, -$bodyXRot, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
+	}
+
+	$tail = $body.Then([Mat]::Pose(0, -2, 6, $tailXRot, 0.1, 0))
+	$p.Box($tail, 0, 31, -2, -2, 0, 4, 4, 4)
+	$tilt = $bodyXRot + $tailXRot
+	$p.Box($tail.Then([Mat]::Pose(0, -2, 2, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
+	$mid = $tail.Then([Mat]::Pose(0, 0, 4, 0.15, 0, 0)); $tilt += 0.15
+	$p.Box($mid, 16, 31, -1.5, -1.5, 0, 3, 3, 4)
+	$p.Box($mid.Then([Mat]::Pose(0, -1.5, 2, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
+	$mid2 = $mid.Then([Mat]::Pose(0, 0, 4, 0.2, 0, 0)); $tilt += 0.2
+	$p.Box($mid2, 30, 31, -1.5, -1.5, 0, 3, 3, 3)
+	$p.Box($mid2.Then([Mat]::Pose(0, -1.5, 1.5, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
+	$tip = $mid2.Then([Mat]::Pose(0, 0, 3, 0.25, 0, 0)); $tilt += 0.25
+	$p.Box($tip, 42, 31, -1, -1, 0, 2, 2, 2)
+	$p.Box($tip.Then([Mat]::Pose(0, -1, 1, -$tilt, 0, 0)), 36, 6, -0.5, -2, -0.5, 1, 2, 1)
+
+	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
+	$p.Box($head, 0, 0, -3.5, -6, -7, 7, 6, 7)
+	$p.Box($head, 28, 0, -2, -3, -10, 4, 3, 3)
+	$p.Box($head.Then([Mat]::Pose(-2.5, -6, -2, 0, 0, -0.3)), 42, 0, -1, -3, 0, 2, 3, 1)
+	$p.Box($head.Then([Mat]::Pose(2.5, -6, -2, 0, 0, 0.3)), 48, 0, -1, -3, 0, 2, 3, 1)
+	foreach ($horn in @(@(-2.0, -0.55), @(2.0, 0.55))) {
+		$h = $head.Then([Mat]::Pose($horn[0], -6, -4.5, -0.25, 0, $horn[1]))
+		$p.Box($h, 54, 0, -1, -4, -1, 2, 4, 2)
+		$p.Box($h.Then([Mat]::Pose(0, -4, 0, -0.7, 0, 0)), 28, 6, -0.5, -3, -0.5, 1, 3, 1)
+	}
+
+	$p.DepthBias = 0.05
+	foreach ($leg in @(@((-2 - $hindSpread), $hindY, $hindZ, $hindXRot), @((2 + $hindSpread), $hindY, $hindZ, $hindXRot), @(-2, 18, -4, 0), @(2, 18, -4, 0))) {
+		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 39, -1.5, 0, -1.5, 3, 6, 3)
+	}
+	return $p
+}
+
 function Save([System.Drawing.Bitmap]$bmp, [string]$name) {
 	$path = Join-Path $outDir $name
 	$bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -327,6 +383,9 @@ Save $back 'cindercub_back.png'
 Save (New-Emberlynx 35 20 $false).Render(640, $true) 'emberlynx.png'
 Save (New-Emberlynx 230 20 $false).Render(640, $true) 'emberlynx_back.png'
 Save (New-Emberlynx 60 15 $true).Render(640, $true) 'emberlynx_sitting.png'
+Save (New-Ashenox 35 20 $false).Render(640, $true) 'ashenox.png'
+Save (New-Ashenox 230 20 $false).Render(640, $true) 'ashenox_back.png'
+Save (New-Ashenox 60 15 $true).Render(640, $true) 'ashenox_sitting.png'
 
 # Texture sheet, scaled 8x with nearest-neighbour on a dark checkerboard.
 $tex = [System.Drawing.Image]::FromFile($texturePath)

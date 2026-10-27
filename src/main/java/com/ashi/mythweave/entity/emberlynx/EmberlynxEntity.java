@@ -11,18 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <ul>
  *   <li>Sturdier (20 HP) and quicker than a Cindercub, and it hits back (4 damage).</li>
- *   <li><b>Defends its owner:</b> attacks whatever hurts its owner, and whatever hurts it,
+ *   <li><b>Defends its owner</b> ({@link #defendsOwner()}): attacks whatever hurts its owner, and whatever hurts it,
  *       but never creepers, ghasts, armor stands, tamed animals, or players its owner can't
  *       harm (the vanilla wolf's rules). It doesn't panic when hurt.</li>
  *   <li>Stronger Ember Spark: {@link EmberSparkAbility#EMBERLYNX} (12 blocks, 10 s).</li>
@@ -61,34 +52,10 @@ public class EmberlynxEntity extends MythlingEntity {
 				.add(Attributes.ATTACK_DAMAGE, 4.0);
 	}
 
-	/** Companion goals from the base class, plus fighting: bite, defend the owner, hit back. */
+	/** Fights instead of fleeing: the base class adds the bite and defend-owner goals. */
 	@Override
-	protected void registerGoals() {
-		super.registerGoals();
-		this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.2, true));
-		this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
-		this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
-	}
-
-	@Override
-	protected boolean fleesWhenHurt() {
-		return false;
-	}
-
-	/** Who it's allowed to fight when defending its owner (same rules as a vanilla wolf). */
-	@Override
-	public boolean wantsToAttack(LivingEntity target, LivingEntity owner) {
-		if (target instanceof Creeper || target instanceof Ghast || target instanceof ArmorStand) {
-			return false;
-		}
-		if (target instanceof Player targetPlayer && owner instanceof Player ownerPlayer
-				&& !ownerPlayer.canHarmPlayer(targetPlayer)) {
-			return false;
-		}
-		if (target instanceof AbstractHorse horse && horse.isTamed()) {
-			return false;
-		}
-		return !(target instanceof TamableAnimal animal && animal.isTame());
+	protected boolean defendsOwner() {
+		return true;
 	}
 
 	@Override

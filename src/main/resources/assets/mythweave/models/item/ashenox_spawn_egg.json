@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mythweave:item/ashenox_spawn_egg"
+  }
+}

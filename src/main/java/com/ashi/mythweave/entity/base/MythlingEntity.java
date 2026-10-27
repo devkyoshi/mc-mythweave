@@ -13,13 +13,21 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -80,9 +88,32 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	protected void onBonded(ServerLevel level, Player owner) {
 	}
 
-	/** True (default) if it runs away when hurt; false for forms that fight back instead. */
-	protected boolean fleesWhenHurt() {
-		return true;
+	/**
+	 * True for forms that fight: they bite whatever hurts their owner or themselves (see
+	 * {@link #wantsToAttack}) instead of running away. Such forms need an ATTACK_DAMAGE
+	 * attribute. Default false: the creature panics when hurt.
+	 */
+	protected boolean defendsOwner() {
+		return false;
+	}
+
+	/**
+	 * Who a defending Mythling may fight: the vanilla wolf's rules. Never creepers, ghasts or
+	 * armor stands, never tamed animals or horses, and never a player its owner can't harm.
+	 */
+	@Override
+	public boolean wantsToAttack(LivingEntity target, LivingEntity owner) {
+		if (target instanceof Creeper || target instanceof Ghast || target instanceof ArmorStand) {
+			return false;
+		}
+		if (target instanceof Player targetPlayer && owner instanceof Player ownerPlayer
+				&& !ownerPlayer.canHarmPlayer(targetPlayer)) {
+			return false;
+		}
+		if (target instanceof AbstractHorse horse && horse.isTamed()) {
+			return false;
+		}
+		return !(target instanceof TamableAnimal animal && animal.isTame());
 	}
 
 	@Override
@@ -158,9 +189,15 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	protected void registerGoals() {
 		// Swim instead of sinking.
 		this.goalSelector.addGoal(1, new FloatGoal(this));
-		// Run away at 1.4x speed for a few seconds when hurt (forms that fight back skip this).
-		// The tamable version also teleports back to a far-away owner while panicking.
-		if (this.fleesWhenHurt()) {
+		if (this.defendsOwner()) {
+			// Fighters: bite the target (chasing it even out of sight), choosing as targets
+			// whatever hurts the owner, then whatever hurts the Mythling itself.
+			this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.2, true));
+			this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+			this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+		} else {
+			// Run away at 1.4x speed for a few seconds when hurt. The tamable version also
+			// teleports back to a far-away owner while panicking.
 			this.goalSelector.addGoal(1, new TamableAnimalPanicGoal(1.4));
 		}
 		// Stay put while ordered to sit (or while the owner is offline / in another dimension).

@@ -65,7 +65,7 @@ it checked on the server.
    the `/mythweave kindle` test command.
 2. **E2: Evolution and Emberlynx.** *Done.* The transformation and
    the full stage-2 form: model, texture, stats, and the defend-owner AI.
-3. **E3: Ashenox.** Model, texture, stats, Magma Bite.
+3. **E3: Ashenox.** *Done.* Model, texture, stats, Magma Bite.
 4. **E4: Solflare.** Model, texture, stats, Sunwarden aura.
 5. **E5: Balance and docs.** Tune the numbers and update the README.
 
@@ -93,3 +93,24 @@ it checked on the server.
   - `wantsToAttack` uses the vanilla wolf's rules;
   - Ember Spark is `EmberSparkAbility.EMBERLYNX` (12 blocks, 10 s);
   - it has its own spawn egg, mainly for testing.
+
+## As built (E3)
+
+- **Shared fighting:** the defend-owner AI moved into `MythlingEntity`. A form returns `true`
+  from `defendsOwner()` to get `MeleeAttackGoal`, `OwnerHurtByTargetGoal` and
+  `HurtByTargetGoal` instead of the panic goal. `wantsToAttack` (the wolf's rules) is in the
+  base class too. Emberlynx and Ashenox both use it.
+- **Ashenox stats:**
+  - 32 HP, 4 armor, 0.5 knockback resistance, 6 attack damage, speed 0.28;
+  - the entity type is `fireImmune()`, so it doesn't burn in fire or lava;
+  - size 0.8 × 1.1, eyes at 0.9.
+- **Magma Bite** (`ability/MagmaBite`) is passive, so it's not an `Ability`.
+  `AshenoxEntity.doHurtTarget` calls `MagmaBite.onBite`, which ignites the target for 4 s.
+  `hurtServer` calls `MagmaBite.onHurt`, which ignites a melee attacker for 3 s. Both skip
+  players and fire-immune mobs, and neither ever places fire.
+- **Ember Spark:** uses `EmberSparkAbility.EMBERLYNX`, unchanged from stage 2, as planned.
+- **Final stage:** `EvolutionRules.kindleToEvolveFrom(3)` is -1, so it never evolves again,
+  and the status reads "fully evolved".
+- **Look:** an obsidian body and two raised plates, both cracked with glowing magma veins;
+  ember-slit eyes; a glowing mouth line; crystal-tipped horns; a magma mane; a thick fire
+  tail; lava-glowing paws. The texture comes from `tools/textures/ashenox.ps1`.

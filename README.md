@@ -95,9 +95,10 @@ Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
 
 - **Check progress:** sneak and right-click your Cindercub with an empty hand to see, for
   example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
-- **At 150 Kindle it evolves** into an **Emberlynx** (see below). At 400 it will take its
-  final form, Ashenox or Solflare, depending on how it leans; those arrive in a later
-  update (see [docs/design/evolution.md](docs/design/evolution.md)).
+- **At 150 Kindle it evolves** into an **Emberlynx**, and **at 400** into its final form,
+  chosen by how it leans: **Ashenox** if you've fought together, **Solflare** if you've explored
+  together. Solflare arrives in a later update; until then a Solflare-leaning Emberlynx tells
+  you it's ready and waits (see [docs/design/evolution.md](docs/design/evolution.md)).
 
 ### Evolution: Emberlynx
 
@@ -121,6 +122,31 @@ sitting, and all its Kindle, and it arrives at full health.
 | Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s |
 | In a fight | runs away when hurt | **defends you**: attacks whatever hurts you or it (never creepers, tamed animals or your friends) |
 | Size | 0.5 × 0.7 | 0.6 × 0.95 |
+
+### Final form: Ashenox
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/ashenox.png" width="260" alt="Ashenox standing"><br><sub>Ashenox</sub></td>
+    <td align="center"><img src="docs/images/ashenox_back.png" width="260" alt="Ashenox from behind, showing its obsidian plates, magma mane and fire tail"><br><sub>Obsidian plates and magma mane</sub></td>
+    <td align="center"><img src="docs/images/ashenox_sitting.png" width="260" alt="Ashenox sitting"><br><sub>Sitting</sub></td>
+  </tr>
+</table>
+
+An Emberlynx that has **fought beside you** (leaning toward battle) becomes an **Ashenox** at
+**400 Kindle**: a heavy volcanic fox armored in obsidian, cracked with glowing magma veins,
+with big crystal-tipped horns, a magma mane, glowing lava paws and a thick fire tail.
+
+| | Emberlynx | Ashenox |
+|---|---|---|
+| Health | 20 | 32, plus 4 armor; resists knockback |
+| Bite | 4 | 6 |
+| **Magma Bite** | none | its bites set mobs on fire, and mobs that hit it up close get burned. Never players, never blocks |
+| Fire and lava | burns | **immune** |
+| Ember Spark | 12 blocks, 10 s | 12 blocks, 10 s |
+| Size | 0.6 × 0.95 | 0.8 × 1.1 |
+
+It's the end of its line: it keeps earning Kindle, but evolves no further.
 
 ### The Ember Brazier
 
@@ -192,7 +218,9 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
   - [x] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
   - [x] **E2: Evolution and Emberlynx.** The transformation at 150 Kindle; Emberlynx with
     its model, texture, spawn egg, stronger Ember Spark and defend-owner AI.
-  - [ ] E3: Ashenox · E4: Solflare · E5: balance
+  - [x] **E3: Ashenox.** The combat stage-3 form: model, texture, spawn egg, Magma Bite,
+    fire immunity.
+  - [ ] E4: Solflare · E5: balance
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
 the *Aether Shard* bonding item, branching evolutions (*Ashenox*, a combat-focused volcanic
@@ -323,9 +351,14 @@ A quick in-game test of everything that works so far. Use a Creative world with 
     spinning, flame spiral), and after 3 s it bursts into an Emberlynx. Check that it still
     follows you, obeys sit/stand, kept its name tag and Kindle (sneak-click), and lights
     braziers up to 12 blocks away every 10 s. Hit a zombie near you: it attacks the zombie.
-    Save and reload mid-transformation: it resumes. Then add 250 more with `combat` (target
-    `type=mythweave:emberlynx`): you get the "ready to become Ashenox" message once, since
-    that form comes later.
+    Save and reload mid-transformation: it resumes.
+15. *(Ashenox)* `/mythweave kindle add @e[type=mythweave:emberlynx,distance=..5] 250 combat` on a
+    bonded Emberlynx: it evolves into an Ashenox. It keeps following you and obeying sit/stand,
+    and sneak-click says "fully evolved". Hit a zombie near you: the Ashenox bites it and the
+    zombie catches fire; let a zombie hit the Ashenox: the zombie catches fire. Walk it through
+    lava: it doesn't burn. Nearby grass and wood never catch fire. Players are never set on fire.
+    With `exploration` instead of `combat`, you get the "ready to become Solflare" message once,
+    since that form comes later.
 
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 

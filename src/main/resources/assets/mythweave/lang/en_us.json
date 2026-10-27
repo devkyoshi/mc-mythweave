@@ -5,6 +5,7 @@
   "entity.mythweave.solflare": "Solflare",
   "item.mythweave.cindercub_spawn_egg": "Cindercub Spawn Egg",
   "item.mythweave.emberlynx_spawn_egg": "Emberlynx Spawn Egg",
+  "item.mythweave.ashenox_spawn_egg": "Ashenox Spawn Egg",
   "block.mythweave.ember_brazier": "Ember Brazier",
 
   "subtitles.mythweave.entity.cindercub.ambient": "Cindercub yips",
@@ -13,6 +14,9 @@
   "subtitles.mythweave.entity.emberlynx.ambient": "Emberlynx barks",
   "subtitles.mythweave.entity.emberlynx.hurt": "Emberlynx hurts",
   "subtitles.mythweave.entity.emberlynx.death": "Emberlynx dies",
+  "subtitles.mythweave.entity.ashenox.ambient": "Ashenox rumbles",
+  "subtitles.mythweave.entity.ashenox.hurt": "Ashenox hurts",
+  "subtitles.mythweave.entity.ashenox.death": "Ashenox dies",
 
   "message.mythweave.mythling.bonded": "%s has bonded with you!",
   "message.mythweave.mythling.wants_item": "This %s sniffs at you curiously. Maybe it would like some %s?",

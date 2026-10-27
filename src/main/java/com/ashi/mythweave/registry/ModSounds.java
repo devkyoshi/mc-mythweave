@@ -19,6 +19,9 @@ public final class ModSounds {
 	public static final SoundEvent EMBERLYNX_AMBIENT = register("entity.emberlynx.ambient");
 	public static final SoundEvent EMBERLYNX_HURT = register("entity.emberlynx.hurt");
 	public static final SoundEvent EMBERLYNX_DEATH = register("entity.emberlynx.death");
+	public static final SoundEvent ASHENOX_AMBIENT = register("entity.ashenox.ambient");
+	public static final SoundEvent ASHENOX_HURT = register("entity.ashenox.hurt");
+	public static final SoundEvent ASHENOX_DEATH = register("entity.ashenox.death");
 
 	private ModSounds() {
 	}

@@ -34,5 +34,23 @@
     "sounds": [
       { "name": "minecraft:entity.fox.death", "type": "event" }
     ]
+  },
+  "entity.ashenox.ambient": {
+    "subtitle": "subtitles.mythweave.entity.ashenox.ambient",
+    "sounds": [
+      { "name": "minecraft:entity.fox.ambient", "type": "event" }
+    ]
+  },
+  "entity.ashenox.hurt": {
+    "subtitle": "subtitles.mythweave.entity.ashenox.hurt",
+    "sounds": [
+      { "name": "minecraft:entity.fox.hurt", "type": "event" }
+    ]
+  },
+  "entity.ashenox.death": {
+    "subtitle": "subtitles.mythweave.entity.ashenox.death",
+    "sounds": [
+      { "name": "minecraft:entity.fox.death", "type": "event" }
+    ]
   }
 }

@@ -29,6 +29,13 @@ public final class ModItems {
 			new Item.Properties().spawnEgg(ModEntities.EMBERLYNX)
 	);
 
+	// Mainly for testing: normally you get an Ashenox by evolving an Emberlynx.
+	public static final Item ASHENOX_SPAWN_EGG = register(
+			"ashenox_spawn_egg",
+			SpawnEggItem::new,
+			new Item.Properties().spawnEgg(ModEntities.ASHENOX)
+	);
+
 	// Block items use the block's name ("block.mythweave.ember_brazier"), like vanilla's.
 	public static final Item EMBER_BRAZIER = register(
 			"ember_brazier",
