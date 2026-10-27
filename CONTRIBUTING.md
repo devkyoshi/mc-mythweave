@@ -18,8 +18,11 @@ and evolution is described in [docs/design/evolution.md](docs/design/evolution.m
 4. Read Minecraft's own code when you need to know how something works:
    `./gradlew genSources` decompiles it, so you can open vanilla classes in your IDE.
 
-More detail (versions, the IPv6 download issue): [docs/dev/setup-notes.md](docs/dev/setup-notes.md)
-and the README's *Building from source* section.
+The full developer docs are in [docs/dev/](docs/dev/README.md):
+- **[setup-and-commands.md](docs/dev/setup-and-commands.md):** setup, every launcher and Gradle
+  command, run folders, test commands, asset scripts, troubleshooting;
+- **[project-structure.md](docs/dev/project-structure.md):** every folder and file explained,
+  how the code runs, ids and save keys, and where to put new things.
 
 ## Where things go
 

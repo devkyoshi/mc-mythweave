@@ -189,7 +189,9 @@ The mod is required on both the client and the server when playing multiplayer.
 ## Building from source (developers)
 
 **You need:** JDK 25 and Git. Gradle downloads itself through the wrapper. If you're going to
-change code, start with [CONTRIBUTING.md](CONTRIBUTING.md).
+change code, start with [CONTRIBUTING.md](CONTRIBUTING.md). The full developer guide
+(every command, the run folders, troubleshooting, and a file-by-file map of the project) is in
+[docs/dev/](docs/dev/README.md).
 
 ```bash
 git clone <this repository>
@@ -352,7 +354,7 @@ src/main/resources/
 
 tools/textures/, tools/previews/            Scripts that paint textures and render README images
 docs/design/                                Specification and evolution design
-docs/dev/                                   Setup notes
+docs/dev/                                   Developer docs: setup and commands, project structure
 dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
 ```
 
