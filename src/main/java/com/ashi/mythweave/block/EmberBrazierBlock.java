@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Ember Brazier: an iron bowl of coals that only a bonded Cindercub can light (see
- * {@link com.ashi.mythweave.creature.cindercub.EmberSpark}). Players can put it out with an empty hand,
+ * {@link com.ashi.mythweave.ability.EmberSparkAbility}). Players can put it out with an empty hand,
  * like a candle.
  *
  * <p>Safe by design: the flame is part of the block's model, not a fire block, so a lit

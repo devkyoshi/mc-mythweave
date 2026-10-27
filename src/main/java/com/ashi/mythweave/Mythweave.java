@@ -1,9 +1,9 @@
 package com.ashi.mythweave;
 
-import com.ashi.mythweave.command.MythweaveCommands;
-import com.ashi.mythweave.mythling.evolution.KindleEvents;
+import com.ashi.mythweave.event.ModEvents;
 import com.ashi.mythweave.registry.ModBlocks;
-import com.ashi.mythweave.registry.ModEntityTypes;
+import com.ashi.mythweave.registry.ModCreativeTabs;
+import com.ashi.mythweave.registry.ModEntities;
 import com.ashi.mythweave.registry.ModItems;
 import com.ashi.mythweave.registry.ModSounds;
 
@@ -30,11 +30,12 @@ public class Mythweave implements ModInitializer {
 
 		// Entity types and blocks first: items refer to CINDERCUB and EMBER_BRAZIER.
 		ModSounds.initialize();
-		ModEntityTypes.initialize();
+		ModEntities.initialize();
 		ModBlocks.initialize();
 		ModItems.initialize();
-		KindleEvents.register();
-		MythweaveCommands.register();
+		ModCreativeTabs.initialize();
+		// Then everything that reacts to the game: event listeners and commands.
+		ModEvents.register();
 
 		LOGGER.info("Mythweave initialized");
 	}

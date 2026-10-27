@@ -1,14 +1,13 @@
 package com.ashi.mythweave.command;
 
-import com.ashi.mythweave.mythling.MythlingEntity;
-import com.ashi.mythweave.mythling.evolution.EvolutionRules.Branch;
+import com.ashi.mythweave.entity.base.MythlingEntity;
+import com.ashi.mythweave.evolution.EvolutionRules.Branch;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -30,9 +29,9 @@ public final class MythweaveCommands {
 	private MythweaveCommands() {
 	}
 
-	/** Called from {@link com.ashi.mythweave.Mythweave#onInitialize()}. */
-	public static void register() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> dispatcher.register(
+	/** Builds the command tree; called by {@link com.ashi.mythweave.event.ModEvents} when commands register. */
+	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+		dispatcher.register(
 				Commands.literal("mythweave")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.literal("kindle")
@@ -41,7 +40,7 @@ public final class MythweaveCommands {
 												.executes(MythweaveCommands::get)))
 								.then(Commands.literal("add")
 										.then(Commands.argument("targets", EntityArgument.entities())
-												.then(addAmount()))))));
+												.then(addAmount())))));
 	}
 
 	private static ArgumentBuilder<CommandSourceStack, ?> addAmount() {

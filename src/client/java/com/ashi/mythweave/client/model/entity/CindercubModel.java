@@ -1,9 +1,8 @@
-package com.ashi.mythweave.client.creature.cindercub;
+package com.ashi.mythweave.client.model.entity;
 
-import com.ashi.mythweave.Mythweave;
+import com.ashi.mythweave.client.render.entity.state.CindercubRenderState;
 
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -21,15 +20,13 @@ import net.minecraft.util.Mth;
  * <p>Fire animation (bonded): the fire tail ripples, curls and flickers, with flame tongues
  * and a plume that always burn upward; the head tilts and the ears twitch while idle. The glowing parts (runes, eye shine,
  * crystals, ember tips, flame) come from {@code cindercub_glow.png}, drawn with a slow pulse
- * by {@link com.ashi.mythweave.client.mythling.PulsingGlowLayer}.
+ * by {@link com.ashi.mythweave.client.render.entity.layer.PulsingGlowLayer}.
  *
  * <p>Model space is in pixels (16 = one block). Y points down and the ground is at y = 24.
  * Texture sheet is 64 x 32; the layout is documented in
  * {@code tools/textures/cindercub.ps1}, which paints the matching PNG.
  */
 public class CindercubModel extends EntityModel<CindercubRenderState> {
-	public static final ModelLayerLocation LAYER = new ModelLayerLocation(Mythweave.id("cindercub"), "main");
-
 	private static final float TAIL_LIFT = 0.6F;
 
 	private final ModelPart body;

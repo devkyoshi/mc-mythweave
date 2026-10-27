@@ -1,4 +1,4 @@
-package com.ashi.mythweave.client.mythling;
+package com.ashi.mythweave.client.render.entity.layer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 

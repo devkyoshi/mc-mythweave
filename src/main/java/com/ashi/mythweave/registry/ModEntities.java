@@ -1,7 +1,7 @@
 package com.ashi.mythweave.registry;
 
 import com.ashi.mythweave.Mythweave;
-import com.ashi.mythweave.creature.cindercub.CindercubEntity;
+import com.ashi.mythweave.entity.cindercub.CindercubEntity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
@@ -14,7 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 
 /** All Mythweave entity types, registered in one place. */
-public final class ModEntityTypes {
+public final class ModEntities {
 	public static final EntityType<CindercubEntity> CINDERCUB = register(
 			"cindercub",
 			// CREATURE = passive animal category (counts toward the animal spawn cap later).
@@ -26,7 +26,7 @@ public final class ModEntityTypes {
 					.eyeHeight(0.56f)
 	);
 
-	private ModEntityTypes() {
+	private ModEntities() {
 	}
 
 	// Since 1.21.2 an EntityType must be built with its own registry key, so the key is

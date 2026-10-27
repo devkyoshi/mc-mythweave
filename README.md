@@ -298,36 +298,47 @@ Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
 ## Project structure
 
-Code is organised **by feature**: shared Mythling code in `mythling/`, everything for one
-creature in `creature/<name>/`. Adding a creature or an evolution form means adding a folder
-and following the checklist in [CONTRIBUTING.md](CONTRIBUTING.md).
+Code is **layered by type**, the usual Minecraft-mod convention: one package per kind of
+thing (entities, abilities, evolution, blocks, registries, events), with creatures nested by
+name. What belongs where, and step-by-step checklists for adding creatures, forms, abilities
+and blocks, are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```text
 src/main/java/com/ashi/mythweave/           Common code (runs on client and server)
-├── Mythweave.java                          Mod entry point: runs all registrations
-├── registry/                               Everything registered, in one place
-│   ├── ModEntityTypes.java                 Entity types and their attributes
-│   ├── ModBlocks.java, ModItems.java       Blocks; items, spawn eggs, creative tabs
-│   └── ModSounds.java                      Sound events (what they play: sounds.json)
-├── mythling/                               Shared by every creature
-│   ├── MythlingEntity.java                 Base class: bonding, owner controls, sit, AI, Kindle
-│   ├── Mythling.java                       Interface: kindle(), evolutionLine()
-│   └── evolution/
-│       ├── EvolutionRules.java             Thresholds, Kindle sources, branch logic
-│       ├── EvolutionLine.java              One species' forms (stage 1 → 2 → two stage-3s)
-│       ├── Kindle.java                     One Mythling's Kindle: earning, saving, status
-│       └── KindleEvents.java               Kindle from fights nearby (Fabric events)
-├── creature/cindercub/                     Everything Cindercub-specific
-│   ├── CindercubEntity.java                Stats, sounds, Ember Spark hook, embers
-│   ├── CindercubLine.java                  Cindercub → Emberlynx → Ashenox | Solflare
-│   └── EmberSpark.java                     Its ability: target search, cooldown, effects
+├── Mythweave.java                          Mod entry point: calls the registries, then events
+├── registry/                               Every registration, one class per kind
+│   ├── ModEntities.java                    Entity types and their attributes
+│   ├── ModItems.java, ModBlocks.java       Items (spawn eggs, block items); blocks
+│   ├── ModSounds.java                      Sound events (what they play: sounds.json)
+│   └── ModCreativeTabs.java                Where items appear in the Creative inventory
+├── entity/
+│   ├── base/MythlingEntity.java            Base class: bonding, owner controls, sit, AI, Kindle
+│   ├── base/Mythling.java                  Interface: kindle(), evolutionLine()
+│   └── cindercub/CindercubEntity.java      Cindercub: stats, sounds, Ember Spark hook, embers
+├── evolution/
+│   ├── EvolutionRules.java                 Thresholds, Kindle sources, branch logic
+│   ├── EvolutionLine.java                  One species' forms (stage 1 → 2 → two stage-3s)
+│   ├── EvolutionLines.java                 Every species' line (Cindercub → Emberlynx → …)
+│   ├── Kindle.java                         One Mythling's Kindle: earning, saving, status
+│   └── KindleEvents.java                   Kindle from fights nearby (Fabric events)
+├── ability/
+│   ├── Ability.java                        Interface every ability implements
+│   ├── AbilityCooldown.java                Per-creature cooldown: tick, save, load
+│   └── EmberSparkAbility.java              Ember Spark: target search, effects
 ├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
-└── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
+├── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
+└── event/ModEvents.java                    Hooks listeners and commands into the game
 
 src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a server)
-├── MythweaveClient.java                    Client entry point: registers models + renderers
-├── mythling/PulsingGlowLayer.java          Any creature's glow map, full-bright and breathing
-└── creature/cindercub/                     CindercubModel, CindercubRenderer, CindercubRenderState
+├── MythweaveClient.java                    Client entry point: calls the client registries
+├── registry/
+│   ├── ModModelLayers.java                 Model layer ids (+ registration)
+│   └── ModRenderers.java                   Entity type → renderer
+├── model/entity/CindercubModel.java        Cube layout, animation, fur/fire tail, sit pose
+└── render/entity/
+    ├── CindercubRenderer.java              Connects model + texture to the entity
+    ├── state/CindercubRenderState.java     Per-frame data the model reads (sitting, tame)
+    └── layer/PulsingGlowLayer.java         Any creature's glow map, full-bright and breathing
 
 src/main/resources/
 ├── fabric.mod.json                         Mod metadata, entry points, dependencies

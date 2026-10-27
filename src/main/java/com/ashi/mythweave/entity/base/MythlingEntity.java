@@ -1,6 +1,6 @@
-package com.ashi.mythweave.mythling;
+package com.ashi.mythweave.entity.base;
 
-import com.ashi.mythweave.mythling.evolution.Kindle;
+import com.ashi.mythweave.evolution.Kindle;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Base class for every Mythling: everything a bonded companion does that isn't specific to
- * one creature. Subclasses (one per creature or evolution form, in {@code creature/<name>/})
+ * one creature. Subclasses (one per creature or evolution form, in {@code entity/<name>/})
  * add their stats, sounds, abilities and visuals through the hooks below.
  *
  * <p>Builds on vanilla {@link TamableAnimal}, which already stores the owner as a UUID

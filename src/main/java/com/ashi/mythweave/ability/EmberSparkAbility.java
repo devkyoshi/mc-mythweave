@@ -1,7 +1,8 @@
-package com.ashi.mythweave.creature.cindercub;
+package com.ashi.mythweave.ability;
 
 import com.ashi.mythweave.block.EmberBrazierBlock;
-import com.ashi.mythweave.mythling.evolution.EvolutionRules;
+import com.ashi.mythweave.entity.cindercub.CindercubEntity;
+import com.ashi.mythweave.evolution.EvolutionRules;
 import com.ashi.mythweave.registry.ModBlocks;
 
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -27,22 +29,39 @@ import org.jspecify.annotations.Nullable;
  * skip it. The effect is bounded: it only ever changes an Ember Brazier's LIT state (never
  * places fire), only within {@link #RANGE} blocks, and only in line of sight.
  */
-public final class EmberSpark {
+public final class EmberSparkAbility implements Ability<CindercubEntity> {
+	public static final EmberSparkAbility INSTANCE = new EmberSparkAbility();
+
 	/** 15 seconds between sparks. */
 	public static final int COOLDOWN_TICKS = 15 * 20;
 	/** Search radius in blocks (spherical), and how far up/down the search box reaches. */
 	public static final int RANGE = 8;
 	private static final int VERTICAL_RANGE = 4;
 
-	private EmberSpark() {
+	private EmberSparkAbility() {
 	}
 
-	/** Server-side. Tries the ability and tells the owner how it went. */
-	public static void use(CindercubEntity cub, ServerLevel level, Player owner) {
-		int cooldown = cub.getEmberCooldown();
-		if (cooldown > 0) {
-			int seconds = (cooldown + 19) / 20;
-			owner.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.ember_recharging", seconds));
+	@Override
+	public String id() {
+		return "ember_spark";
+	}
+
+	@Override
+	public int cooldownTicks() {
+		return COOLDOWN_TICKS;
+	}
+
+	@Override
+	public boolean isTriggeredBy(ItemStack stack) {
+		return stack.is(CindercubEntity.BONDING_ITEM);
+	}
+
+	@Override
+	public void use(CindercubEntity cub, ServerLevel level, Player owner) {
+		AbilityCooldown cooldown = cub.emberSparkCooldown();
+		if (!cooldown.isReady()) {
+			owner.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.ember_recharging",
+					cooldown.remainingSeconds()));
 			return;
 		}
 
@@ -62,7 +81,7 @@ public final class EmberSpark {
 		EmberBrazierBlock.setLit(level, target, level.getBlockState(target), true, cub);
 		level.sendParticles(ParticleTypes.LAVA, to.x, to.y + 0.3, to.z, 6, 0.2, 0.1, 0.2, 0.0);
 
-		cub.setEmberCooldown(COOLDOWN_TICKS);
+		cooldown.start(COOLDOWN_TICKS);
 		cub.kindle().gain(cub, EvolutionRules.KindleSource.EMBER_SPARK);
 		owner.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.ember_lit"));
 	}

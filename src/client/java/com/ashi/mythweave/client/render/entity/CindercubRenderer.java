@@ -1,8 +1,11 @@
-package com.ashi.mythweave.client.creature.cindercub;
+package com.ashi.mythweave.client.render.entity;
 
 import com.ashi.mythweave.Mythweave;
-import com.ashi.mythweave.client.mythling.PulsingGlowLayer;
-import com.ashi.mythweave.creature.cindercub.CindercubEntity;
+import com.ashi.mythweave.client.model.entity.CindercubModel;
+import com.ashi.mythweave.client.registry.ModModelLayers;
+import com.ashi.mythweave.client.render.entity.layer.PulsingGlowLayer;
+import com.ashi.mythweave.client.render.entity.state.CindercubRenderState;
+import com.ashi.mythweave.entity.cindercub.CindercubEntity;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -22,7 +25,7 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 
 	public CindercubRenderer(EntityRendererProvider.Context context) {
 		// 0.3 = shadow radius in blocks, sized for the 0.5-wide hitbox.
-		super(context, new CindercubModel(context.bakeLayer(CindercubModel.LAYER)), 0.3F);
+		super(context, new CindercubModel(context.bakeLayer(ModModelLayers.CINDERCUB)), 0.3F);
 		this.addLayer(new PulsingGlowLayer<>(this, GLOW_TEXTURE));
 	}
 

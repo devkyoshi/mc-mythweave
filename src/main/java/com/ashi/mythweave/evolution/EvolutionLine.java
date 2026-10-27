@@ -1,4 +1,4 @@
-package com.ashi.mythweave.mythling.evolution;
+package com.ashi.mythweave.evolution;
 
 import com.ashi.mythweave.Mythweave;
 
@@ -6,8 +6,8 @@ import net.minecraft.network.chat.Component;
 
 /**
  * One species' evolution line: its base form, its stage-2 form, and the two stage-3 forms it
- * branches into. Each species defines one (for example {@code CindercubLine.LINE}); every
- * form of that species returns it from {@link com.ashi.mythweave.mythling.Mythling#evolutionLine()}.
+ * branches into. Each species has one in {@link EvolutionLines} (e.g. {@code EvolutionLines.CINDERCUB}); every
+ * form of that species returns it from {@link com.ashi.mythweave.entity.base.Mythling#evolutionLine()}.
  *
  * <p>Values are entity ids in the mythweave namespace (e.g. "emberlynx"), so a form's name
  * is its entity name ({@code entity.mythweave.<id>} in the lang file).

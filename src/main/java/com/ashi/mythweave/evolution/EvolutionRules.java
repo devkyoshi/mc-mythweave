@@ -1,4 +1,4 @@
-package com.ashi.mythweave.mythling.evolution;
+package com.ashi.mythweave.evolution;
 
 /**
  * Every evolution number and rule, in one place (spec: evolution conditions must not be
@@ -6,7 +6,7 @@ package com.ashi.mythweave.mythling.evolution;
  * these rules. See docs/design/evolution.md.
  *
  * <p>These rules are shared by every species. Which forms a species evolves into is its
- * {@link EvolutionLine} (e.g. {@code CindercubLine}): stage 1 -> stage 2 -> one of two
+ * {@link EvolutionLine} (all in {@link EvolutionLines}): stage 1 -> stage 2 -> one of two
  * stage-3 forms, picked by {@link Branch}.
  */
 public final class EvolutionRules {

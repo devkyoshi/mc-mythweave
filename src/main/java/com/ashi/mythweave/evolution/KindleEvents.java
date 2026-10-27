@@ -1,7 +1,7 @@
-package com.ashi.mythweave.mythling.evolution;
+package com.ashi.mythweave.evolution;
 
-import com.ashi.mythweave.mythling.MythlingEntity;
-import com.ashi.mythweave.mythling.evolution.EvolutionRules.KindleSource;
+import com.ashi.mythweave.entity.base.MythlingEntity;
+import com.ashi.mythweave.evolution.EvolutionRules.KindleSource;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 
@@ -17,7 +17,7 @@ public final class KindleEvents {
 	private KindleEvents() {
 	}
 
-	/** Called from {@link com.ashi.mythweave.Mythweave#onInitialize()}. */
+	/** Called from {@link com.ashi.mythweave.event.ModEvents#register()}. */
 	public static void register() {
 		// A hostile mob died: every bonded Mythling near it that's with its owner shares the win.
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {

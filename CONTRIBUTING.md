@@ -23,20 +23,43 @@ and the README's *Building from source* section.
 
 ## Where things go
 
-The code is organised **by feature**, not by kind of class:
+The code is **layered by type**, the usual Minecraft-mod convention: one package per kind of
+thing, with creatures nested by name inside the packages that need it. (`...` is
+`com/ashi/mythweave`.)
+
+**Common code** (`src/main/java/...`):
+
+| Package | What belongs there |
+|---|---|
+| `registry/` | Every registration, one class per kind: `ModEntities`, `ModItems`, `ModBlocks`, `ModSounds`, `ModCreativeTabs` |
+| `entity/base/` | `MythlingEntity` (the base class every creature extends) and the `Mythling` interface |
+| `entity/<name>/` | One creature's entity class, e.g. `entity/cindercub/CindercubEntity` |
+| `evolution/` | Kindle, the evolution rules, `EvolutionLine`, and every species' line in `EvolutionLines` |
+| `ability/` | The `Ability` interface, `AbilityCooldown`, and every ability (`EmberSparkAbility`, …) |
+| `block/` | Block classes |
+| `item/` | Custom item classes. Not created yet: today's items are vanilla `SpawnEggItem`/`BlockItem` |
+| `command/` | Command trees |
+| `event/` | `ModEvents`: the one place that hooks listeners and commands into the game |
+
+**Client-only code** (`src/client/java/.../client/`):
+
+| Package | What belongs there |
+|---|---|
+| `registry/` | `ModModelLayers` (model layer ids) and `ModRenderers` (entity → renderer) |
+| `model/entity/` | Entity models: cube layout and animation, e.g. `CindercubModel` |
+| `render/entity/` | Entity renderers, e.g. `CindercubRenderer` |
+| `render/entity/state/` | Render states: per-frame data a model animates from |
+| `render/entity/layer/` | Render layers shared by renderers, e.g. `PulsingGlowLayer` |
+
+**Resources and tools:**
 
 | Path | What lives there |
 |---|---|
-| `src/main/java/.../mythling/` | Shared by every creature: `MythlingEntity` (base class), `Mythling` |
-| `src/main/java/.../mythling/evolution/` | Kindle and evolution rules, shared by every species |
-| `src/main/java/.../creature/<name>/` | Everything for one creature: entity, evolution line, its abilities |
-| `src/main/java/.../registry/` | Every registration (entity types, items, blocks, sounds), in one place |
-| `src/main/java/.../block/` | Blocks (shared across creatures) |
-| `src/main/java/.../command/` | Commands |
-| `src/client/java/.../client/creature/<name>/` | That creature's model, renderer, render state |
-| `src/client/java/.../client/mythling/` | Shared client code (e.g. `PulsingGlowLayer`) |
-| `assets/mythweave/textures/entity/<name>/` | That creature's texture and glow map |
+| `assets/mythweave/textures/entity/<name>/` | A creature's texture and glow map |
 | `tools/textures/`, `tools/previews/` | Scripts that paint textures / render README images ([tools/README.md](tools/README.md)) |
+
+Naming: registries are `Mod<Things>`; entities `<Name>Entity`; models, renderers and render
+states `<Name>Model`, `<Name>Renderer`, `<Name>RenderState`; abilities `<Name>Ability`.
 
 `src/main` runs on both the client and the dedicated server; `src/client` runs only on the
 client. That split is enforced by the build (`splitEnvironmentSourceSets`).
@@ -65,31 +88,33 @@ client. That split is enforced by the build (`splitEnvironmentSourceSets`).
 - Imports in groups: this mod, then other libraries (Mojang, Fabric), then Minecraft, then Java.
 - Comments explain **why** (rules, numbers, vanilla quirks); the code says what. Every class
   gets a short Javadoc saying what it's for.
-- Registries are `Mod*` classes in `registry/`; everything is registered there.
+- Registries are `Mod*` classes in `registry/` (common) and `client/registry/` (client);
+  everything is registered there, and `Mythweave` / `MythweaveClient` only call them in order.
 
 ## Checklist: adding a new Mythling (creature)
 
-Use Cindercub (`creature/cindercub/`) as the template.
+Use Cindercub as the template: `entity/cindercub/CindercubEntity`, `EvolutionLines.CINDERCUB`,
+and on the client `CindercubModel`, `CindercubRenderer`, `CindercubRenderState`.
 
-1. **Entity:** `creature/<name>/<Name>Entity.java`, extending `MythlingEntity`:
+1. **Entity:** `entity/<name>/<Name>Entity.java`, extending `MythlingEntity`:
    - `createAttributes()`: health, speed;
    - `bondingItem()` and `evolutionLine()`;
    - sounds (`getAmbientSound` etc.);
    - optional hooks: `onOwnerUseItem` for abilities, `onBonded` for bonding effects;
    - extra saved fields: override `addAdditionalSaveData`/`readAdditionalSaveData` and call `super`.
-2. **Evolution line** (new species only): `creature/<name>/<Name>Line.java` holding its
-   `EvolutionLine`.
-3. **Register** in `registry/ModEntityTypes.java`: `register(...)` with its size and eye
-   height, plus its attributes in `initialize()`.
-4. **Spawn egg:** register it in `ModItems`, add it to the Spawn Eggs tab, and add
-   `items/<name>_spawn_egg.json`, `models/item/…` and `textures/item/…`.
+2. **Evolution line** (new species only): add a constant to `evolution/EvolutionLines.java`.
+3. **Register** in `registry/ModEntities.java`: `register(...)` with its size and eye height,
+   plus its attributes in `initialize()`.
+4. **Spawn egg:**
+   - register it in `ModItems`, and list it in `ModCreativeTabs`;
+   - add `items/<name>_spawn_egg.json`, `models/item/…` and `textures/item/…`.
 5. **Sounds:** add them to `ModSounds`, `sounds.json`, and the subtitles in the lang file.
-6. **Client** in `client/creature/<name>/`:
-   - a model with a `LAYER`;
-   - a render state;
-   - a renderer, plus `PulsingGlowLayer` if it glows.
-
-   Register both in `MythweaveClient` (`ModelLayerRegistry` and `EntityRenderers`).
+6. **Client:**
+   - the model in `model/entity/<Name>Model`, its layer id in `registry/ModModelLayers`
+     (registered in `register()`);
+   - the render state in `render/entity/state/`;
+   - the renderer in `render/entity/`, adding `PulsingGlowLayer` if it glows, and registered
+     in `registry/ModRenderers`.
 7. **Textures:** put them in `textures/entity/<name>/`. Ideally generate them from
    `tools/textures/<name>.ps1`, which documents the UV layout.
 8. **Lang:** `entity.mythweave.<name>`, the spawn egg, and the subtitles.
@@ -97,14 +122,14 @@ Use Cindercub (`creature/cindercub/`) as the template.
 
 ## Checklist: adding an evolution form
 
-A form (e.g. Emberlynx) is a Mythling of its own: follow the creature checklist above, in the
-**same** `creature/<line>/` folder. Then:
+A form (e.g. Emberlynx) is a Mythling of its own: follow the creature checklist above, giving
+it its own `entity/<form>/` package. Then:
 
-- `evolutionLine()` returns the species' existing line (e.g. `CindercubLine.LINE`);
+- `evolutionLine()` returns the species' existing line (e.g. `EvolutionLines.CINDERCUB`);
+  don't add a new line;
 - the entity id must equal the name used in that line (`"emberlynx"`);
-- the evolution itself (Kindle threshold → transformation) comes from
-  `mythling/evolution/`; see [docs/design/evolution.md](docs/design/evolution.md) for which
-  phase adds what.
+- the evolution itself (Kindle threshold → transformation) comes from `evolution/`; see
+  [docs/design/evolution.md](docs/design/evolution.md) for which phase adds what.
 
 ## Checklist: blocks and abilities
 
@@ -112,10 +137,13 @@ A form (e.g. Emberlynx) is a Mythling of its own: follow the creature checklist 
   - the class goes in `block/`; register it in `ModBlocks` and its item in `ModItems`;
   - add `blockstates/`, `models/block/`, `items/`, textures, loot table (`data/mythweave/loot_table/blocks/`),
     a recipe if craftable, a mining tag, and lang.
-- **Ability:**
-  - put it next to its creature (`creature/<name>/`) and trigger it from `onOwnerUseItem`;
-  - store its cooldown on the entity and save it;
-  - when a second creature needs the same ability, move it to a shared `mythling/ability/` package.
+- **Ability** (see `EmberSparkAbility`):
+  - `ability/<Name>Ability.java` implementing `Ability<YourEntity>`, as a singleton `INSTANCE`;
+  - give the entity an `AbilityCooldown` with a save key that never changes; tick it in
+    `tick()` and save/load it in the entity's save methods;
+  - trigger it from the entity's `onOwnerUseItem` via `isTriggeredBy(stack)` and `use(...)`.
+- **Event listener:** register it in `event/ModEvents.register()`, so every hook into the game
+  stays in one place.
 - **Kindle source:** add it to `EvolutionRules.KindleSource` and report it with
   `mythling.kindle().gain(mythling, KindleSource.X)`.
 

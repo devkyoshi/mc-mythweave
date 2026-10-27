@@ -1,7 +1,10 @@
-package com.ashi.mythweave.creature.cindercub;
+package com.ashi.mythweave.entity.cindercub;
 
-import com.ashi.mythweave.mythling.MythlingEntity;
-import com.ashi.mythweave.mythling.evolution.EvolutionLine;
+import com.ashi.mythweave.ability.AbilityCooldown;
+import com.ashi.mythweave.ability.EmberSparkAbility;
+import com.ashi.mythweave.entity.base.MythlingEntity;
+import com.ashi.mythweave.evolution.EvolutionLine;
+import com.ashi.mythweave.evolution.EvolutionLines;
 import com.ashi.mythweave.registry.ModSounds;
 
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <ul>
  *   <li>Bonds with {@link #BONDING_ITEM} (Blaze Powder); its tail ignites when it does.</li>
- *   <li>The owner uses Blaze Powder on it again to trigger {@link EmberSpark}.</li>
+ *   <li>The owner uses Blaze Powder on it again to trigger {@link EmberSparkAbility}.</li>
  *   <li>Once bonded its tail is fire, and embers stream from it (client-side particles).</li>
  * </ul>
  */
@@ -38,11 +41,8 @@ public class CindercubEntity extends MythlingEntity {
 	/** Prototype bonding item (spec §5). A custom Aether Shard can replace it later. */
 	public static final Item BONDING_ITEM = Items.BLAZE_POWDER;
 
-	/**
-	 * Ticks until Ember Spark can be used again. Server-only (never synced, so a client
-	 * can't change it) and saved with the entity, so relogging doesn't reset it.
-	 */
-	private int emberCooldown;
+	/** Ember Spark's cooldown; saved as "EmberCooldown" (the key existing worlds already use). */
+	private final AbilityCooldown emberSparkCooldown = new AbilityCooldown("EmberCooldown");
 
 	public CindercubEntity(EntityType<? extends CindercubEntity> type, Level level) {
 		super(type, level);
@@ -62,17 +62,17 @@ public class CindercubEntity extends MythlingEntity {
 
 	@Override
 	public EvolutionLine evolutionLine() {
-		return CindercubLine.LINE;
+		return EvolutionLines.CINDERCUB;
 	}
 
 	/** Owner + Blaze Powder: Ember Spark (works sitting or standing; no powder is used). */
 	@Override
 	protected boolean onOwnerUseItem(Player owner, ItemStack stack) {
-		if (!stack.is(BONDING_ITEM)) {
+		if (!EmberSparkAbility.INSTANCE.isTriggeredBy(stack)) {
 			return false;
 		}
 		if (this.level() instanceof ServerLevel serverLevel) {
-			EmberSpark.use(this, serverLevel, owner);
+			EmberSparkAbility.INSTANCE.use(this, serverLevel, owner);
 		}
 		return true;
 	}
@@ -107,19 +107,15 @@ public class CindercubEntity extends MythlingEntity {
 		return super.getVoicePitch() * 1.25F;
 	}
 
-	public int getEmberCooldown() {
-		return this.emberCooldown;
-	}
-
-	public void setEmberCooldown(int ticks) {
-		this.emberCooldown = ticks;
+	public AbilityCooldown emberSparkCooldown() {
+		return this.emberSparkCooldown;
 	}
 
 	@Override
 	public void tick() {
 		super.tick();
-		if (!this.level().isClientSide() && this.emberCooldown > 0) {
-			this.emberCooldown--;
+		if (!this.level().isClientSide()) {
+			this.emberSparkCooldown.tick();
 		}
 	}
 
@@ -163,13 +159,12 @@ public class CindercubEntity extends MythlingEntity {
 	@Override
 	protected void addAdditionalSaveData(ValueOutput output) {
 		super.addAdditionalSaveData(output);
-		output.putInt("EmberCooldown", this.emberCooldown);
+		this.emberSparkCooldown.save(output);
 	}
 
 	@Override
 	protected void readAdditionalSaveData(ValueInput input) {
 		super.readAdditionalSaveData(input);
-		// Clamp so a hand-edited or corrupt value can't lock the ability for ages.
-		this.emberCooldown = Math.clamp(input.getIntOr("EmberCooldown", 0), 0, EmberSpark.COOLDOWN_TICKS);
+		this.emberSparkCooldown.load(input, EmberSparkAbility.COOLDOWN_TICKS);
 	}
 }

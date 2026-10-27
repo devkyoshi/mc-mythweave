@@ -1,8 +1,8 @@
-package com.ashi.mythweave.mythling.evolution;
+package com.ashi.mythweave.evolution;
 
-import com.ashi.mythweave.mythling.MythlingEntity;
-import com.ashi.mythweave.mythling.evolution.EvolutionRules.Branch;
-import com.ashi.mythweave.mythling.evolution.EvolutionRules.KindleSource;
+import com.ashi.mythweave.entity.base.MythlingEntity;
+import com.ashi.mythweave.evolution.EvolutionRules.Branch;
+import com.ashi.mythweave.evolution.EvolutionRules.KindleSource;
 
 import com.mojang.serialization.Codec;
 

@@ -2,14 +2,11 @@ package com.ashi.mythweave.registry;
 
 import com.ashi.mythweave.Mythweave;
 
-import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
-
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 
@@ -22,7 +19,7 @@ public final class ModItems {
 	public static final Item CINDERCUB_SPAWN_EGG = register(
 			"cindercub_spawn_egg",
 			SpawnEggItem::new,
-			new Item.Properties().spawnEgg(ModEntityTypes.CINDERCUB)
+			new Item.Properties().spawnEgg(ModEntities.CINDERCUB)
 	);
 
 	// Block items use the block's name ("block.mythweave.ember_brazier"), like vanilla's.
@@ -41,11 +38,10 @@ public final class ModItems {
 		return Registry.register(BuiltInRegistries.ITEM, key, factory.apply(properties.setId(key)));
 	}
 
-	/** Called from {@link Mythweave#onInitialize()}, after entity types and blocks. */
+	/**
+	 * Called from {@link Mythweave#onInitialize()}, after entities and blocks; loading the class
+	 * runs the registrations. Creative-tab placement is in {@link ModCreativeTabs}.
+	 */
 	public static void initialize() {
-		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS)
-				.register(output -> output.accept(CINDERCUB_SPAWN_EGG));
-		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)
-				.register(output -> output.accept(EMBER_BRAZIER));
 	}
 }

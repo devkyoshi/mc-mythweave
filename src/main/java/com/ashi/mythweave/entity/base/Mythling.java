@@ -1,7 +1,7 @@
-package com.ashi.mythweave.mythling;
+package com.ashi.mythweave.entity.base;
 
-import com.ashi.mythweave.mythling.evolution.EvolutionLine;
-import com.ashi.mythweave.mythling.evolution.Kindle;
+import com.ashi.mythweave.evolution.EvolutionLine;
+import com.ashi.mythweave.evolution.Kindle;
 
 /**
  * A creature that can bond and evolve. Every Mythling form extends {@link MythlingEntity},
