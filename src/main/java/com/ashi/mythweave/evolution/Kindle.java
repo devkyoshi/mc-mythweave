@@ -6,7 +6,6 @@ import com.ashi.mythweave.evolution.EvolutionRules.KindleSource;
 
 import com.mojang.serialization.Codec;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -116,29 +115,33 @@ public final class Kindle {
 		if (!mythling.isTame() || amount <= 0) {
 			return;
 		}
-		int before = this.points;
 		this.points += amount;
 		switch (affinity) {
 			case COMBAT -> this.combat += amount;
 			case EXPLORATION -> this.exploration += amount;
 			case NONE -> { }
 		}
-		if (before < EvolutionRules.STAGE_2_KINDLE && this.points >= EvolutionRules.STAGE_2_KINDLE) {
-			this.celebrate(mythling);
-		}
+		// Reaching a goal is noticed by Evolution.checkReady (once a second), which evolves it.
 	}
 
-	/** Reached the stage-2 goal: a flare of flame and a message (evolving itself comes in E2). */
-	private void celebrate(MythlingEntity mythling) {
-		if (mythling.level() instanceof ServerLevel level) {
-			level.sendParticles(ParticleTypes.FLAME, mythling.getX(), mythling.getY() + 0.5, mythling.getZ(),
-					30, 0.3, 0.4, 0.3, 0.05);
-		}
-		tellOwner(mythling, Component.translatable("message.mythweave.kindle.ready", mythling.getDisplayName()));
+	/** Copies everything from another Kindle: used when a Mythling evolves into a new entity. */
+	public void copyFrom(Kindle other) {
+		this.points = other.points;
+		this.combat = other.combat;
+		this.exploration = other.exploration;
+		this.visitedBiomes.clear();
+		this.visitedBiomes.addAll(other.visitedBiomes);
+		this.ticksWithOwner = other.ticksWithOwner;
+		this.blocksTravelled = other.blocksTravelled;
+		this.lastSurvivedHitTick = other.lastSurvivedHitTick;
 	}
 
 	/** The one-line status shown to the owner: name, Kindle toward the next goal, leaning. */
 	public Component status(MythlingEntity mythling) {
+		int goal = EvolutionRules.kindleToEvolveFrom(EvolutionRules.stageOf(mythling.evolutionLine(), mythling.formId()));
+		if (goal < 0) {
+			return Component.translatable("message.mythweave.kindle.status_final", mythling.getDisplayName(), this.points);
+		}
 		// "leaning toward <form> (battle)": the form's name comes from this species' line.
 		Branch leaning = this.leaning();
 		Component leaningText = switch (leaning) {
@@ -149,10 +152,11 @@ public final class Kindle {
 					EvolutionLine.formName(mythling.evolutionLine().formFor(leaning)));
 		};
 		return Component.translatable("message.mythweave.kindle.status", mythling.getDisplayName(),
-				this.points, EvolutionRules.nextGoal(this.points), leaningText);
+				this.points, goal, leaningText);
 	}
 
-	private static void tellOwner(MythlingEntity mythling, Component message) {
+	/** Sends an action-bar message to the owner, if they're online. */
+	public static void tellOwner(MythlingEntity mythling, Component message) {
 		if (mythling.getOwner() instanceof Player player) {
 			player.sendOverlayMessage(message);
 		}

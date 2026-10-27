@@ -2,6 +2,7 @@ package com.ashi.mythweave.client.registry;
 
 import com.ashi.mythweave.client.MythweaveClient;
 import com.ashi.mythweave.client.render.entity.CindercubRenderer;
+import com.ashi.mythweave.client.render.entity.EmberlynxRenderer;
 import com.ashi.mythweave.registry.ModEntities;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -18,5 +19,6 @@ public final class ModRenderers {
 	public static void register() {
 		// Fabric's EntityRendererRegistry is deprecated in 26.3; vanilla's register is public.
 		EntityRenderers.register(ModEntities.CINDERCUB, CindercubRenderer::new);
+		EntityRenderers.register(ModEntities.EMBERLYNX, EmberlynxRenderer::new);
 	}
 }

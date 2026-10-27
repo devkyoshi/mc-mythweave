@@ -67,29 +67,37 @@ Package root `com.ashi.mythweave` (written `…` below).
 ├── Mythweave.java                     Mod entry point (fabric.mod.json "main"). Calls the registries, then ModEvents.
 │                                      Also holds MOD_ID, the LOGGER and id("path") → mythweave:path.
 ├── registry/                          Everything registered with the game, one class per kind
-│   ├── ModSounds.java                 Sound events: entity.cindercub.ambient / hurt / death
-│   ├── ModEntities.java               Entity types (CINDERCUB: size, eye height) + their attributes
+│   ├── ModSounds.java                 Sound events: entity.<cindercub|emberlynx>.ambient / hurt / death
+│   ├── ModEntities.java               Entity types (CINDERCUB, EMBERLYNX: size, eye height) + their attributes,
+│   │                                  and mythlingForm(id): form id → entity type, used by evolution
 │   ├── ModBlocks.java                 Blocks (EMBER_BRAZIER: strength, sound, light while lit)
-│   ├── ModItems.java                  Items: the spawn egg, block items
+│   ├── ModItems.java                  Items: spawn eggs, block items
 │   └── ModCreativeTabs.java           Which Creative tab each item appears in
 ├── entity/
 │   ├── base/
 │   │   ├── Mythling.java              Interface: kindle(), evolutionLine()
 │   │   └── MythlingEntity.java        Base class of every creature: bonding, refusing non-owners,
-│   │                                  owner controls (status, abilities, sit), companion AI, Kindle saving
-│   └── cindercub/
-│       └── CindercubEntity.java       Cindercub: stats, sounds, bonding item, Ember Spark trigger,
-│                                      ignition burst on bonding, tail embers (client particles)
+│   │                                  owner controls (status, abilities, sit), companion AI, Kindle saving,
+│   │                                  evolution ticking, shared ember particles (emitEmbers)
+│   ├── cindercub/
+│   │   └── CindercubEntity.java       Cindercub (stage 1): stats, sounds, bonding item, Ember Spark trigger,
+│   │                                  ignition burst on bonding, tail embers (client particles)
+│   └── emberlynx/
+│       └── EmberlynxEntity.java       Emberlynx (stage 2): stronger stats, defend-owner AI (wolf rules),
+│                                      stronger Ember Spark, tail and mane embers
 ├── evolution/
-│   ├── EvolutionRules.java            All evolution numbers: Kindle thresholds, Kindle sources, ranges, branches
+│   ├── EvolutionRules.java            All evolution numbers and rules: thresholds, Kindle sources, ranges,
+│   │                                  branches, stageOf / nextForm, transformation length
 │   ├── EvolutionLine.java             One species' forms: base → stage 2 → combat form | exploration form
 │   ├── EvolutionLines.java            Every species' line as a constant (CINDERCUB)
-│   ├── Kindle.java                    One Mythling's evolution progress: earning, saving, status message
+│   ├── Evolution.java                 Evolving: readiness check, the 3 s transformation, the entity swap
+│   ├── Kindle.java                    One Mythling's evolution progress: earning, saving, copying, status
 │   └── KindleEvents.java              Kindle from the world: hostile mobs dying nearby, survived hits
 ├── ability/
-│   ├── Ability.java                   Interface: id, cooldown, trigger item, use(...) (server-side)
+│   ├── Ability.java                   Interface: id, cooldown, trigger item, use(mythling, cooldown, ...) (server)
 │   ├── AbilityCooldown.java           One ability's cooldown on one creature: tick, save, load
-│   └── EmberSparkAbility.java         Ember Spark: light the nearest visible unlit brazier within 8 blocks
+│   └── EmberSparkAbility.java         Ember Spark: light the nearest visible unlit brazier; one constant per
+│                                      form (CINDERCUB 8 blocks / 15 s, EMBERLYNX 12 blocks / 10 s)
 ├── block/
 │   └── EmberBrazierBlock.java         Ember Brazier: LIT state, shape, empty-hand extinguish, particles
 ├── command/
@@ -109,15 +117,18 @@ Package root `com.ashi.mythweave.client`.
 client/
 ├── MythweaveClient.java               Client entry point (fabric.mod.json "client"). Calls the client registries.
 ├── registry/
-│   ├── ModModelLayers.java            Model layer ids (CINDERCUB = mythweave:cindercub#main) + their registration
+│   ├── ModModelLayers.java            Model layer ids (CINDERCUB, EMBERLYNX = mythweave:<name>#main) + registration
 │   └── ModRenderers.java              Entity type → renderer (every entity type needs one)
 ├── model/entity/
-│   └── CindercubModel.java            Cube layout and all animation: walk, head look, idle tilt, ear twitch,
-│                                      sit pose, fur tail (wild) vs fire tail (bonded) with its flicker
+│   ├── CindercubModel.java            Cube layout and all animation: walk, head look, idle tilt, ear twitch,
+│   │                                  sit pose, fur tail (wild) vs fire tail (bonded) with its flicker
+│   └── EmberlynxModel.java            Taller lynx: fire mane, flame ear tufts, long rippling fire tail, sit pose
 └── render/entity/
     ├── CindercubRenderer.java         Ties model + textures to the entity; fills the render state each frame
+    ├── EmberlynxRenderer.java         The same for Emberlynx
     ├── state/
-    │   └── CindercubRenderState.java  Per-frame snapshot the model reads (isSitting, isTame, + vanilla data)
+    │   ├── CindercubRenderState.java  Per-frame snapshot the model reads (isSitting, isTame, + vanilla data)
+    │   └── EmberlynxRenderState.java  isSitting + vanilla data
     └── layer/
         └── PulsingGlowLayer.java      Draws any creature's glow map full-bright with a slow "breathing" pulse
 ```
@@ -137,12 +148,13 @@ resources/
 │   ├── sounds.json                    What each sound event plays (currently vanilla fox sounds, by event)
 │   ├── blockstates/ember_brazier.json Picks the model per LIT state
 │   ├── models/block/                  ember_brazier.json (unlit), ember_brazier_lit.json (with flame planes)
-│   ├── models/item/                   cindercub_spawn_egg.json
-│   ├── items/                         Item appearances: cindercub_spawn_egg.json, ember_brazier.json
+│   ├── models/item/                   cindercub_spawn_egg.json, emberlynx_spawn_egg.json
+│   ├── items/                         Item appearances: both spawn eggs, ember_brazier.json
 │   └── textures/
 │       ├── entity/cindercub/          cindercub.png (64×32 texture), cindercub_glow.png (glow map)
+│       ├── entity/emberlynx/          emberlynx.png (64×64 texture), emberlynx_glow.png (glow map)
 │       ├── block/                     ember_brazier_*.png; ember_brazier_flame.png (+ .mcmeta = animation)
-│       └── item/                      cindercub_spawn_egg.png
+│       └── item/                      cindercub_spawn_egg.png, emberlynx_spawn_egg.png
 └── data/                              Server data (data pack)
     ├── mythweave/recipe/ember_brazier.json          Crafting recipe
     ├── mythweave/loot_table/blocks/ember_brazier.json   Drops itself when mined
@@ -163,9 +175,10 @@ resources/
 tools/
 ├── README.md                          What each script does and when to re-run it
 ├── textures/cindercub.ps1             Paints the Cindercub texture + glow map; documents its UV layout
-├── textures/cindercub_spawn_egg.ps1   Paints the spawn egg
+├── textures/emberlynx.ps1             Paints the Emberlynx texture + glow map; documents its UV layout
+├── textures/spawn_eggs.ps1            Paints every spawn egg (same shape, per-form colors)
 ├── textures/ember_brazier.ps1         Paints the brazier textures and flame animation
-└── previews/cindercub.ps1             Renders docs/images/*.png from the model (duplicates its cube list)
+└── previews/mythlings.ps1             Renders docs/images/*.png from the models (duplicates their cube lists)
 
 docs/
 ├── design/specification.md            The original design document: pillars, phases, rules
@@ -203,6 +216,11 @@ server changes anything):
 **Every server tick** for a bonded Mythling: `Kindle.tick` pays out for time together,
 distance travelled together and new biomes; ability cooldowns tick down.
 
+**Once a second**, `Evolution.checkReady` asks `EvolutionRules.nextForm` whether it should
+evolve. If so, and the next form exists in `ModEntities.mythlingForm`, `Evolution.tick` runs
+a 60-tick transformation and then swaps the entity (`Mob#convertTo`), carrying over the owner,
+sit order and Kindle.
+
 **Every rendered frame:**
 1. `CindercubRenderer.extractRenderState` copies `isSitting` and `isTame` into the render state.
 2. `CindercubModel.setupAnim` poses the parts from that state.
@@ -214,12 +232,12 @@ These are in players' worlds and resource packs. **Never rename them**; add new 
 
 | Kind | Values |
 |---|---|
-| Entity | `mythweave:cindercub` |
-| Items | `mythweave:cindercub_spawn_egg`, `mythweave:ember_brazier` |
+| Entities | `mythweave:cindercub`, `mythweave:emberlynx` |
+| Items | `mythweave:cindercub_spawn_egg`, `mythweave:emberlynx_spawn_egg`, `mythweave:ember_brazier` |
 | Block | `mythweave:ember_brazier` (state `lit=true/false`) |
-| Sounds | `mythweave:entity.cindercub.ambient`, `.hurt`, `.death` |
-| Model layer | `mythweave:cindercub#main` |
-| Entity save data | `Owner`, `Sitting` (vanilla), `EmberCooldown`, `Kindle` → `Points`, `Combat`, `Exploration`, `TicksWithOwner`, `BlocksTravelled`, `Biomes` |
+| Sounds | `mythweave:entity.cindercub.*` and `mythweave:entity.emberlynx.*` (`ambient`, `hurt`, `death`) |
+| Model layers | `mythweave:cindercub#main`, `mythweave:emberlynx#main` |
+| Entity save data | `Owner`, `Sitting` (vanilla), `EmberCooldown`, `EvolvingTicks` (only mid-transformation), `Kindle` → `Points`, `Combat`, `Exploration`, `TicksWithOwner`, `BlocksTravelled`, `Biomes` |
 
 **Translation key namespaces** (`lang/en_us.json`):
 

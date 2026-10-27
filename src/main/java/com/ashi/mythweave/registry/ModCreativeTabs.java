@@ -14,7 +14,10 @@ public final class ModCreativeTabs {
 	/** Called from {@link Mythweave#onInitialize()}, after {@link ModItems}. */
 	public static void initialize() {
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS)
-				.register(output -> output.accept(ModItems.CINDERCUB_SPAWN_EGG));
+				.register(output -> {
+					output.accept(ModItems.CINDERCUB_SPAWN_EGG);
+					output.accept(ModItems.EMBERLYNX_SPAWN_EGG);
+				});
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)
 				.register(output -> output.accept(ModItems.EMBER_BRAZIER));
 	}

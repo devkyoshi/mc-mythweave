@@ -10,14 +10,15 @@ powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 | Script | Writes | Re-run when |
 |---|---|---|
 | `textures/cindercub.ps1` | `textures/entity/cindercub/cindercub.png` + `cindercub_glow.png` | you change Cindercub's colors or its model's UV layout |
-| `textures/cindercub_spawn_egg.ps1` | `textures/item/cindercub_spawn_egg.png` | you change the egg |
+| `textures/emberlynx.ps1` | `textures/entity/emberlynx/emberlynx.png` + `emberlynx_glow.png` | you change Emberlynx's colors or its model's UV layout |
+| `textures/spawn_eggs.ps1` | `textures/item/*_spawn_egg.png` | you change an egg or add a form (add a `New-Egg` line) |
 | `textures/ember_brazier.ps1` | `textures/block/ember_brazier_*.png` (+ flame `.mcmeta`) | you change the brazier |
-| `previews/cindercub.ps1` | `docs/images/*.png` (README renders and banner) | the Cindercub model or texture changes |
+| `previews/mythlings.ps1` | `docs/images/*.png` (README renders and banner) | a Mythling model or texture changes |
 
 - Output is deterministic: the same script always writes byte-identical files, so `git diff`
   only shows real changes.
 - Each texture script documents the UV layout it paints. If you change a model's cubes in
-  Java, update the script and `previews/cindercub.ps1`, which duplicates the cube list.
+  Java, update the script and `previews/mythlings.ps1`, which duplicates each cube list.
 - Commit the regenerated PNGs together with the script change.
 - Hand-painting in Blockbench or a pixel editor is fine too. If you do, say so in the script
   header, so nobody overwrites your work by re-running it.

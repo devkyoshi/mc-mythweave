@@ -63,7 +63,7 @@ playful, and a little mischievous.
 | **Habitat (planned)** | Savannas, badlands, warm caves |
 
 <sub>The images above are generated from the mod's real model layout and texture by
-<code>tools/previews/cindercub.ps1</code>. Lighting is approximate.</sub>
+<code>tools/previews/mythlings.ps1</code>. Lighting is approximate.</sub>
 
 ## How to play
 
@@ -95,8 +95,32 @@ Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
 
 - **Check progress:** sneak and right-click your Cindercub with an empty hand to see, for
   example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
-- At **150 Kindle** its flame flares up and it's ready to evolve. The evolution itself
-  arrives in the next update (see [docs/design/evolution.md](docs/design/evolution.md)).
+- **At 150 Kindle it evolves** into an **Emberlynx** (see below). At 400 it will take its
+  final form, Ashenox or Solflare, depending on how it leans; those arrive in a later
+  update (see [docs/design/evolution.md](docs/design/evolution.md)).
+
+### Evolution: Emberlynx
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/emberlynx.png" width="260" alt="Emberlynx standing"><br><sub>Emberlynx</sub></td>
+    <td align="center"><img src="docs/images/emberlynx_back.png" width="260" alt="Emberlynx from behind, showing its fire mane and long fire tail"><br><sub>Fire mane and tail</sub></td>
+    <td align="center"><img src="docs/images/emberlynx_sitting.png" width="260" alt="Emberlynx sitting"><br><sub>Sitting</sub></td>
+  </tr>
+</table>
+
+When a bonded Cindercub reaches **150 Kindle** it evolves on its own, as soon as it's standing
+on solid ground. It glows, rises off the ground spinning inside a spiral of flame, and after
+three seconds bursts into an **Emberlynx**. It keeps its name, its bond to you, whether it was
+sitting, and all its Kindle, and it arrives at full health.
+
+| | Cindercub | Emberlynx |
+|---|---|---|
+| Look | chibi kit, fire tail | taller ember lynx: fire mane, flame-tufted ears, longer crystal horns, long fire tail |
+| Health | 12 | 20 |
+| Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s |
+| In a fight | runs away when hurt | **defends you**: attacks whatever hurts you or it (never creepers, tamed animals or your friends) |
+| Size | 0.5 × 0.7 | 0.6 × 0.95 |
 
 ### The Ember Brazier
 
@@ -160,15 +184,15 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
   command, with a cooldown. It can't set the world on fire.
 - [x] **Phase 7: Polish.** Glowing ember tail tip, Cindercub sounds with subtitles, its own
   spawn egg, cleaner sitting pose.
-- [ ] **Design pass: mythical and cute.** Chibi proportions, big eyes, crystal horns and spine
+- [x] **Design pass: mythical and cute.** Chibi proportions, big eyes, crystal horns and spine
   shards, glowing rune marks, fox tail that ignites into a rippling fire tail when bonded,
   fire animations (flicker, breathing glow, embers), idle head tilt and ear twitches.
-  *(Built; awaiting in-game test.)*
 - [ ] **Evolution.** Bond XP ("Kindle") evolves Cindercub → Emberlynx → Ashenox or Solflare.
   See [docs/design/evolution.md](docs/design/evolution.md).
-  - [ ] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
-    *(Built; awaiting in-game test.)*
-  - [ ] E2: evolution moment + Emberlynx · E3: Ashenox · E4: Solflare · E5: balance
+  - [x] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
+  - [x] **E2: Evolution and Emberlynx.** The transformation at 150 Kindle; Emberlynx with
+    its model, texture, spawn egg, stronger Ember Spark and defend-owner AI.
+  - [ ] E3: Ashenox · E4: Solflare · E5: balance
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
 the *Aether Shard* bonding item, branching evolutions (*Ashenox*, a combat-focused volcanic
@@ -292,9 +316,16 @@ A quick in-game test of everything that works so far. Use a Creative world with 
     Kindle status. Use Ember Spark and check again: +5, leaning Solflare. Walk into a new
     biome together: "+10 Kindle" message. Kill a zombie next to it: +8, leaning shifts.
     Save, quit, reload: the numbers are unchanged. A wild one earns nothing.
-13. *(Test command, operators)* `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150`
-    triggers the "ready to evolve" flare. `/mythweave kindle get @e[type=mythweave:cindercub,limit=1,sort=nearest]`
-    prints the status. Add `combat` or `exploration` to the `add` command to push the leaning.
+13. *(Test command, operators)* `/mythweave kindle get @e[type=mythweave:cindercub,limit=1,sort=nearest]`
+    prints the status. Add `combat` or `exploration` to the `add` command (below) to push the leaning.
+14. *(Evolution)* `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150` on a bonded
+    Cindercub standing on the ground: within a second it starts evolving (message, rising,
+    spinning, flame spiral), and after 3 s it bursts into an Emberlynx. Check that it still
+    follows you, obeys sit/stand, kept its name tag and Kindle (sneak-click), and lights
+    braziers up to 12 blocks away every 10 s. Hit a zombie near you: it attacks the zombie.
+    Save and reload mid-transformation: it resumes. Then add 250 more with `combat` (target
+    `type=mythweave:emberlynx`): you get the "ready to become Ashenox" message once, since
+    that form comes later.
 
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 

@@ -188,9 +188,10 @@ powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 | Script | Regenerates |
 |---|---|
 | `tools/textures/cindercub.ps1` | Cindercub texture + glow map |
-| `tools/textures/cindercub_spawn_egg.ps1` | Spawn egg texture |
+| `tools/textures/emberlynx.ps1` | Emberlynx texture + glow map |
+| `tools/textures/spawn_eggs.ps1` | Every spawn egg texture |
 | `tools/textures/ember_brazier.ps1` | Ember Brazier textures (+ animated flame) |
-| `tools/previews/cindercub.ps1` | README images in `docs/images/` |
+| `tools/previews/mythlings.ps1` | README images in `docs/images/` |
 
 Output is byte-identical between runs, so `git status` shows only real changes. Commit the PNGs
 together with the script change. Details: [tools/README.md](../../tools/README.md).

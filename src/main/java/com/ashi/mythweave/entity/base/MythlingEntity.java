@@ -1,9 +1,14 @@
 package com.ashi.mythweave.entity.base;
 
+import com.ashi.mythweave.evolution.Evolution;
+import com.ashi.mythweave.evolution.EvolutionRules;
 import com.ashi.mythweave.evolution.Kindle;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -51,6 +56,10 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 
 	/** Evolution progress; server-side, saved with the entity (see {@link Kindle}). */
 	private final Kindle kindle = new Kindle();
+	/** Ticks left in an evolution in progress; saved so a reload mid-transformation resumes it. */
+	private int evolvingTicks;
+	/** Not saved: the "ready, next form not in the game yet" message shows once per load. */
+	private boolean readyAnnounced;
 
 	protected MythlingEntity(EntityType<? extends MythlingEntity> type, Level level) {
 		super(type, level);
@@ -71,9 +80,73 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	protected void onBonded(ServerLevel level, Player owner) {
 	}
 
+	/** True (default) if it runs away when hurt; false for forms that fight back instead. */
+	protected boolean fleesWhenHurt() {
+		return true;
+	}
+
 	@Override
 	public Kindle kindle() {
 		return this.kindle;
+	}
+
+	/** This form's id in its {@link com.ashi.mythweave.evolution.EvolutionLine}: its entity id path, e.g. "cindercub". */
+	public String formId() {
+		return BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getPath();
+	}
+
+	/** Ticks left in an evolution in progress (0 = not evolving). Driven by {@link Evolution}. */
+	public int evolvingTicks() {
+		return this.evolvingTicks;
+	}
+
+	public void setEvolvingTicks(int ticks) {
+		this.evolvingTicks = ticks;
+	}
+
+	public boolean isEvolving() {
+		return this.evolvingTicks > 0;
+	}
+
+	/** Whether the owner has been told it's ready but its next form isn't in the game yet (once per load). */
+	public boolean readyAnnounced() {
+		return this.readyAnnounced;
+	}
+
+	public void setReadyAnnounced(boolean announced) {
+		this.readyAnnounced = announced;
+	}
+
+	/**
+	 * Client-side visuals only: little flames drift up from a point behind and above the
+	 * body (e.g. a fire tail), more often while it runs. In rain or water they turn into puffs
+	 * of steam. Each client spawns its own, so this sends nothing over the network.
+	 *
+	 * @param back     how far behind the centre the effect starts (blocks)
+	 * @param backSpan how much further back it can reach (picked at random along the span)
+	 * @param up       height above the feet where it starts (blocks)
+	 * @param upSpan   how much higher it can reach along the same span
+	 * @param oneInIdle   spawn chance per tick while standing still (1 in n)
+	 * @param oneInMoving spawn chance per tick while moving (1 in n)
+	 */
+	protected void emitEmbers(double back, double backSpan, double up, double upSpan, int oneInIdle, int oneInMoving) {
+		boolean moving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4;
+		if (this.random.nextInt(moving ? oneInMoving : oneInIdle) != 0) {
+			return;
+		}
+		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite.
+		double along = this.random.nextDouble();
+		double b = back + along * backSpan;
+		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
+		double x = this.getX() + Mth.sin(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
+		double y = this.getY() + up + along * upSpan;
+		double z = this.getZ() - Mth.cos(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
+		if (this.isInWaterOrRain()) {
+			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
+		} else {
+			this.level().addParticle(this.random.nextInt(4) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMALL_FLAME,
+					x, y, z, 0.0, 0.015 + this.random.nextDouble() * 0.02, 0.0);
+		}
 	}
 
 	/**
@@ -85,9 +158,11 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	protected void registerGoals() {
 		// Swim instead of sinking.
 		this.goalSelector.addGoal(1, new FloatGoal(this));
-		// Run away at 1.4x speed for a few seconds when hurt. The tamable version also
-		// teleports back to a far-away owner while panicking.
-		this.goalSelector.addGoal(1, new TamableAnimalPanicGoal(1.4));
+		// Run away at 1.4x speed for a few seconds when hurt (forms that fight back skip this).
+		// The tamable version also teleports back to a far-away owner while panicking.
+		if (this.fleesWhenHurt()) {
+			this.goalSelector.addGoal(1, new TamableAnimalPanicGoal(1.4));
+		}
 		// Stay put while ordered to sit (or while the owner is offline / in another dimension).
 		this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
 		// Follow the owner once more than 8 blocks away, stopping within 2 blocks. 1.2x speed
@@ -115,6 +190,11 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 		ItemStack stack = player.getItemInHand(hand);
 		boolean server = !this.level().isClientSide();
 		Item bondingItem = this.bondingItem();
+
+		// Mid-evolution it ignores everyone (the transformation takes three seconds).
+		if (this.isEvolving()) {
+			return InteractionResult.PASS;
+		}
 
 		if (!this.isTame()) {
 			if (stack.is(bondingItem)) {
@@ -197,8 +277,15 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	@Override
 	public void tick() {
 		super.tick();
-		if (this.level() instanceof ServerLevel serverLevel && this.isTame()) {
-			this.kindle.tick(this, serverLevel);
+		if (this.level() instanceof ServerLevel serverLevel) {
+			if (this.isEvolving()) {
+				Evolution.tick(this, serverLevel);
+			} else if (this.isTame()) {
+				this.kindle.tick(this, serverLevel);
+				if (this.tickCount % 20 == 0) {
+					Evolution.checkReady(this, serverLevel);
+				}
+			}
 		}
 	}
 
@@ -206,12 +293,16 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	protected void addAdditionalSaveData(ValueOutput output) {
 		super.addAdditionalSaveData(output);
 		this.kindle.save(output);
+		if (this.evolvingTicks > 0) {
+			output.putInt("EvolvingTicks", this.evolvingTicks);
+		}
 	}
 
 	@Override
 	protected void readAdditionalSaveData(ValueInput input) {
 		super.readAdditionalSaveData(input);
 		this.kindle.load(input);
+		this.evolvingTicks = Math.clamp(input.getIntOr("EvolvingTicks", 0), 0, EvolutionRules.EVOLUTION_TICKS);
 	}
 
 	// Breeding is out of scope (spec §5), so nothing counts as food and no offspring is made.

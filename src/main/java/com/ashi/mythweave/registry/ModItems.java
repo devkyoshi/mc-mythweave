@@ -22,6 +22,13 @@ public final class ModItems {
 			new Item.Properties().spawnEgg(ModEntities.CINDERCUB)
 	);
 
+	// Mainly for testing: normally you get an Emberlynx by evolving a Cindercub.
+	public static final Item EMBERLYNX_SPAWN_EGG = register(
+			"emberlynx_spawn_egg",
+			SpawnEggItem::new,
+			new Item.Properties().spawnEgg(ModEntities.EMBERLYNX)
+	);
+
 	// Block items use the block's name ("block.mythweave.ember_brazier"), like vanilla's.
 	public static final Item EMBER_BRAZIER = register(
 			"ember_brazier",

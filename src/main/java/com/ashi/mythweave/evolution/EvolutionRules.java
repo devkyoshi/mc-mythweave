@@ -1,5 +1,7 @@
 package com.ashi.mythweave.evolution;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Every evolution number and rule, in one place (spec: evolution conditions must not be
  * scattered through entity code). Entities only report what happened; {@link Kindle} applies
@@ -13,6 +15,8 @@ public final class EvolutionRules {
 	/** Kindle needed for stage 2, and for stage 3 (counted from zero, not on top of stage 2). */
 	public static final int STAGE_2_KINDLE = 150;
 	public static final int STAGE_3_KINDLE = 400;
+	/** How long the transformation takes: 3 seconds of rising, spinning flame. */
+	public static final int EVOLUTION_TICKS = 60;
 
 	/** "With its owner" means the owner is alive, in the same dimension, within this range. */
 	public static final double OWNER_RANGE = 16.0;
@@ -55,9 +59,41 @@ public final class EvolutionRules {
 	private EvolutionRules() {
 	}
 
-	/** The next Kindle goal to show the player: stage 2's until reached, then stage 3's. */
-	public static int nextGoal(int kindle) {
-		return kindle < STAGE_2_KINDLE ? STAGE_2_KINDLE : STAGE_3_KINDLE;
+	/** A form's stage in its line: 1 (base), 2, or 3 (either branch); 0 if it isn't in the line. */
+	public static int stageOf(EvolutionLine line, String formId) {
+		if (formId.equals(line.base())) {
+			return 1;
+		}
+		if (formId.equals(line.stage2())) {
+			return 2;
+		}
+		return formId.equals(line.combatForm()) || formId.equals(line.explorationForm()) ? 3 : 0;
+	}
+
+	/** Kindle needed to evolve out of a stage, or -1 if it's the final stage. */
+	public static int kindleToEvolveFrom(int stage) {
+		return switch (stage) {
+			case 1 -> STAGE_2_KINDLE;
+			case 2 -> STAGE_3_KINDLE;
+			default -> -1;
+		};
+	}
+
+	/**
+	 * The form a Mythling should evolve into right now, or null if it isn't ready: not enough
+	 * Kindle, already final, or (stage 2 -> 3) no branch leaning yet. Stage 3 is whichever
+	 * branch has more affinity, so how you play decides it.
+	 */
+	public static @Nullable String nextForm(EvolutionLine line, String formId, int kindle, Branch leaning) {
+		int stage = stageOf(line, formId);
+		int needed = kindleToEvolveFrom(stage);
+		if (needed < 0 || kindle < needed) {
+			return null;
+		}
+		if (stage == 1) {
+			return line.stage2();
+		}
+		return leaning == Branch.NONE ? null : line.formFor(leaning);
 	}
 
 	/** The branch with more affinity; a tie (including 0 - 0) leans nowhere yet. */

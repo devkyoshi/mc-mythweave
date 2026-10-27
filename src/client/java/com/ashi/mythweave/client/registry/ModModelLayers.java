@@ -3,6 +3,7 @@ package com.ashi.mythweave.client.registry;
 import com.ashi.mythweave.Mythweave;
 import com.ashi.mythweave.client.MythweaveClient;
 import com.ashi.mythweave.client.model.entity.CindercubModel;
+import com.ashi.mythweave.client.model.entity.EmberlynxModel;
 
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 
@@ -14,6 +15,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
  */
 public final class ModModelLayers {
 	public static final ModelLayerLocation CINDERCUB = new ModelLayerLocation(Mythweave.id("cindercub"), "main");
+	public static final ModelLayerLocation EMBERLYNX = new ModelLayerLocation(Mythweave.id("emberlynx"), "main");
 
 	private ModModelLayers() {
 	}
@@ -21,5 +23,6 @@ public final class ModModelLayers {
 	/** Called from {@link MythweaveClient#onInitializeClient()}, before {@link ModRenderers}. */
 	public static void register() {
 		ModelLayerRegistry.registerModelLayer(CINDERCUB, CindercubModel::createBodyLayer);
+		ModelLayerRegistry.registerModelLayer(EMBERLYNX, EmberlynxModel::createBodyLayer);
 	}
 }

@@ -1,16 +1,18 @@
-# Renders README preview images of Cindercub from the real texture and the same cube layout
-# as CindercubModel.java (no game needed). Outputs to docs/images/.
+# Renders README preview images of the Mythlings (Cindercub, Emberlynx) from their real
+# textures and the same cube layouts as their models (no game needed). Outputs to docs/images/.
 #
 # Usage (from the project root):
-#   powershell -ExecutionPolicy Bypass -File tools\previews\cindercub.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\previews\mythlings.ps1
 #
-# The cube list below duplicates CindercubModel#createBodyLayer and #setSittingPose. If you
-# change the model, update it here too. In-game screenshots (F2) are always the real truth.
+# New-Cindercub / New-Emberlynx duplicate each model's createBodyLayer and setSittingPose.
+# If you change a model, update it here too. In-game screenshots (F2) are always the real truth.
 
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $texturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub.png'
 $glowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub_glow.png'
+$lynxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx.png'
+$lynxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -253,6 +255,61 @@ function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting, [bool]$tame
 	return $p
 }
 
+# Emberlynx, from EmberlynxModel#createBodyLayer and #setSittingPose (flames at rest).
+function New-Emberlynx([double]$yaw, [double]$pitch, [bool]$sitting) {
+	$p = New-Object Preview $lynxTexturePath, $lynxGlowPath, $yaw, $pitch
+	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
+
+	$bodyY = 15.5; $bodyXRot = 0.0; $headY = 13.5; $headZ = -4.5; $tailXRot = 0.5
+	$hindY = 18.0; $hindZ = 4.0; $hindXRot = 0.0; $hindSpread = 0.0
+	if ($sitting) {
+		$bodyY += 4.0; $bodyXRot = -0.45; $headY += 2.1; $headZ += 1.6; $tailXRot = 0.15
+		$hindY += 4.0; $hindZ -= 0.5; $hindXRot = -1.45; $hindSpread = 0.5
+	}
+
+	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
+	$p.Box($body, 0, 12, -2.5, -2.5, -5, 5, 5, 10)
+	for ($i = 0; $i -lt 3; $i++) { $p.Box($body.Then([Mat]::Pose(0, -2.5, -1.5 + $i * 2.5, -0.4, 0, 0)), 56, 0, -0.5, -2, -0.5, 1, 2, 1) }
+	$mane = $body.Then([Mat]::Pose(0, -2, -3.5, 0, 0, 0))
+	$p.Box($mane, 30, 12, -3, -3, -1.5, 6, 3, 3)
+	foreach ($t in @(@(-2, 0), @(0, -0.5), @(2, 0))) {
+		$p.Box($mane.Then([Mat]::Pose($t[0], -3, $t[1], -$bodyXRot, 0, 0)), 48, 4, -0.5, -2, -0.5, 1, 2, 1)
+	}
+
+	# Fire tail: base, two segments, tip; tongues and plume counter-rotated upright.
+	$tail = $body.Then([Mat]::Pose(0, -1.5, 5, $tailXRot, 0.12, 0))
+	$p.Box($tail, 30, 18, -1.5, -1.5, 0, 3, 3, 3)
+	$tilt = $bodyXRot + $tailXRot
+	$p.Box($tail.Then([Mat]::Pose(0, -1.5, 1.5, -$tilt, 0, 0)), 48, 4, -0.5, -2, -0.5, 1, 2, 1)
+	$seg = $tail
+	foreach ($curl in 0.15, 0.2) {
+		$seg = $seg.Then([Mat]::Pose(0, 0, 3, $curl, 0, 0)); $tilt += $curl
+		$p.Box($seg, 42, 18, -1, -1, 0, 2, 2, 3)
+		$p.Box($seg.Then([Mat]::Pose(0, -1, 1.5, -$tilt, 0, 0)), 48, 4, -0.5, -2, -0.5, 1, 2, 1)
+	}
+	$tip = $seg.Then([Mat]::Pose(0, 0, 3, 0.25, 0, 0)); $tilt += 0.25
+	$p.Box($tip, 52, 18, -1, -1, 0, 2, 2, 2)
+	$p.Box($tip.Then([Mat]::Pose(0, -1, 1, -$tilt, 0, 0)), 60, 0, -0.5, -2, -0.5, 1, 2, 1)
+
+	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
+	$p.Box($head, 0, 0, -3.5, -5, -6, 7, 5, 6)
+	$p.Box($head, 26, 0, -1.5, -2, -8, 3, 2, 2)
+	foreach ($ear in @(@(-2.5, -0.15, 36), @(2.5, 0.15, 42))) {
+		$e = $head.Then([Mat]::Pose($ear[0], -5, -2.5, 0, 0, $ear[1]))
+		$p.Box($e, $ear[2], 0, -1, -5, 0, 2, 5, 1)
+		$p.Box($e.Then([Mat]::Pose(0, -5, 0.5, 0, 0, 0)), 48, 0, -0.5, -2, -0.5, 1, 2, 1)
+	}
+	foreach ($horn in @(@(-1.2, -0.3), @(1.2, 0.3))) {
+		$p.Box($head.Then([Mat]::Pose($horn[0], -5, -4.5, -0.8, 0, $horn[1])), 52, 0, -0.5, -4, -0.5, 1, 4, 1)
+	}
+
+	$p.DepthBias = 0.05
+	foreach ($leg in @(@((-1.5 - $hindSpread), $hindY, $hindZ, $hindXRot), @((1.5 + $hindSpread), $hindY, $hindZ, $hindXRot), @(-1.5, 18, -4, 0), @(1.5, 18, -4, 0))) {
+		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 28, -1, 0, -1, 2, 6, 2)
+	}
+	return $p
+}
+
 function Save([System.Drawing.Bitmap]$bmp, [string]$name) {
 	$path = Join-Path $outDir $name
 	$bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -267,6 +324,9 @@ $sitting = (New-Cindercub 60 15 $true $true).Render(640, $true)
 Save $sitting 'cindercub_sitting.png'
 $back = (New-Cindercub 215 25 $false $true).Render(640, $true)
 Save $back 'cindercub_back.png'
+Save (New-Emberlynx 35 20 $false).Render(640, $true) 'emberlynx.png'
+Save (New-Emberlynx 230 20 $false).Render(640, $true) 'emberlynx_back.png'
+Save (New-Emberlynx 60 15 $true).Render(640, $true) 'emberlynx_sitting.png'
 
 # Texture sheet, scaled 8x with nearest-neighbour on a dark checkerboard.
 $tex = [System.Drawing.Image]::FromFile($texturePath)

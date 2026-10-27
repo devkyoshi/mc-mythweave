@@ -9,9 +9,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * A Mythling ability: something the owner triggers by using an item on their Mythling.
  *
- * <p>Abilities are stateless singletons (e.g. {@link EmberSparkAbility#INSTANCE}); per-creature
- * state such as the cooldown lives on the entity in an {@link AbilityCooldown}. A Mythling
- * triggers its abilities from {@code MythlingEntity#onOwnerUseItem}.
+ * <p>Abilities are stateless constants (e.g. {@link EmberSparkAbility#CINDERCUB}); per-creature
+ * state such as the cooldown lives on the entity in an {@link AbilityCooldown}, which the
+ * entity passes in. A Mythling triggers its abilities from {@code MythlingEntity#onOwnerUseItem}.
  *
  * <p>Rules (spec §5, §9): {@link #use} runs only on the server, checks the cooldown itself,
  * tells the owner what happened, and keeps its effect bounded (no uncontrolled fire, no
@@ -29,6 +29,9 @@ public interface Ability<E extends MythlingEntity> {
 	/** True if using this item on the Mythling should trigger the ability. */
 	boolean isTriggeredBy(ItemStack stack);
 
-	/** Server-side. Tries the ability (respecting the cooldown) and tells the owner how it went. */
-	void use(E mythling, ServerLevel level, Player owner);
+	/**
+	 * Server-side. Tries the ability (respecting {@code cooldown}, which it also starts on
+	 * success) and tells the owner how it went.
+	 */
+	void use(E mythling, AbilityCooldown cooldown, ServerLevel level, Player owner);
 }

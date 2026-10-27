@@ -68,11 +68,11 @@ public class CindercubEntity extends MythlingEntity {
 	/** Owner + Blaze Powder: Ember Spark (works sitting or standing; no powder is used). */
 	@Override
 	protected boolean onOwnerUseItem(Player owner, ItemStack stack) {
-		if (!EmberSparkAbility.INSTANCE.isTriggeredBy(stack)) {
+		if (!EmberSparkAbility.CINDERCUB.isTriggeredBy(stack)) {
 			return false;
 		}
 		if (this.level() instanceof ServerLevel serverLevel) {
-			EmberSparkAbility.INSTANCE.use(this, serverLevel, owner);
+			EmberSparkAbility.CINDERCUB.use(this, this.emberSparkCooldown, serverLevel, owner);
 		}
 		return true;
 	}
@@ -107,10 +107,6 @@ public class CindercubEntity extends MythlingEntity {
 		return super.getVoicePitch() * 1.25F;
 	}
 
-	public AbilityCooldown emberSparkCooldown() {
-		return this.emberSparkCooldown;
-	}
-
 	@Override
 	public void tick() {
 		super.tick();
@@ -123,36 +119,14 @@ public class CindercubEntity extends MythlingEntity {
 	public void aiStep() {
 		super.aiStep();
 		// Only a bonded Cindercub's tail is fire; a wild one has a plain fur tail.
+		// Embers stream from the fire tail (lower when sitting). Only a bonded Cindercub's tail
+		// is fire; a wild one has a plain fur tail.
 		if (this.level().isClientSide() && this.isTame()) {
-			this.spawnTailEmbers();
-		}
-	}
-
-	/**
-	 * Client-side visuals only: embers stream up from the fire tail, more while running. In
-	 * rain or water they turn into puffs of steam instead. Each client spawns its own, so this
-	 * sends nothing over the network.
-	 */
-	private void spawnTailEmbers() {
-		boolean moving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4;
-		if (this.random.nextInt(moving ? 2 : 4) != 0) {
-			return;
-		}
-		// A random point along the fire tail: behind the body and up (lower when sitting).
-		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite.
-		boolean sitting = this.isInSittingPose();
-		double along = this.random.nextDouble();
-		double back = (sitting ? 0.35 : 0.3) + along * 0.3;
-		double up = (sitting ? 0.3 : 0.55) + along * (sitting ? 0.2 : 0.25);
-		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
-		double x = this.getX() + Mth.sin(yaw) * back + (this.random.nextDouble() - 0.5) * 0.15;
-		double y = this.getY() + up;
-		double z = this.getZ() - Mth.cos(yaw) * back + (this.random.nextDouble() - 0.5) * 0.15;
-		if (this.isInWaterOrRain()) {
-			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
-		} else {
-			this.level().addParticle(this.random.nextInt(4) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMALL_FLAME,
-					x, y, z, 0.0, 0.015 + this.random.nextDouble() * 0.02, 0.0);
+			if (this.isInSittingPose()) {
+				this.emitEmbers(0.35, 0.3, 0.3, 0.2, 4, 2);
+			} else {
+				this.emitEmbers(0.3, 0.3, 0.55, 0.25, 4, 2);
+			}
 		}
 	}
 
@@ -165,6 +139,6 @@ public class CindercubEntity extends MythlingEntity {
 	@Override
 	protected void readAdditionalSaveData(ValueInput input) {
 		super.readAdditionalSaveData(input);
-		this.emberSparkCooldown.load(input, EmberSparkAbility.COOLDOWN_TICKS);
+		this.emberSparkCooldown.load(input, EmberSparkAbility.CINDERCUB.cooldownTicks());
 	}
 }

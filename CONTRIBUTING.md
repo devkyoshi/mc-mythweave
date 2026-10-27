@@ -131,8 +131,13 @@ it its own `entity/<form>/` package. Then:
 - `evolutionLine()` returns the species' existing line (e.g. `EvolutionLines.CINDERCUB`);
   don't add a new line;
 - the entity id must equal the name used in that line (`"emberlynx"`);
-- the evolution itself (Kindle threshold → transformation) comes from `evolution/`; see
-  [docs/design/evolution.md](docs/design/evolution.md) for which phase adds what.
+- **add it to `ModEntities.MYTHLING_FORMS`**: that's what makes it reachable by evolution.
+  Until a form is there, its predecessor just tells the owner it's "ready" and waits;
+- the evolution itself (Kindle threshold, transformation, the entity swap that keeps the
+  owner, sit state and Kindle) is handled by `evolution/Evolution`, so the form needs no
+  extra code for it. Copy any extra per-creature state you add in `Evolution.copyBond`.
+  See [docs/design/evolution.md](docs/design/evolution.md).
+- Use `EmberlynxEntity` and `EmberlynxModel` as the template for a later form.
 
 ## Checklist: blocks and abilities
 
@@ -141,7 +146,7 @@ it its own `entity/<form>/` package. Then:
   - add `blockstates/`, `models/block/`, `items/`, textures, loot table (`data/mythweave/loot_table/blocks/`),
     a recipe if craftable, a mining tag, and lang.
 - **Ability** (see `EmberSparkAbility`):
-  - `ability/<Name>Ability.java` implementing `Ability<YourEntity>`, as a singleton `INSTANCE`;
+  - `ability/<Name>Ability.java` implementing `Ability<…>`, as constants (one per form if it grows with evolution, like `EmberSparkAbility.CINDERCUB` / `.EMBERLYNX`);
   - give the entity an `AbilityCooldown` with a save key that never changes; tick it in
     `tick()` and save/load it in the entity's save methods;
   - trigger it from the entity's `onOwnerUseItem` via `isTriggeredBy(stack)` and `use(...)`.

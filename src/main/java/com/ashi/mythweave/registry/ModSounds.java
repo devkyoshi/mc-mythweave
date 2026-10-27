@@ -16,6 +16,9 @@ public final class ModSounds {
 	public static final SoundEvent CINDERCUB_AMBIENT = register("entity.cindercub.ambient");
 	public static final SoundEvent CINDERCUB_HURT = register("entity.cindercub.hurt");
 	public static final SoundEvent CINDERCUB_DEATH = register("entity.cindercub.death");
+	public static final SoundEvent EMBERLYNX_AMBIENT = register("entity.emberlynx.ambient");
+	public static final SoundEvent EMBERLYNX_HURT = register("entity.emberlynx.hurt");
+	public static final SoundEvent EMBERLYNX_DEATH = register("entity.emberlynx.death");
 
 	private ModSounds() {
 	}

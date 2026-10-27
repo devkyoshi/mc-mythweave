@@ -16,5 +16,23 @@
     "sounds": [
       { "name": "minecraft:entity.fox.death", "type": "event" }
     ]
+  },
+  "entity.emberlynx.ambient": {
+    "subtitle": "subtitles.mythweave.entity.emberlynx.ambient",
+    "sounds": [
+      { "name": "minecraft:entity.fox.ambient", "type": "event" }
+    ]
+  },
+  "entity.emberlynx.hurt": {
+    "subtitle": "subtitles.mythweave.entity.emberlynx.hurt",
+    "sounds": [
+      { "name": "minecraft:entity.fox.hurt", "type": "event" }
+    ]
+  },
+  "entity.emberlynx.death": {
+    "subtitle": "subtitles.mythweave.entity.emberlynx.death",
+    "sounds": [
+      { "name": "minecraft:entity.fox.death", "type": "event" }
+    ]
   }
 }
