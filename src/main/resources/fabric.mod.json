@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "mythweave",
+	"version": "${version}",
+	"name": "Mythweave",
+	"description": "Discover, bond with, and raise original magical creatures called Mythlings.",
+	"authors": [
+		"ashi"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/mythweave/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.ashi.mythweave.Mythweave"
+		],
+		"client": [
+			"com.ashi.mythweave.client.MythweaveClient"
+		]
+	},
+	"mixins": [
+		"mythweave.mixins.json",
+		{
+			"config": "mythweave.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
