@@ -1,9 +1,13 @@
 {
   "entity.mythweave.cindercub": "Cindercub",
   "item.mythweave.cindercub_spawn_egg": "Cindercub Spawn Egg",
+  "block.mythweave.ember_brazier": "Ember Brazier",
   "message.mythweave.cindercub.bonded": "Cindercub has bonded with you!",
   "message.mythweave.cindercub.wants_item": "This Cindercub sniffs at you curiously. Maybe it would like some %s?",
   "message.mythweave.cindercub.not_yours": "This Cindercub is already bonded to another player.",
   "message.mythweave.cindercub.sitting": "Cindercub sits and waits.",
-  "message.mythweave.cindercub.following": "Cindercub is following you."
+  "message.mythweave.cindercub.following": "Cindercub is following you.",
+  "message.mythweave.cindercub.ember_lit": "Cindercub flicks an ember spark and lights the brazier!",
+  "message.mythweave.cindercub.ember_recharging": "Cindercub's ember is still recharging (%s s).",
+  "message.mythweave.cindercub.ember_no_brazier": "Cindercub looks around, but it can't see an unlit Ember Brazier within %s blocks."
 }

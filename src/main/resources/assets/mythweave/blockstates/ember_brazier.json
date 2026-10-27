@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "mythweave:block/ember_brazier"
+    },
+    "lit=true": {
+      "model": "mythweave:block/ember_brazier_lit"
+    }
+  }
+}

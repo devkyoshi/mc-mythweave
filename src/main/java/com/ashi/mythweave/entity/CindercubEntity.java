@@ -1,5 +1,7 @@
 package com.ashi.mythweave.entity;
 
+import com.ashi.mythweave.ability.EmberSpark;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -21,6 +23,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +37,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Wild: wanders, looks around, flees when hurt. Bond by using {@link #BONDING_ITEM}
  * on it (always succeeds). Bonded: follows its owner; the owner toggles sit/stand by
- * using it with an empty hand (or any item that has no other use on it).
+ * using it with an empty hand (or any item that has no other use on it), and uses
+ * {@link #BONDING_ITEM} on it again to trigger {@link EmberSpark}.
  *
  * <p>Owner offline or in another dimension: vanilla's {@link SitWhenOrderedToGoal}
  * makes it sit and wait, and it stands up again when the owner is back. Owner death:
@@ -45,6 +50,12 @@ public class CindercubEntity extends TamableAnimal {
 
 	// Entity event ids handled by TamableAnimal#handleEntityEvent on the client.
 	private static final byte EVENT_HEART_PARTICLES = 7;
+
+	/**
+	 * Ticks until Ember Spark can be used again. Server-only (never synced, so a client
+	 * can't change it) and saved with the entity, so relogging doesn't reset it.
+	 */
+	private int emberCooldown;
 
 	public CindercubEntity(EntityType<? extends CindercubEntity> type, Level level) {
 		super(type, level);
@@ -87,8 +98,9 @@ public class CindercubEntity extends TamableAnimal {
 	 * client call only predicts the arm swing, so every state change and message below is
 	 * guarded by {@code !isClientSide()} and decided by the server.
 	 *
-	 * <p>Priority: bonding a wild Cindercub, then vanilla interactions (leads, etc.), then
-	 * the owner's sit toggle. A non-owner can never change an owned Cindercub.
+	 * <p>Priority: bonding a wild Cindercub; for the owner, {@link #BONDING_ITEM} triggers
+	 * Ember Spark, then vanilla interactions (leads, etc.), then the sit toggle. A non-owner
+	 * can never change an owned Cindercub.
 	 */
 	@Override
 	public InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -127,6 +139,14 @@ public class CindercubEntity extends TamableAnimal {
 			return super.mobInteract(player, hand);
 		}
 
+		// Owner + Blaze Powder: Ember Spark (works sitting or standing; no powder is used).
+		if (stack.is(BONDING_ITEM)) {
+			if (this.level() instanceof ServerLevel serverLevel) {
+				EmberSpark.use(this, serverLevel, player);
+			}
+			return InteractionResult.SUCCESS.withoutItem();
+		}
+
 		// Owner: vanilla interactions first; if nothing used the click, toggle sit/stand.
 		InteractionResult result = super.mobInteract(player, hand);
 		if (result.consumesAction()) {
@@ -152,6 +172,35 @@ public class CindercubEntity extends TamableAnimal {
 		this.setOrderedToSit(false);
 		this.level().broadcastEntityEvent(this, EVENT_HEART_PARTICLES);
 		player.sendOverlayMessage(Component.translatable("message.mythweave.cindercub.bonded"));
+	}
+
+	public int getEmberCooldown() {
+		return this.emberCooldown;
+	}
+
+	public void setEmberCooldown(int ticks) {
+		this.emberCooldown = ticks;
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		if (!this.level().isClientSide() && this.emberCooldown > 0) {
+			this.emberCooldown--;
+		}
+	}
+
+	@Override
+	protected void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		output.putInt("EmberCooldown", this.emberCooldown);
+	}
+
+	@Override
+	protected void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		// Clamp so a hand-edited or corrupt value can't lock the ability for ages.
+		this.emberCooldown = Math.clamp(input.getIntOr("EmberCooldown", 0), 0, EmberSpark.COOLDOWN_TICKS);
 	}
 
 	// Breeding is out of scope (spec §5), so nothing counts as food and no offspring is made.

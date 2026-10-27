@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "B": "minecraft:blaze_powder",
+    "C": "#minecraft:coals",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "NBN",
+    "NCN",
+    " I "
+  ],
+  "result": {
+    "id": "mythweave:ember_brazier"
+  }
+}

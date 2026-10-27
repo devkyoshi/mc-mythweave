@@ -1,0 +1,46 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "mythweave:block/ember_brazier_metal",
+    "metal": "mythweave:block/ember_brazier_metal",
+    "bowl": "mythweave:block/ember_brazier_bowl",
+    "coals": "mythweave:block/ember_brazier_coals"
+  },
+  "elements": [
+    {
+      "from": [ 4, 0, 4 ],
+      "to": [ 12, 2, 12 ],
+      "faces": {
+        "north": { "uv": [ 4, 14, 12, 16 ], "texture": "#metal" },
+        "east":  { "uv": [ 4, 14, 12, 16 ], "texture": "#metal" },
+        "south": { "uv": [ 4, 14, 12, 16 ], "texture": "#metal" },
+        "west":  { "uv": [ 4, 14, 12, 16 ], "texture": "#metal" },
+        "up":    { "uv": [ 4, 4, 12, 12 ], "texture": "#metal" },
+        "down":  { "uv": [ 4, 4, 12, 12 ], "texture": "#metal", "cullface": "down" }
+      }
+    },
+    {
+      "from": [ 6, 2, 6 ],
+      "to": [ 10, 6, 10 ],
+      "faces": {
+        "north": { "uv": [ 6, 10, 10, 14 ], "texture": "#metal" },
+        "east":  { "uv": [ 6, 10, 10, 14 ], "texture": "#metal" },
+        "south": { "uv": [ 6, 10, 10, 14 ], "texture": "#metal" },
+        "west":  { "uv": [ 6, 10, 10, 14 ], "texture": "#metal" }
+      }
+    },
+    {
+      "from": [ 2, 6, 2 ],
+      "to": [ 14, 10, 14 ],
+      "faces": {
+        "north": { "uv": [ 2, 0, 14, 4 ], "texture": "#bowl" },
+        "east":  { "uv": [ 2, 0, 14, 4 ], "texture": "#bowl" },
+        "south": { "uv": [ 2, 0, 14, 4 ], "texture": "#bowl" },
+        "west":  { "uv": [ 2, 0, 14, 4 ], "texture": "#bowl" },
+        "up":    { "uv": [ 2, 2, 14, 14 ], "texture": "#coals" },
+        "down":  { "uv": [ 2, 2, 14, 14 ], "texture": "#metal" }
+      }
+    }
+  ]
+}

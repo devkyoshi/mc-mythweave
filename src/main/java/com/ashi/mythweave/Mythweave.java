@@ -1,5 +1,6 @@
 package com.ashi.mythweave;
 
+import com.ashi.mythweave.registry.ModBlocks;
 import com.ashi.mythweave.registry.ModEntityTypes;
 import com.ashi.mythweave.registry.ModItems;
 
@@ -24,8 +25,9 @@ public class Mythweave implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		// Entity types first: the spawn egg item refers to CINDERCUB.
+		// Entity types and blocks first: items refer to CINDERCUB and EMBER_BRAZIER.
 		ModEntityTypes.initialize();
+		ModBlocks.initialize();
 		ModItems.initialize();
 
 		LOGGER.info("Mythweave initialized");

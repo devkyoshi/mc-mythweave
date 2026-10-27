@@ -70,6 +70,26 @@ its fluffy tail. It's curious, playful, and a little mischievous.
    catch up, it teleports to your side.
 4. **Tell it to wait:** right-click it with an empty hand. It sits and stays put.
    Right-click again and it gets up and follows you.
+5. **Ember Spark:** place an **Ember Brazier** nearby, then right-click your Cindercub
+   holding **Blaze Powder**. It flicks a spark at the closest unlit brazier it can see
+   (within 8 blocks) and lights it. Then it needs **15 seconds** to recharge.
+
+### The Ember Brazier
+
+An iron bowl of coals that only a Cindercub can light. Lit, it glows at full brightness
+(light level 15) and crackles. It's safe to put anywhere: the flame is part of the block,
+so it never spreads fire, burns nearby blocks, or hurts anyone who touches it.
+
+- **Craft it:** iron nuggets around Blaze Powder and coal (or charcoal), on an iron ingot.
+
+  | | | |
+  |:-:|:-:|:-:|
+  | Iron Nugget | Blaze Powder | Iron Nugget |
+  | Iron Nugget | Coal | Iron Nugget |
+  | | Iron Ingot | |
+
+- **Put it out:** right-click a lit brazier with an empty hand.
+- **Find it in Creative:** Functional Blocks tab. Mine it with a pickaxe (it drops itself).
 
 ### Interactions
 
@@ -77,6 +97,7 @@ its fluffy tail. It's curious, playful, and a little mischievous.
 |---|---|---|
 | Anyone (wild Cindercub) | Blaze Powder | Bonds. Uses 1 powder. |
 | Anyone (wild Cindercub) | Empty hand | A hint about what it likes. |
+| Owner | Blaze Powder | **Ember Spark:** lights the nearest visible unlit Ember Brazier within 8 blocks. 15 s cooldown. No powder used. |
 | Owner | Empty hand (or an item with no other use on it) | Toggles sit / follow. |
 | Owner | Lead, name tag, … | Works like on any vanilla animal. |
 | Another player | Blaze Powder or empty hand | *"This Cindercub is already bonded to another player."* Nothing changes. |
@@ -99,8 +120,8 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
 - [x] **Phase 4: Bonding and companion.** Bond with Blaze Powder, follow owner, sit/stand.
 - [x] **Phase 5: Save/load and multiplayer checks.** Dedicated server, two-player tests,
   one-command dev launcher.
-- [ ] **Phase 6: Signature ability.** *Ember Spark*: a safe, cooldown-limited ember effect
-  (possibly lighting a special Ember Brazier block). It won't set the world on fire.
+- [x] **Phase 6: Signature ability.** *Ember Spark* lights an Ember Brazier block on
+  command, with a cooldown. It can't set the world on fire.
 - [ ] **Phase 7: Polish.** True glowing ember tip, sounds, custom spawn egg, finer texture.
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
@@ -207,6 +228,12 @@ A quick in-game test of everything that works so far. Use a Creative world with 
    Cindercub. Player1 logs out and back in: it's still sitting and still answers to them.
    `stop` the server and start it again: owner and sitting state are unchanged.
 
+9. Place an Ember Brazier within 8 blocks. Right-click your Cindercub with Blaze Powder:
+   spark trail, the brazier lights, "lights the brazier!". Right away again: "recharging (N s)".
+   After 15 s with no unlit brazier around: "can't see an unlit Ember Brazier".
+10. Put the brazier behind a wall: the Cindercub won't light it. Put it out with an empty
+    hand and relight it after the cooldown. Nothing around it ever catches fire.
+
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
 ## Project structure
@@ -214,10 +241,13 @@ Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 ```text
 src/main/java/com/ashi/mythweave/           Common code (runs on client and server)
 ├── Mythweave.java                          Mod entry point: runs all registrations
+├── ability/EmberSpark.java                 Ember Spark: target search, cooldown, effects
+├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
 ├── entity/CindercubEntity.java             Cindercub: stats, AI goals, bonding and sit logic
 └── registry/
+    ├── ModBlocks.java                      Blocks
     ├── ModEntityTypes.java                 Entity types and their attributes
-    └── ModItems.java                       Items (spawn egg) and creative tab placement
+    └── ModItems.java                       Items (spawn egg, block items), creative tabs
 
 src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a server)
 ├── MythweaveClient.java                    Client entry point: registers model + renderer
@@ -228,15 +258,21 @@ src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a 
 
 src/main/resources/
 ├── fabric.mod.json                         Mod metadata, entry points, dependencies
-└── assets/mythweave/
-    ├── textures/entity/cindercub.png       Cindercub texture (64×32)
-    ├── items/cindercub_spawn_egg.json      Spawn egg appearance
-    └── lang/en_us.json                     English names and messages
+├── assets/mythweave/
+│   ├── textures/entity/cindercub.png       Cindercub texture (64×32)
+│   ├── textures/block/ember_brazier_*.png  Brazier textures (flame is animated)
+│   ├── blockstates/, models/block/         Brazier unlit/lit models
+│   ├── items/                              Item appearances (spawn egg, brazier)
+│   └── lang/en_us.json                     English names and messages
+└── data/
+    ├── mythweave/recipe/, loot_table/      Brazier recipe and drop
+    └── minecraft/tags/block/mineable/      Brazier mines faster with a pickaxe
 
 dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
 
 tools/
 ├── generate_cindercub_texture.ps1          Paints cindercub.png; documents the UV layout
+├── generate_brazier_textures.ps1           Paints the Ember Brazier textures
 └── render_cindercub_preview.ps1            Renders the README images in docs/images/
 
 docs/
