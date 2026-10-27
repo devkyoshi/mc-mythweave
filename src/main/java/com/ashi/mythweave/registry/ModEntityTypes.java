@@ -18,10 +18,12 @@ public final class ModEntityTypes {
 	public static final EntityType<CindercubEntity> CINDERCUB = register(
 			"cindercub",
 			// CREATURE = passive animal category (counts toward the animal spawn cap later).
-			// 0.5 wide x 0.6 tall: a bit smaller than a vanilla fox (0.6 x 0.7).
+			// 0.5 wide x 0.65 tall, a bit smaller than a vanilla fox (0.6 x 0.7). The height
+			// covers the model up to the top of the head; the ears stick out above it, like
+			// a fox's. Eye height matches the model's eyes (8.5 of 16 pixels up).
 			EntityType.Builder.of(CindercubEntity::new, MobCategory.CREATURE)
-					.sized(0.5f, 0.6f)
-					.eyeHeight(0.45f)
+					.sized(0.5f, 0.65f)
+					.eyeHeight(0.53f)
 	);
 
 	private ModEntityTypes() {
