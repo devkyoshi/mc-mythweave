@@ -97,7 +97,8 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
 - [x] **Phase 2: Render Cindercub.** Original model, texture, walk/look/tail animation.
 - [x] **Phase 3: Behavior.** Wander, look around, swim, flee when hurt.
 - [x] **Phase 4: Bonding and companion.** Bond with Blaze Powder, follow owner, sit/stand.
-- [ ] **Phase 5: Save/load and multiplayer checks.** Dedicated server, two-player tests.
+- [x] **Phase 5: Save/load and multiplayer checks.** Dedicated server, two-player tests,
+  one-command dev launcher.
 - [ ] **Phase 6: Signature ability.** *Ember Spark*: a safe, cooldown-limited ember effect
   (possibly lighting a special Ember Brazier block). It won't set the world on fire.
 - [ ] **Phase 7: Polish.** True glowing ember tip, sounds, custom spawn egg, finer texture.
@@ -127,6 +128,33 @@ git clone <this repository>
 cd mythweave
 ```
 
+### One-command launcher (Windows)
+
+Double-click **`dev.cmd`** for a menu, or run it with a command:
+
+```bash
+.\dev.cmd client
+```
+
+| Command | What it opens |
+|---|---|
+| `.\dev.cmd client` | Minecraft with the mod, as **Player1** (singleplayer) |
+| `.\dev.cmd multiplayer` | A dedicated server plus **Player1** and **Player2**, each in its own window. Both join the server automatically. |
+| `.\dev.cmd server` | Only the dedicated server (folder `run-server/`) |
+| `.\dev.cmd client2` | A second Minecraft, as **Player2** (folder `run-client2/`) |
+| `.\dev.cmd build` | Builds the JAR |
+
+It finds JDK 25 by itself. The first time you start the server, it asks you to accept the
+[Minecraft EULA](https://aka.ms/MinecraftEULA), switches the server to offline mode (dev
+clients have no Microsoft login), and makes Player1 and Player2 operators so `/summon` and
+other commands work. Type `stop` in the server window to shut it down.
+
+The usernames are fixed on purpose: offline players' UUIDs come from their name, and
+Minecraft's default dev name is random, so with a random name each relaunch you'd be a
+"different player" and your bonded Cindercubs would say they belong to someone else.
+
+### Gradle directly
+
 Build the mod JAR (output: `build/libs/mythweave-1.0.0.jar`):
 
 ```bash
@@ -147,6 +175,8 @@ Other useful tasks:
 | Task | What it does |
 |---|---|
 | `./gradlew runServer` | Starts a dedicated server with the mod (checks no client-only code leaks into the server). |
+| `./gradlew runClient2` | A second client as Player2, for multiplayer tests. |
+| `./gradlew runClient -PjoinServer=localhost` | The client joins that server as soon as it starts. |
 | `./gradlew genSources` | Decompiles Minecraft so you can read vanilla code in your IDE. |
 
 <details>
@@ -173,7 +203,9 @@ A quick in-game test of everything that works so far. Use a Creative world with 
 5. Walk 10+ blocks away: it follows. Sprint far: it teleports to you.
 6. Right-click with an empty hand: it sits and stays. Again: it follows.
 7. Sit it, save and quit, reload: still sitting, still yours. Repeat while it's standing.
-8. *(Multiplayer)* A second player can't bond with or command your Cindercub.
+8. *(Multiplayer, `.\dev.cmd multiplayer`)* Player2 can't bond with or command Player1's
+   Cindercub. Player1 logs out and back in: it's still sitting and still answers to them.
+   `stop` the server and start it again: owner and sitting state are unchanged.
 
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
@@ -200,6 +232,8 @@ src/main/resources/
     ├── textures/entity/cindercub.png       Cindercub texture (64×32)
     ├── items/cindercub_spawn_egg.json      Spawn egg appearance
     └── lang/en_us.json                     English names and messages
+
+dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
 
 tools/
 ├── generate_cindercub_texture.ps1          Paints cindercub.png; documents the UV layout

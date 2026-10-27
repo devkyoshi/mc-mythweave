@@ -20,6 +20,34 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
+
+	// Multiplayer testing (Phase 5). The server gets its own folder so its world and
+	// server.properties don't mix with the dev client's. runClient2 is a second player
+	// ("Player2") with its own folder, so two clients can run at once.
+	// Fixed usernames matter: offline-mode UUIDs come from the name, and Minecraft's
+	// default dev name is random, which would make bonded Cindercubs "not yours"
+	// after a relaunch. -PjoinServer=<address> makes the clients join a server on start.
+	def joinServer = providers.gradleProperty("joinServer").getOrNull()
+	runs {
+		client {
+			programArgs "--username", "Player1"
+			if (joinServer) {
+				programArgs "--quickPlayMultiplayer", joinServer
+			}
+		}
+		server {
+			runDir "run-server"
+		}
+		client2 {
+			client()
+			name "Minecraft Client 2"
+			programArgs "--username", "Player2"
+			if (joinServer) {
+				programArgs "--quickPlayMultiplayer", joinServer
+			}
+			runDir "run-client2"
+		}
+	}
 }
 
 dependencies {
