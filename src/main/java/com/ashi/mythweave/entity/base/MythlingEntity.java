@@ -15,6 +15,9 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -52,6 +55,8 @@ import org.jspecify.annotations.Nullable;
  *       handles in {@link #onOwnerUseItem}, otherwise vanilla interactions, then sit/stand;</li>
  *   <li>the companion AI goals (follow, sit, wander, flee when hurt);</li>
  *   <li>{@link Kindle}: evolution progress, ticked, saved under "Kindle";</li>
+ *   <li>each form's size, its {@code SCALE} attribute ({@link #formScale}), so later stages
+ *       are bigger;</li>
  *   <li>no breeding (out of scope, spec §5).</li>
  * </ul>
  *
@@ -68,6 +73,8 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	private int evolvingTicks;
 	/** Not saved: the "ready, next form not in the game yet" message shows once per load. */
 	private boolean readyAnnounced;
+	/** Not saved: the "needs more room to evolve" message shows once per load. */
+	private boolean roomAnnounced;
 
 	protected MythlingEntity(EntityType<? extends MythlingEntity> type, Level level) {
 		super(type, level);
@@ -148,6 +155,25 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 		this.readyAnnounced = announced;
 	}
 
+	/** Whether the owner has been told it needs more room to evolve (once per load). */
+	public boolean roomAnnounced() {
+		return this.roomAnnounced;
+	}
+
+	public void setRoomAnnounced(boolean announced) {
+		this.roomAnnounced = announced;
+	}
+
+	/**
+	 * How big a form is drawn and collides, relative to its model: the {@code SCALE} base value
+	 * from its {@code createAttributes()}. Vanilla multiplies the hitbox, eye height, model,
+	 * shadow and leash point by it, so later stages are visibly bigger with one number per form.
+	 */
+	@SuppressWarnings("unchecked")
+	public static float formScale(EntityType<?> type) {
+		return (float) DefaultAttributes.getSupplier((EntityType<? extends LivingEntity>) type).getBaseValue(Attributes.SCALE);
+	}
+
 	/**
 	 * Client-side visuals only: little flames drift up from a point behind and above the
 	 * body (e.g. a fire tail), more often while it runs. In rain or water they turn into puffs
@@ -165,12 +191,14 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 		if (this.random.nextInt(moving ? oneInMoving : oneInIdle) != 0) {
 			return;
 		}
-		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite.
+		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite. Offsets are for
+		// the model at scale 1 and grow with the form's size.
+		float scale = this.getScale();
 		double along = this.random.nextDouble();
-		double b = back + along * backSpan;
+		double b = (back + along * backSpan) * scale;
 		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
 		double x = this.getX() + Mth.sin(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
-		double y = this.getY() + up + along * upSpan;
+		double y = this.getY() + (up + along * upSpan) * scale;
 		double z = this.getZ() - Mth.cos(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
 		if (this.isInWaterOrRain()) {
 			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
@@ -340,6 +368,12 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 		super.readAdditionalSaveData(input);
 		this.kindle.load(input);
 		this.evolvingTicks = Math.clamp(input.getIntOr("EvolvingTicks", 0), 0, EvolutionRules.EVOLUTION_TICKS);
+		// Size belongs to the form, not the save: one saved before a size change (or edited
+		// with /attribute) loads at its form's current size.
+		AttributeInstance scale = this.getAttribute(Attributes.SCALE);
+		if (scale != null) {
+			scale.setBaseValue(formScale(this.getType()));
+		}
 	}
 
 	// Breeding is out of scope (spec §5), so nothing counts as food and no offspring is made.

@@ -20,12 +20,12 @@ import net.minecraft.resources.Identifier;
  */
 public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRenderState, CindercubModel> {
 	private static final Identifier TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub.png");
-	/** Transparent except the parts that glow (runes, eye shine, crystals, ember tips, fire tail). */
+	/** Transparent except the parts that glow (the ember tail and the eye shine). */
 	private static final Identifier GLOW_TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub_glow.png");
 
 	public CindercubRenderer(EntityRendererProvider.Context context) {
-		// 0.3 = shadow radius in blocks, sized for the 0.5-wide hitbox.
-		super(context, new CindercubModel(context.bakeLayer(ModModelLayers.CINDERCUB)), 0.3F);
+		// 0.35 = shadow radius in blocks, sized for the 0.6-wide hitbox.
+		super(context, new CindercubModel(context.bakeLayer(ModModelLayers.CINDERCUB)), 0.35F);
 		this.addLayer(new PulsingGlowLayer<>(this, GLOW_TEXTURE));
 	}
 
@@ -38,7 +38,6 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 	public void extractRenderState(CindercubEntity entity, CindercubRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isSitting = entity.isInSittingPose();
-		state.isTame = entity.isTame();
 	}
 
 	@Override

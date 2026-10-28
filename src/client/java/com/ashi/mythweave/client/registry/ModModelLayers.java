@@ -5,6 +5,7 @@ import com.ashi.mythweave.client.MythweaveClient;
 import com.ashi.mythweave.client.model.entity.AshenoxModel;
 import com.ashi.mythweave.client.model.entity.CindercubModel;
 import com.ashi.mythweave.client.model.entity.EmberlynxModel;
+import com.ashi.mythweave.client.model.entity.SolflareModel;
 
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 
@@ -18,6 +19,7 @@ public final class ModModelLayers {
 	public static final ModelLayerLocation CINDERCUB = new ModelLayerLocation(Mythweave.id("cindercub"), "main");
 	public static final ModelLayerLocation EMBERLYNX = new ModelLayerLocation(Mythweave.id("emberlynx"), "main");
 	public static final ModelLayerLocation ASHENOX = new ModelLayerLocation(Mythweave.id("ashenox"), "main");
+	public static final ModelLayerLocation SOLFLARE = new ModelLayerLocation(Mythweave.id("solflare"), "main");
 
 	private ModModelLayers() {
 	}
@@ -27,5 +29,6 @@ public final class ModModelLayers {
 		ModelLayerRegistry.registerModelLayer(CINDERCUB, CindercubModel::createBodyLayer);
 		ModelLayerRegistry.registerModelLayer(EMBERLYNX, EmberlynxModel::createBodyLayer);
 		ModelLayerRegistry.registerModelLayer(ASHENOX, AshenoxModel::createBodyLayer);
+		ModelLayerRegistry.registerModelLayer(SOLFLARE, SolflareModel::createBodyLayer);
 	}
 }

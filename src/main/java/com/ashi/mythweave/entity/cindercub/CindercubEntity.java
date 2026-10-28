@@ -32,9 +32,9 @@ import org.jspecify.annotations.Nullable;
  * and Kindle come from {@link MythlingEntity}; this class adds what makes it a Cindercub.
  *
  * <ul>
- *   <li>Bonds with {@link #BONDING_ITEM} (Blaze Powder); its tail ignites when it does.</li>
+ *   <li>Bonds with {@link #BONDING_ITEM} (Blaze Powder), with a burst of flame.</li>
  *   <li>The owner uses Blaze Powder on it again to trigger {@link EmberSparkAbility}.</li>
- *   <li>Once bonded its tail is fire, and embers stream from it (client-side particles).</li>
+ *   <li>Its tail is made of glowing embers, and embers stream from it (client-side particles).</li>
  * </ul>
  */
 public class CindercubEntity extends MythlingEntity {
@@ -77,12 +77,12 @@ public class CindercubEntity extends MythlingEntity {
 		return true;
 	}
 
-	/** The tail ignites (clients switch to the fire tail as the tame flag syncs): flame burst and whoosh. */
+	/** Bonding flares the ember tail: a flame burst and whoosh. */
 	@Override
 	protected void onBonded(ServerLevel level, Player owner) {
 		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
-		level.sendParticles(ParticleTypes.FLAME, this.getX() + Mth.sin(yaw) * 0.45, this.getY() + 0.6,
-				this.getZ() - Mth.cos(yaw) * 0.45, 24, 0.15, 0.15, 0.15, 0.04);
+		level.sendParticles(ParticleTypes.FLAME, this.getX() + Mth.sin(yaw) * 0.3, this.getY() + 0.85,
+				this.getZ() - Mth.cos(yaw) * 0.3, 24, 0.15, 0.15, 0.15, 0.04);
 		this.playSound(SoundEvents.FIRECHARGE_USE, 0.6F, 1.4F);
 	}
 
@@ -118,14 +118,13 @@ public class CindercubEntity extends MythlingEntity {
 	@Override
 	public void aiStep() {
 		super.aiStep();
-		// Only a bonded Cindercub's tail is fire; a wild one has a plain fur tail.
-		// Embers stream from the fire tail (lower when sitting). Only a bonded Cindercub's tail
-		// is fire; a wild one has a plain fur tail.
-		if (this.level().isClientSide() && this.isTame()) {
+		// Embers stream from the ember tail, which rises tall behind the body (it stands
+		// up even taller when sitting).
+		if (this.level().isClientSide()) {
 			if (this.isInSittingPose()) {
-				this.emitEmbers(0.35, 0.3, 0.3, 0.2, 4, 2);
+				this.emitEmbers(0.3, 0.2, 0.5, 0.5, 4, 2);
 			} else {
-				this.emitEmbers(0.3, 0.3, 0.55, 0.25, 4, 2);
+				this.emitEmbers(0.3, 0.25, 0.55, 0.45, 4, 2);
 			}
 		}
 	}

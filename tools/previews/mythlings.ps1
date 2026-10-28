@@ -1,10 +1,10 @@
-# Renders README preview images of the Mythlings (Cindercub, Emberlynx) from their real
+# Renders README preview images of the Mythlings (Cindercub, Emberlynx, Ashenox, Solflare) from their real
 # textures and the same cube layouts as their models (no game needed). Outputs to docs/images/.
 #
 # Usage (from the project root):
 #   powershell -ExecutionPolicy Bypass -File tools\previews\mythlings.ps1
 #
-# New-Cindercub / New-Emberlynx duplicate each model's createBodyLayer and setSittingPose.
+# New-Cindercub / New-Emberlynx / New-Ashenox / New-Solflare duplicate each model's createBodyLayer and setSittingPose.
 # If you change a model, update it here too. In-game screenshots (F2) are always the real truth.
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +15,8 @@ $lynxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures
 $lynxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx_glow.png'
 $oxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox.png'
 $oxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox_glow.png'
+$solTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\solflare\solflare.png'
+$solGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\solflare\solflare_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -70,6 +72,8 @@ public class Preview {
 	List<Quad> quads = new List<Quad>();
 	// Pushes the next boxes slightly back so they lose depth ties against flush surfaces.
 	public double DepthBias = 0;
+	// If set, output pixels per model pixel (instead of fitting the image); see Render.
+	public double FixedScale = 0;
 	Bitmap tex, glow;
 	double yaw, pitch;
 
@@ -140,6 +144,14 @@ public class Preview {
 		}
 		double scale = 0.78 * S / Math.Max(maxX - minX, maxY - minY);
 		double ox = S / 2.0 - (minX + maxX) / 2 * scale, oy = S / 2.0 - (minY + maxY) / 2 * scale;
+		if (FixedScale > 0) {
+			// Same pixels per model pixel for every creature (times its in-game SCALE), feet on a
+			// shared ground line, so a lineup shows their real sizes.
+			scale = FixedScale * ss;
+			double[] ground = View(new double[] { 0, 24, 0 });
+			ox = S / 2.0 - (minX + maxX) / 2 * scale;
+			oy = S * 0.88 - ground[1] * scale;
+		}
 
 		Bitmap big = new Bitmap(S, S, PixelFormat.Format32bppArgb);
 		using (Graphics g = Graphics.FromImage(big)) {
@@ -208,51 +220,48 @@ public class Preview {
 }
 '@
 
-function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting, [bool]$tame) {
+function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting) {
 	$p = New-Object Preview $texturePath, $glowPath, $yaw, $pitch
 	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
 
-	# Rest pose, from CindercubModel#createBodyLayer (flames at their resting size).
-	$bodyY = 19.0; $bodyXRot = 0.0; $headY = 18.0; $headZ = -3.0; $tailXRot = 0.6
-	$hindY = 21.0; $hindXRot = 0.0; $hindSpread = 0.0
+	# Rest pose, from CindercubModel#createBodyLayer.
+	$bodyY = 16.5; $bodyXRot = 0.0; $headY = 13.0; $headZ = -3.0; $tailXRot = 0.8
+	$hindY = 19.0; $hindXRot = 0.0; $hindSpread = 0.0
 	if ($sitting) {
 		# From CindercubModel#setSittingPose.
-		$bodyY += 2.0; $bodyXRot = -0.5; $headY += 0.8; $headZ += 1.3; $tailXRot = 0.3
-		$hindY += 2.0; $hindXRot = -1.4; $hindSpread = 0.5
+		$bodyY += 3.4; $bodyXRot = -0.5; $headY += 1.8; $headZ += 1.7; $tailXRot += 0.7
+		$hindY += 3.0; $hindXRot = -1.4; $hindSpread = 0.5
 	}
 
 	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
-	$p.Box($body, 0, 11, -2, -2, -3, 4, 4, 6)
-	foreach ($z in -0.5, 1.5) { $p.Box($body.Then([Mat]::Pose(0, -2, $z, -0.4, 0, 0)), 54, 0, -0.5, -2, -0.5, 1, 2, 1) }
-	$tail = $body.Then([Mat]::Pose(0, -1, 3, $tailXRot, 0.15, 0))
-	if (-not $tame) {
-		$p.Box($tail, 22, 11, -1.5, -1.5, 0, 3, 3, 5)                          # wild: fur tail
-	} else {
-		# Bonded: fire tail at rest (segment curl from CindercubModel#animateFireTail).
-		$p.Box($tail, 22, 20, -1.5, -1.5, 0, 3, 3, 3)
-		$p.Box($tail.Then([Mat]::Pose(0, -1.5, 1.5, -($bodyXRot + $tailXRot), 0, 0)), 48, 11, -0.5, -2, -0.5, 1, 2, 1)
-		$mid = $tail.Then([Mat]::Pose(0, 0, 3, 0.2, 0, 0))
-		$p.Box($mid, 36, 20, -1, -1, 0, 2, 2, 3)
-		$p.Box($mid.Then([Mat]::Pose(0, -1, 1.5, -($bodyXRot + $tailXRot + 0.2), 0, 0)), 48, 11, -0.5, -2, -0.5, 1, 2, 1)
-		$tip = $mid.Then([Mat]::Pose(0, 0, 3, 0.3, 0, 0))
-		$p.Box($tip, 40, 11, -1, -1, 0, 2, 2, 2)
-		$p.Box($tip.Then([Mat]::Pose(0, -1, 1, -($bodyXRot + $tailXRot + 0.5), 0, 0)), 58, 0, -0.5, -2, -0.5, 1, 2, 1)
+	$p.Box($body, 0, 12, -3, -2.5, -4, 6, 5, 8)
+	# Ember tail: root, fluffy middle (with side tufts that burn upward), tip, flame.
+	$tail = $body.Then([Mat]::Pose(0, -1, 3, $tailXRot, 0.35, 0))   # swept to one side (TAIL_SWEEP)
+	$p.Box($tail, 36, 12, -2, -2, 0, 4, 4, 3)
+	$mid = $tail.Then([Mat]::Pose(0, 0, 2.5, 0.3, 0, 0))
+	$p.Box($mid, 0, 25, -4, -4, 0, 8, 8, 7)
+	foreach ($x in -4, 4) {
+		$p.Box($mid.Then([Mat]::Pose($x, -2, 3.5, -($bodyXRot + $tailXRot + 0.3), 0, 0)), 52, 12, -0.5, -2, -0.5, 1, 2, 1)
 	}
+	$tip = $mid.Then([Mat]::Pose(0, 0, 6.5, 0.4, 0, 0))
+	$p.Box($tip, 30, 25, -3, -3, 0, 6, 6, 5)
+	$p.Box($tip.Then([Mat]::Pose(0, 0, 4.5, 0.45, 0, 0)), 0, 40, -2, -2, 0, 4, 4, 3)
 
 	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
-	$p.Box($head, 0, 0, -3.5, -5, -4, 7, 5, 5)
-	$p.Box($head, 24, 0, -1.5, -2, -5, 3, 2, 1)
-	foreach ($ear in @(@(-2.5, -0.2, 34), @(2.5, 0.2, 40))) {
-		$p.Box($head.Then([Mat]::Pose($ear[0], -5, -2, 0, 0, $ear[1])), $ear[2], 0, -1, -4, 0, 2, 4, 1)
-	}
-	foreach ($horn in @(@(-1.0, -0.35), @(1.0, 0.35))) {
-		$p.Box($head.Then([Mat]::Pose($horn[0], -5, -3, -0.6, 0, $horn[1])), 50, 0, -0.5, -2, -0.5, 1, 2, 1)
+	$p.Box($head, 0, 0, -4, -3, -5, 8, 6, 6)
+	$p.Box($head, 28, 0, -2, 1, -6, 4, 2, 1)
+	foreach ($ear in @(@(-2.5, -0.1, -0.5), @(2.5, 0.1, 0.5))) {
+		$earPose = $head.Then([Mat]::Pose($ear[0], -3, -2, 0, 0, $ear[1]))
+		$p.Box($earPose, 48, 0, -1.5, -3, -1.5, 3, 3, 3)
+		$p.Box($earPose.Then([Mat]::Pose($ear[2], -3, 0, 0, 0, 0)), 56, 12, -1, -2, -1, 2, 2, 2)
 	}
 
 	# Legs touch the body where they join; a small bias lets the body win those edges.
 	$p.DepthBias = 0.05
-	foreach ($leg in @(@((-1 - $hindSpread), $hindY, 2, $hindXRot), @((1 + $hindSpread), $hindY, 2, $hindXRot), @(-1, 21, -2, 0), @(1, 21, -2, 0))) {
-		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 23, -1, 0, -1, 2, 3, 2)
+	foreach ($leg in @(@((-1.75 - $hindSpread), $hindY, 2.5, $hindXRot), @((1.75 + $hindSpread), $hindY, 2.5, $hindXRot), @(-1.75, 19, -2.5, 0), @(1.75, 19, -2.5, 0))) {
+		$legPose = $id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0))
+		$p.Box($legPose, 28, 12, -1, 0, -1, 2, 3, 2)
+		$p.Box($legPose, 50, 17, -1.5, 3, -1.5, 3, 2, 3)
 	}
 	return $p
 }
@@ -366,6 +375,61 @@ function New-Ashenox([double]$yaw, [double]$pitch, [bool]$sitting) {
 	return $p
 }
 
+# Solflare, from SolflareModel#createBodyLayer and #setSittingPose (flames at rest).
+function New-Solflare([double]$yaw, [double]$pitch, [bool]$sitting) {
+	$p = New-Object Preview $solTexturePath, $solGlowPath, $yaw, $pitch
+	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
+
+	$bodyY = 13.5; $bodyXRot = 0.0; $headY = 11.5; $headZ = -4.5; $tailXRot = 0.55
+	$hindY = 16.0; $hindZ = 4.0; $hindXRot = 0.0; $hindSpread = 0.0
+	if ($sitting) {
+		$bodyY += 6.0; $bodyXRot = -0.45; $headY += 3.6; $headZ += 2.2; $tailXRot = 0.15
+		$hindY += 6.0; $hindZ -= 0.5; $hindXRot = -1.45; $hindSpread = 0.5
+	}
+
+	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
+	$p.Box($body, 0, 11, -2.5, -2.5, -5.5, 5, 5, 11)
+	$p.Box($body.Then([Mat]::Pose(0, 1, -5, 0, 0, 0)), 32, 11, -3, -1.5, -1.5, 6, 3, 3)
+	foreach ($wing in @(@(-2.5, -0.5), @(2.5, 0.5))) {
+		$w = $body.Then([Mat]::Pose($wing[0], -2, -2.5, 0, 0, $wing[1]))
+		$blades = @(@(50, 11, 10, -0.25), @(56, 11, 8, -0.7), @(32, 17, 6, -1.15))
+		for ($i = 0; $i -lt 3; $i++) {
+			$b = $blades[$i]
+			$p.Box($w.Then([Mat]::Pose(0, 0, $i * 0.8, $b[3], 0, 0)), $b[0], $b[1], -0.5, -$b[2], -1, 1, $b[2], 2)
+		}
+	}
+
+	# Comet tail: base, two segments, tip; tongues and plume counter-rotated upright.
+	$tail = $body.Then([Mat]::Pose(0, -1.5, 5.5, $tailXRot, 0.12, 0))
+	$p.Box($tail, 38, 17, -1.5, -1.5, 0, 3, 3, 3)
+	$tilt = $bodyXRot + $tailXRot
+	$p.Box($tail.Then([Mat]::Pose(0, -1.5, 1.5, -$tilt, 0, 0)), 56, 0, -0.5, -2, -0.5, 1, 2, 1)
+	$seg = $tail; $len = 3
+	foreach ($curl in 0.12, 0.16) {
+		$seg = $seg.Then([Mat]::Pose(0, 0, $len, $curl, 0, 0)); $tilt += $curl; $len = 4
+		$p.Box($seg, 0, 27, -1, -1, 0, 2, 2, 4)
+		$p.Box($seg.Then([Mat]::Pose(0, -1, 2, -$tilt, 0, 0)), 56, 0, -0.5, -2, -0.5, 1, 2, 1)
+	}
+	$tip = $seg.Then([Mat]::Pose(0, 0, 4, 0.2, 0, 0)); $tilt += 0.2
+	$p.Box($tip, 12, 27, -1, -1, 0, 2, 2, 3)
+	$p.Box($tip.Then([Mat]::Pose(0, -1, 1.5, -$tilt, 0, 0)), 60, 0, -0.5, -2, -0.5, 1, 2, 1)
+
+	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
+	$p.Box($head, 0, 0, -3, -5, -6, 6, 5, 6)
+	$p.Box($head, 24, 0, -1.5, -2, -9, 3, 2, 3)
+	$p.Box($head.Then([Mat]::Pose(-2, -5, -2.5, 0, 0, -0.15)), 36, 0, -1, -5, 0, 2, 5, 1)
+	$p.Box($head.Then([Mat]::Pose(2, -5, -2.5, 0, 0, 0.15)), 42, 0, -1, -5, 0, 2, 5, 1)
+	$p.Box($head.Then([Mat]::Pose(0, -5, -5, -0.5, 0, 0)), 52, 0, -0.5, -3, -0.5, 1, 3, 1)
+	$p.Box($head.Then([Mat]::Pose(0, -5, -3.5, -0.65, 0, 0)), 48, 0, -0.5, -4, -0.5, 1, 4, 1)
+	$p.Box($head.Then([Mat]::Pose(0, -5, -2, -0.8, 0, 0)), 48, 0, -0.5, -4, -0.5, 1, 4, 1)
+
+	$p.DepthBias = 0.05
+	foreach ($leg in @(@((-1.5 - $hindSpread), $hindY, $hindZ, $hindXRot), @((1.5 + $hindSpread), $hindY, $hindZ, $hindXRot), @(-1.5, 16, -4, 0), @(1.5, 16, -4, 0))) {
+		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 33, -1, 0, -1, 2, 8, 2)
+	}
+	return $p
+}
+
 function Save([System.Drawing.Bitmap]$bmp, [string]$name) {
 	$path = Join-Path $outDir $name
 	$bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -373,12 +437,11 @@ function Save([System.Drawing.Bitmap]$bmp, [string]$name) {
 }
 
 # Yaw 0 looks at the face; 180 looks at the tail.
-# Standing = wild (fur tail); sitting and back = bonded (fire tail).
-$standing = (New-Cindercub 35 25 $false $false).Render(640, $true)
+$standing = (New-Cindercub 35 25 $false).Render(640, $true)
 Save $standing 'cindercub_standing.png'
-$sitting = (New-Cindercub 60 15 $true $true).Render(640, $true)
+$sitting = (New-Cindercub 60 15 $true).Render(640, $true)
 Save $sitting 'cindercub_sitting.png'
-$back = (New-Cindercub 215 25 $false $true).Render(640, $true)
+$back = (New-Cindercub 215 25 $false).Render(640, $true)
 Save $back 'cindercub_back.png'
 Save (New-Emberlynx 35 20 $false).Render(640, $true) 'emberlynx.png'
 Save (New-Emberlynx 230 20 $false).Render(640, $true) 'emberlynx_back.png'
@@ -386,17 +449,43 @@ Save (New-Emberlynx 60 15 $true).Render(640, $true) 'emberlynx_sitting.png'
 Save (New-Ashenox 35 20 $false).Render(640, $true) 'ashenox.png'
 Save (New-Ashenox 230 20 $false).Render(640, $true) 'ashenox_back.png'
 Save (New-Ashenox 60 15 $true).Render(640, $true) 'ashenox_sitting.png'
+Save (New-Solflare 35 20 $false).Render(640, $true) 'solflare.png'
+Save (New-Solflare 230 20 $false).Render(640, $true) 'solflare_back.png'
+Save (New-Solflare 60 15 $true).Render(640, $true) 'solflare_sitting.png'
+
+# The line at real size: each form drawn at its in-game SCALE (Cindercub 1.0, Emberlynx 1.15,
+# Ashenox and Solflare 1.3, from each entity's createAttributes), feet on one ground line.
+$line = New-Object System.Drawing.Bitmap 1600, 440
+$g = [System.Drawing.Graphics]::FromImage($line)
+$g.Clear([System.Drawing.Color]::FromArgb(255, 34, 28, 30))
+$g.SmoothingMode = 'AntiAlias'; $g.TextRenderingHint = 'AntiAliasGridFit'
+$labelFont = New-Object System.Drawing.Font 'Segoe UI', 22, ([System.Drawing.FontStyle]::Regular), ([System.Drawing.GraphicsUnit]::Pixel)
+$labelBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 243, 211, 163))
+$forms = @(
+	@((New-Cindercub 35 12 $false), 1.0, 'Cindercub'),
+	@((New-Emberlynx 35 12 $false), 1.15, 'Emberlynx'),
+	@((New-Ashenox 35 12 $false), 1.3, 'Ashenox'),
+	@((New-Solflare 35 12 $false), 1.3, 'Solflare'))
+for ($i = 0; $i -lt $forms.Count; $i++) {
+	$f = $forms[$i]
+	$f[0].FixedScale = 9.0 * $f[1]
+	$g.DrawImage($f[0].Render(400, $true), $i * 400, 0, 400, 400)
+	$size = $g.MeasureString($f[2], $labelFont)
+	$g.DrawString($f[2], $labelFont, $labelBrush, $i * 400 + (400 - $size.Width) / 2, 398)
+}
+$g.Dispose()
+Save $line 'cindercub_line.png'
 
 # Texture sheet, scaled 8x with nearest-neighbour on a dark checkerboard.
 $tex = [System.Drawing.Image]::FromFile($texturePath)
-$sheet = New-Object System.Drawing.Bitmap 512, 256
+$sheet = New-Object System.Drawing.Bitmap 512, 512
 $g = [System.Drawing.Graphics]::FromImage($sheet)
-for ($x = 0; $x -lt 64; $x++) { for ($y = 0; $y -lt 32; $y++) {
+for ($x = 0; $x -lt 64; $x++) { for ($y = 0; $y -lt 64; $y++) {
 	$shade = if ((($x + $y) % 2) -eq 0) { 38 } else { 48 }
 	$g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, $shade, $shade, $shade + 4))), $x * 8, $y * 8, 8, 8)
 } }
 $g.InterpolationMode = 'NearestNeighbor'; $g.PixelOffsetMode = 'Half'
-$g.DrawImage($tex, 0, 0, 512, 256)
+$g.DrawImage($tex, 0, 0, 512, 512)
 $g.Dispose(); $tex.Dispose()
 Save $sheet 'cindercub_texture.png'
 
@@ -419,7 +508,7 @@ $smallFont = New-Object System.Drawing.Font 'Segoe UI', 20, ([System.Drawing.Fon
 $g.DrawString('Mythweave', $titleFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 255, 214, 140))), 64, 112)
 $g.DrawString('Discover, bond with, and raise magical Mythlings', $subFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 243, 211, 163))), 70, 200)
 $g.DrawString('A Fabric mod for Minecraft Java 26.3', $smallFont, (New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(200, 243, 211, 163))), 70, 246)
-$hero = (New-Cindercub 35 25 $false $true).Render(400, $true)
+$hero = (New-Cindercub 35 25 $false).Render(400, $true)
 $g.DrawImage($hero, 840, 0, 400, 400)
 $g.Dispose()
 Save $banner 'banner.png'

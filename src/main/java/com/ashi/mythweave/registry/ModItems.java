@@ -36,6 +36,13 @@ public final class ModItems {
 			new Item.Properties().spawnEgg(ModEntities.ASHENOX)
 	);
 
+	// Mainly for testing: normally you get a Solflare by evolving an Emberlynx.
+	public static final Item SOLFLARE_SPAWN_EGG = register(
+			"solflare_spawn_egg",
+			SpawnEggItem::new,
+			new Item.Properties().spawnEgg(ModEntities.SOLFLARE)
+	);
+
 	// Block items use the block's name ("block.mythweave.ember_brazier"), like vanilla's.
 	public static final Item EMBER_BRAZIER = register(
 			"ember_brazier",

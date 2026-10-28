@@ -141,7 +141,11 @@ it its own `entity/<form>/` package. Then:
   bite and defend-owner goals with the vanilla wolf's target rules) and add an `ATTACK_DAMAGE`
   attribute. Passive combat effects go in a helper like `ability/MagmaBite`, called from
   `doHurtTarget` / `hurtServer`.
-- Use `EmberlynxEntity` / `AshenoxEntity` and their models as the template for a later form.
+- **Size:** set the form's `Attributes.SCALE` in `createAttributes()` (keep the `ModEntities`
+  hitbox at model size; SCALE multiplies it). Each stage should be bigger than the one before;
+  evolution grows the creature to the new size and waits for room on its own.
+- Use `EmberlynxEntity` / `AshenoxEntity` / `SolflareEntity` and their models as the template for
+  a later form.
 
 ## Checklist: blocks and abilities
 

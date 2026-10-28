@@ -52,5 +52,23 @@
     "sounds": [
       { "name": "minecraft:entity.fox.death", "type": "event" }
     ]
+  },
+  "entity.solflare.ambient": {
+    "subtitle": "subtitles.mythweave.entity.solflare.ambient",
+    "sounds": [
+      { "name": "minecraft:entity.fox.ambient", "type": "event" }
+    ]
+  },
+  "entity.solflare.hurt": {
+    "subtitle": "subtitles.mythweave.entity.solflare.hurt",
+    "sounds": [
+      { "name": "minecraft:entity.fox.hurt", "type": "event" }
+    ]
+  },
+  "entity.solflare.death": {
+    "subtitle": "subtitles.mythweave.entity.solflare.death",
+    "sounds": [
+      { "name": "minecraft:entity.fox.death", "type": "event" }
+    ]
   }
 }

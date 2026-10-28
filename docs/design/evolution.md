@@ -38,8 +38,8 @@ everything else.
 
 | | Cindercub | Emberlynx | Ashenox | Solflare |
 |---|---|---|---|---|
-| Look | chibi kit (current) | taller, lean; fire tail and a small fire mane; horns grow | heavy, obsidian and magma plates, cracked glowing veins, big curved horns | sleek, sun-gold, radiant crest and a long fire tail like a comet trail |
-| Size | 0.5 × 0.7 | 0.6 × 0.9 | 0.8 × 1.1 | 0.7 × 1.0 |
+| Look | ember fox kit: boxy head, cream muzzle, big charcoal ears, chunky charcoal paws, a huge glowing ember tail (docs/reference/cindercub, Asset Sheet-5) | taller, lean; fire tail and a small fire mane; horns grow | heavy, obsidian and magma plates, cracked glowing veins, big curved horns | sleek, sun-gold, radiant crest and a long fire tail like a comet trail |
+| Size (in game) | 0.6 × 0.9 | 0.69 × 1.09 | 1.04 × 1.43 | 0.91 × 1.43 |
 | Health | 12 | 20 | 32 | 24 |
 | Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s | same as stage 2 | 16 blocks, 6 s, lights several braziers |
 | New ability | none | defends its owner (attacks mobs that hurt you) | **Magma Bite:** sets attackers on fire (mobs only, never blocks) | **Sunwarden aura:** you get Fire Resistance and a little Speed while it's near |
@@ -66,7 +66,7 @@ it checked on the server.
 2. **E2: Evolution and Emberlynx.** *Done.* The transformation and
    the full stage-2 form: model, texture, stats, and the defend-owner AI.
 3. **E3: Ashenox.** *Done.* Model, texture, stats, Magma Bite.
-4. **E4: Solflare.** Model, texture, stats, Sunwarden aura.
+4. **E4: Solflare.** *Done.* Model, texture, stats, Sunwarden aura; every stage drawn bigger.
 5. **E5: Balance and docs.** Tune the numbers and update the README.
 
 ## As built (E2)
@@ -114,3 +114,33 @@ it checked on the server.
 - **Look:** an obsidian body and two raised plates, both cracked with glowing magma veins;
   ember-slit eyes; a glowing mouth line; crystal-tipped horns; a magma mane; a thick fire
   tail; lava-glowing paws. The texture comes from `tools/textures/ashenox.ps1`.
+
+## As built (E4)
+
+- **Bigger stages:** every form's `createAttributes()` sets vanilla's `SCALE` attribute:
+  Cindercub 1.0, Emberlynx 1.15, Ashenox and Solflare 1.3. Vanilla multiplies the hitbox, eye
+  height, model, shadow and leash point by it, so `ModEntities` keeps model-sized hitboxes.
+  `MythlingEntity.formScale(type)` reads a form's value; on load the base value is reset to it,
+  so creatures saved before a size change load at their form's current size. Particle offsets
+  in `emitEmbers` scale with it too. In game (width × height): 0.5 × 0.7, 0.69 × 1.09,
+  1.04 × 1.43, 0.91 × 1.43, close to the concept sheet's 0.6 / 0.9 / 1.4 heights.
+- **Growing while it evolves:** `Evolution.grow` adds a transient `SCALE` modifier
+  (`mythweave:evolution_growth`) that rises with the transformation's progress until it's as
+  tall as the new form, so the swap doesn't jump in size. It's never saved; a reload
+  mid-transformation re-applies it on the next tick.
+- **Room check:** before starting, the new form's hitbox (plus the 1-block rise) must be free
+  of blocks. If not, the owner gets a "needs more room" message once per load, and it waits.
+- **Solflare stats:** 24 HP, speed 0.36, 4 attack damage, defends its owner, fire-immune; size
+  0.7 × 1.1 at scale 1, eyes at 0.94.
+- **Sunwarden aura** (`ability/SunwardenAura`) is passive, like Magma Bite. Every 2 s, if the
+  owner is alive, in the same dimension and within 8 blocks, they get Fire Resistance and
+  Speed I for 5 s (ambient, like a beacon). Nobody else is affected; vanilla keeps a stronger
+  or longer effect the owner already has.
+- **Ember Spark:** `EmberSparkAbility.SOLFLARE` reaches 16 blocks, recharges in 6 s and lights
+  up to three braziers (the closest it can see) per use; Kindle is earned once per use.
+- **Look** (from the concept sheet's stage 3): cream and sun-gold fur with red-orange markings,
+  long legs, tall flame-tipped ears, a three-blade flame crest, two fans of three flame blades
+  at the shoulders that breathe open and sweep back when it runs, and a long comet tail. The
+  texture comes from `tools/textures/solflare.ps1`.
+- **Palette:** Cindercub and Emberlynx shifted a little redder, and Ashenox from purple-black
+  toward charcoal, to match the concept sheet's swatches.

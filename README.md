@@ -38,9 +38,9 @@ and step-by-step checklists for adding creatures, evolution forms, blocks and ab
 
 <table>
   <tr>
-    <td align="center"><img src="docs/images/cindercub_standing.png" width="260" alt="A wild Cindercub with a fluffy fox tail"><br><sub>Wild: a fluffy fox tail</sub></td>
-    <td align="center"><img src="docs/images/cindercub_sitting.png" width="260" alt="A bonded Cindercub sitting, its tail now made of fire"><br><sub>Bonded and sitting</sub></td>
-    <td align="center"><img src="docs/images/cindercub_back.png" width="260" alt="A bonded Cindercub from behind, showing its fire tail"><br><sub>Bonded: a tail of living fire</sub></td>
+    <td align="center"><img src="docs/images/cindercub_standing.png" width="260" alt="A Cindercub standing, its big ember tail rising behind it"><br><sub>The ember fox</sub></td>
+    <td align="center"><img src="docs/images/cindercub_sitting.png" width="260" alt="A Cindercub sitting"><br><sub>Sitting</sub></td>
+    <td align="center"><img src="docs/images/cindercub_back.png" width="260" alt="A Cindercub from behind, showing its ember tail"><br><sub>A tail of glowing embers</sub></td>
   </tr>
 </table>
 
@@ -97,8 +97,17 @@ Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
   example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
 - **At 150 Kindle it evolves** into an **Emberlynx**, and **at 400** into its final form,
   chosen by how it leans: **Ashenox** if you've fought together, **Solflare** if you've explored
-  together. Solflare arrives in a later update; until then a Solflare-leaning Emberlynx tells
-  you it's ready and waits (see [docs/design/evolution.md](docs/design/evolution.md)).
+  together (see [docs/design/evolution.md](docs/design/evolution.md)).
+- **Each stage is bigger.** While it transforms it grows to its new size, and it only starts
+  where the new form has room (otherwise it tells you once and waits until you lead it
+  somewhere open).
+
+<p align="center"><img src="docs/images/cindercub_line.png" alt="Cindercub, Emberlynx, Ashenox and Solflare side by side at their in-game sizes"></p>
+
+| | Cindercub | Emberlynx | Ashenox | Solflare |
+|---|---|---|---|---|
+| Stage | 1 | 2 | 3 (battle) | 3 (exploration) |
+| Hitbox, width × height (blocks) | 0.5 × 0.7 | 0.69 × 1.09 | 1.04 × 1.43 | 0.91 × 1.43 |
 
 ### Evolution: Emberlynx
 
@@ -121,7 +130,7 @@ sitting, and all its Kindle, and it arrives at full health.
 | Health | 12 | 20 |
 | Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s |
 | In a fight | runs away when hurt | **defends you**: attacks whatever hurts you or it (never creepers, tamed animals or your friends) |
-| Size | 0.5 × 0.7 | 0.6 × 0.95 |
+| Size | 0.5 × 0.7 | 0.69 × 1.09 |
 
 ### Final form: Ashenox
 
@@ -144,9 +153,36 @@ with big crystal-tipped horns, a magma mane, glowing lava paws and a thick fire 
 | **Magma Bite** | none | its bites set mobs on fire, and mobs that hit it up close get burned. Never players, never blocks |
 | Fire and lava | burns | **immune** |
 | Ember Spark | 12 blocks, 10 s | 12 blocks, 10 s |
-| Size | 0.6 × 0.95 | 0.8 × 1.1 |
+| Size | 0.69 × 1.09 | 1.04 × 1.43 |
 
 It's the end of its line: it keeps earning Kindle, but evolves no further.
+
+### Final form: Solflare
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/solflare.png" width="260" alt="Solflare standing"><br><sub>Solflare</sub></td>
+    <td align="center"><img src="docs/images/solflare_back.png" width="260" alt="Solflare from behind, showing its flame wings and comet tail"><br><sub>Flame wings and comet tail</sub></td>
+    <td align="center"><img src="docs/images/solflare_sitting.png" width="260" alt="Solflare sitting"><br><sub>Sitting</sub></td>
+  </tr>
+</table>
+
+An Emberlynx that has **explored with you** (travelling, new biomes, Ember Spark) becomes a
+**Solflare** at **400 Kindle**: a radiant guardian fox in cream and sun-gold with red-orange
+markings, long legs, tall flame-tipped ears, a crest of three flame blades, two fans of flame
+wings at the shoulders and a long comet tail.
+
+| | Emberlynx | Solflare |
+|---|---|---|
+| Health | 20 | 24 |
+| Speed | 0.3 | 0.36 (swift) |
+| Bite | 4 | 4 |
+| **Sunwarden aura** | none | while you're within 8 blocks: **Fire Resistance** and **Speed I** (only you, never other players) |
+| Fire and lava | burns | **immune** |
+| Ember Spark | 12 blocks, 10 s | **16 blocks, 6 s, up to 3 braziers at once** |
+| Size | 0.69 × 1.09 | 0.91 × 1.43 |
+
+Like the Ashenox it still defends you, keeps earning Kindle, and evolves no further.
 
 ### The Ember Brazier
 
@@ -220,11 +256,13 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
     its model, texture, spawn egg, stronger Ember Spark and defend-owner AI.
   - [x] **E3: Ashenox.** The combat stage-3 form: model, texture, spawn egg, Magma Bite,
     fire immunity.
-  - [ ] E4: Solflare · E5: balance
+  - [x] **E4: Solflare, and bigger stages.** The exploration stage-3 form: model, texture,
+    spawn egg, Sunwarden aura, Ember Spark for up to three braziers, fire immunity. Every
+    stage is now drawn bigger (SCALE attribute), and grows during its transformation.
+  - [ ] E5: balance
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
-the *Aether Shard* bonding item, branching evolutions (*Ashenox*, a combat-focused volcanic
-fox, and *Solflare*, an exploration-focused one), magical shrines, and a creature journal.
+the *Aether Shard* bonding item, magical shrines, and a creature journal.
 
 ## Installing (players)
 
@@ -357,8 +395,15 @@ A quick in-game test of everything that works so far. Use a Creative world with 
     and sneak-click says "fully evolved". Hit a zombie near you: the Ashenox bites it and the
     zombie catches fire; let a zombie hit the Ashenox: the zombie catches fire. Walk it through
     lava: it doesn't burn. Nearby grass and wood never catch fire. Players are never set on fire.
-    With `exploration` instead of `combat`, you get the "ready to become Solflare" message once,
-    since that form comes later.
+16. *(Solflare)* The same command with `exploration` instead of `combat`: it evolves into a
+    Solflare. Within a couple of seconds you get Fire Resistance and Speed I (ambient icons);
+    walk more than 8 blocks away and they wear off after a few seconds. Place three unlit
+    braziers within 16 blocks and use Blaze Powder on it: all three light, and it recharges in
+    6 s. Walk it through lava: it doesn't burn. Another player near it gets no effects.
+17. *(Size)* Each stage is visibly bigger than the last (see the lineup image above), and grows
+    smoothly during its transformation. Put a bonded Cindercub with 150 Kindle under a
+    one-block-high ceiling: it says once that it needs more room and waits; break the ceiling
+    and it evolves. Older saved Emberlynx and Ashenox load at their new size.
 
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
@@ -400,7 +445,7 @@ src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a 
 ├── registry/
 │   ├── ModModelLayers.java                 Model layer ids (+ registration)
 │   └── ModRenderers.java                   Entity type → renderer
-├── model/entity/CindercubModel.java        Cube layout, animation, fur/fire tail, sit pose
+├── model/entity/CindercubModel.java        Cube layout, animation, ember tail, sit pose
 └── render/entity/
     ├── CindercubRenderer.java              Connects model + texture to the entity
     ├── state/CindercubRenderState.java     Per-frame data the model reads (sitting, tame)

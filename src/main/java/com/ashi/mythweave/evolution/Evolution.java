@@ -1,17 +1,26 @@
 package com.ashi.mythweave.evolution;
 
+import com.ashi.mythweave.Mythweave;
 import com.ashi.mythweave.entity.base.MythlingEntity;
 import com.ashi.mythweave.registry.ModEntities;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Evolving: when a bonded Mythling has enough Kindle ({@link EvolutionRules}), it transforms
@@ -21,18 +30,24 @@ import java.util.Optional;
  * invulnerable, floats up spinning inside a spiral of flame, then bursts and is replaced by
  * the new form. The new entity keeps its owner, sit order, Kindle, name and leash (vanilla's
  * {@code Mob#convertTo} copies the last two), and starts at full health.
+ *
+ * <p>Every stage is bigger than the last, so while it spins the Mythling also grows until it's
+ * as tall as its new form, and it only starts where the new form has room.
  */
 public final class Evolution {
 	/** Upward speed (blocks per tick) for the first two thirds of the transformation. */
 	private static final double RISE_SPEED = 0.025;
+	/** How high it rises in total, so the room check covers the whole transformation. */
+	private static final double RISE_HEIGHT = RISE_SPEED * EvolutionRules.EVOLUTION_TICKS * 0.66;
+	/** The temporary SCALE modifier that grows it during the transformation (never saved). */
+	private static final Identifier GROWTH = Mythweave.id("evolution_growth");
 
 	private Evolution() {
 	}
 
 	/** Server-side, once a second for a bonded Mythling: starts evolving if it's ready. */
 	public static void checkReady(MythlingEntity mythling, ServerLevel level) {
-		Kindle kindle = mythling.kindle();
-		String next = EvolutionRules.nextForm(mythling.evolutionLine(), mythling.formId(), kindle.points(), kindle.leaning());
+		String next = nextFormId(mythling);
 		if (next == null) {
 			return;
 		}
@@ -47,9 +62,31 @@ public final class Evolution {
 			return;
 		}
 		// Only start somewhere sensible: standing on the ground, not swimming or riding.
-		if (mythling.onGround() && !mythling.isInWater() && !mythling.isPassenger()) {
-			start(mythling, level);
+		if (!mythling.onGround() || mythling.isInWater() || mythling.isPassenger()) {
+			return;
 		}
+		// The new form is bigger: wait until it fits here, rise included (say so once).
+		AABB room = sizeOf(type.get()).makeBoundingBox(mythling.position()).expandTowards(0.0, RISE_HEIGHT, 0.0);
+		if (!level.noCollision(mythling, room)) {
+			if (!mythling.roomAnnounced()) {
+				mythling.setRoomAnnounced(true);
+				Kindle.tellOwner(mythling, Component.translatable("message.mythweave.evolution.needs_room",
+						mythling.getDisplayName(), EvolutionLine.formName(next)));
+			}
+			return;
+		}
+		start(mythling, level);
+	}
+
+	/** The form it's ready to become right now, or null. */
+	private static @Nullable String nextFormId(MythlingEntity mythling) {
+		Kindle kindle = mythling.kindle();
+		return EvolutionRules.nextForm(mythling.evolutionLine(), mythling.formId(), kindle.points(), kindle.leaning());
+	}
+
+	/** A form's real size: its model-sized hitbox times its SCALE. */
+	private static EntityDimensions sizeOf(EntityType<?> type) {
+		return type.getDimensions().scale(MythlingEntity.formScale(type));
 	}
 
 	private static void start(MythlingEntity mythling, ServerLevel level) {
@@ -79,8 +116,10 @@ public final class Evolution {
 		mythling.setYBodyRot(spin);
 		mythling.setYHeadRot(spin);
 
+		grow(mythling, progress);
+
 		// Two flames orbiting and climbing, plus a few embers; denser as it builds.
-		double radius = 0.7 - 0.3 * progress;
+		double radius = mythling.getBbWidth() * (1.4 - 0.6 * progress); // wider for bigger forms
 		for (int i = 0; i < 2; i++) {
 			double angle = elapsed * 0.5 + i * Math.PI;
 			level.sendParticles(ParticleTypes.FLAME,
@@ -101,11 +140,31 @@ public final class Evolution {
 		}
 	}
 
+	/**
+	 * Grows it smoothly from its own height to its new form's, so the swap at the end doesn't
+	 * jump in size. A transient SCALE modifier: synced to clients, never saved (a reload
+	 * mid-transformation re-applies it on the next tick).
+	 */
+	private static void grow(MythlingEntity mythling, float progress) {
+		AttributeInstance scale = mythling.getAttribute(Attributes.SCALE);
+		String next = nextFormId(mythling);
+		Optional<EntityType<? extends MythlingEntity>> type = next == null ? Optional.empty() : ModEntities.mythlingForm(next);
+		if (scale == null || type.isEmpty()) {
+			return;
+		}
+		float ratio = sizeOf(type.get()).height() / sizeOf(mythling.getType()).height();
+		scale.addOrUpdateTransientModifier(new AttributeModifier(GROWTH, (ratio - 1.0F) * progress,
+				AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+	}
+
 	private static void finish(MythlingEntity mythling, ServerLevel level) {
 		mythling.setNoGravity(false); // convertTo copies NoGravity, so clear it first
 		mythling.setPermanentlyInvulnerable(false); // also copied by convertTo
-		String next = EvolutionRules.nextForm(mythling.evolutionLine(), mythling.formId(),
-				mythling.kindle().points(), mythling.kindle().leaning());
+		AttributeInstance scale = mythling.getAttribute(Attributes.SCALE);
+		if (scale != null) {
+			scale.removeModifier(GROWTH); // in case it lands as it was
+		}
+		String next = nextFormId(mythling);
 		Optional<EntityType<? extends MythlingEntity>> type = next == null ? Optional.empty() : ModEntities.mythlingForm(next);
 		if (type.isEmpty()) {
 			return; // can't happen normally (checked at start); just land as it was

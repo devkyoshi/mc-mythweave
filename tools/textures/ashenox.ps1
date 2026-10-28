@@ -33,10 +33,10 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 # Palette: obsidian and ash for the armor, the line's ember/flame/crystal colors for the magma.
-$obsidian      = @(42, 30, 48)
-$obsidianLight = @(70, 54, 80)
-$ash           = @(92, 80, 84)
-$ashLight      = @(130, 116, 116)
+$obsidian      = @(40, 28, 32)
+$obsidianLight = @(68, 48, 52)
+$ash           = @(92, 76, 74)
+$ashLight      = @(130, 112, 106)
 $eyeDark       = @(24, 14, 16)
 $magmaDeep     = @(200, 60, 20)
 $ember         = @(255, 184, 46)

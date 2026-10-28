@@ -22,6 +22,9 @@ public final class ModSounds {
 	public static final SoundEvent ASHENOX_AMBIENT = register("entity.ashenox.ambient");
 	public static final SoundEvent ASHENOX_HURT = register("entity.ashenox.hurt");
 	public static final SoundEvent ASHENOX_DEATH = register("entity.ashenox.death");
+	public static final SoundEvent SOLFLARE_AMBIENT = register("entity.solflare.ambient");
+	public static final SoundEvent SOLFLARE_HURT = register("entity.solflare.hurt");
+	public static final SoundEvent SOLFLARE_DEATH = register("entity.solflare.death");
 
 	private ModSounds() {
 	}

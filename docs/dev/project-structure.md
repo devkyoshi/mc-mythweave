@@ -67,8 +67,8 @@ Package root `com.ashi.mythweave` (written `…` below).
 ├── Mythweave.java                     Mod entry point (fabric.mod.json "main"). Calls the registries, then ModEvents.
 │                                      Also holds MOD_ID, the LOGGER and id("path") → mythweave:path.
 ├── registry/                          Everything registered with the game, one class per kind
-│   ├── ModSounds.java                 Sound events: entity.<cindercub|emberlynx|ashenox>.ambient / hurt / death
-│   ├── ModEntities.java               Entity types (CINDERCUB, EMBERLYNX, ASHENOX: size, eye height) + attributes,
+│   ├── ModSounds.java                 Sound events: entity.<cindercub|emberlynx|ashenox|solflare>.ambient / hurt / death
+│   ├── ModEntities.java               Entity types (CINDERCUB, EMBERLYNX, ASHENOX, SOLFLARE: model-scale size, eye height) + attributes,
 │   │                                  and mythlingForm(id): form id → entity type, used by evolution
 │   ├── ModBlocks.java                 Blocks (EMBER_BRAZIER: strength, sound, light while lit)
 │   ├── ModItems.java                  Items: spawn eggs, block items
@@ -86,22 +86,28 @@ Package root `com.ashi.mythweave` (written `…` below).
 │   ├── emberlynx/
 │   │   └── EmberlynxEntity.java       Emberlynx (stage 2): stronger stats, defends its owner,
 │   │                                  stronger Ember Spark, tail and mane embers
-│   └── ashenox/
-│       └── AshenoxEntity.java         Ashenox (stage 3, combat): armored, fire-immune, Magma Bite, lava drips
+│   ├── ashenox/
+│   │   └── AshenoxEntity.java         Ashenox (stage 3, combat): armored, fire-immune, Magma Bite, lava drips
+│   └── solflare/
+│       └── SolflareEntity.java        Solflare (stage 3, exploration): swift, fire-immune, Sunwarden aura,
+│                                      three-brazier Ember Spark, wing and tail embers
 ├── evolution/
 │   ├── EvolutionRules.java            All evolution numbers and rules: thresholds, Kindle sources, ranges,
 │   │                                  branches, stageOf / nextForm, transformation length
 │   ├── EvolutionLine.java             One species' forms: base → stage 2 → combat form | exploration form
 │   ├── EvolutionLines.java            Every species' line as a constant (CINDERCUB)
-│   ├── Evolution.java                 Evolving: readiness check, the 3 s transformation, the entity swap
+│   ├── Evolution.java                 Evolving: readiness and room check, the 3 s transformation (growing to
+│   │                                  the new size), the entity swap
 │   ├── Kindle.java                    One Mythling's evolution progress: earning, saving, copying, status
 │   └── KindleEvents.java              Kindle from the world: hostile mobs dying nearby, survived hits
 ├── ability/
 │   ├── Ability.java                   Interface: id, cooldown, trigger item, use(mythling, cooldown, ...) (server)
 │   ├── AbilityCooldown.java           One ability's cooldown on one creature: tick, save, load
 │   ├── EmberSparkAbility.java         Ember Spark: light the nearest visible unlit brazier; one constant per
-│   │                                  form (CINDERCUB 8 blocks / 15 s, EMBERLYNX 12 blocks / 10 s)
-│   └── MagmaBite.java                 Ashenox's passive ability: bites ignite mobs; mobs that hit it burn
+│   │                                  form (CINDERCUB 8 blocks / 15 s, EMBERLYNX 12 / 10 s,
+│   │                                  SOLFLARE 16 / 6 s, up to three braziers)
+│   ├── MagmaBite.java                 Ashenox's passive ability: bites ignite mobs; mobs that hit it burn
+│   └── SunwardenAura.java             Solflare's passive ability: Fire Resistance + Speed I for its nearby owner
 ├── block/
 │   └── EmberBrazierBlock.java         Ember Brazier: LIT state, shape, empty-hand extinguish, particles
 ├── command/
@@ -127,15 +133,18 @@ client/
 │   ├── CindercubModel.java            Cube layout and all animation: walk, head look, idle tilt, ear twitch,
 │   │                                  sit pose, fur tail (wild) vs fire tail (bonded) with its flicker
 │   ├── EmberlynxModel.java            Taller lynx: fire mane, flame ear tufts, long rippling fire tail, sit pose
-│   └── AshenoxModel.java              Heavy volcanic fox: obsidian plates, magma mane, curved horns, thick fire tail
+│   ├── AshenoxModel.java              Heavy volcanic fox: obsidian plates, magma mane, curved horns, thick fire tail
+│   └── SolflareModel.java             Radiant fox: long legs, flame crest, two fans of flame wings, comet tail
 └── render/entity/
     ├── CindercubRenderer.java         Ties model + textures to the entity; fills the render state each frame
     ├── EmberlynxRenderer.java         The same for Emberlynx
     ├── AshenoxRenderer.java           The same for Ashenox
+    ├── SolflareRenderer.java          The same for Solflare
     ├── state/
     │   ├── CindercubRenderState.java  Per-frame snapshot the model reads (isSitting, isTame, + vanilla data)
     │   ├── EmberlynxRenderState.java  isSitting + vanilla data
-    │   └── AshenoxRenderState.java    isSitting + vanilla data
+    │   ├── AshenoxRenderState.java    isSitting + vanilla data
+    │   └── SolflareRenderState.java   isSitting + vanilla data
     └── layer/
         └── PulsingGlowLayer.java      Draws any creature's glow map full-bright with a slow "breathing" pulse
 ```
@@ -155,14 +164,15 @@ resources/
 │   ├── sounds.json                    What each sound event plays (currently vanilla fox sounds, by event)
 │   ├── blockstates/ember_brazier.json Picks the model per LIT state
 │   ├── models/block/                  ember_brazier.json (unlit), ember_brazier_lit.json (with flame planes)
-│   ├── models/item/                   <form>_spawn_egg.json for cindercub, emberlynx, ashenox
+│   ├── models/item/                   <form>_spawn_egg.json for cindercub, emberlynx, ashenox, solflare
 │   ├── items/                         Item appearances: the three spawn eggs, ember_brazier.json
 │   └── textures/
-│       ├── entity/cindercub/          cindercub.png (64×32 texture), cindercub_glow.png (glow map)
+│       ├── entity/cindercub/          cindercub.png (64×64 texture), cindercub_glow.png (glow map)
 │       ├── entity/emberlynx/          emberlynx.png (64×64 texture), emberlynx_glow.png (glow map)
 │       ├── entity/ashenox/            ashenox.png (64×64 texture), ashenox_glow.png (glow map)
+│       ├── entity/solflare/           solflare.png (64×64 texture), solflare_glow.png (glow map)
 │       ├── block/                     ember_brazier_*.png; ember_brazier_flame.png (+ .mcmeta = animation)
-│       └── item/                      <form>_spawn_egg.png for cindercub, emberlynx, ashenox
+│       └── item/                      <form>_spawn_egg.png for cindercub, emberlynx, ashenox, solflare
 └── data/                              Server data (data pack)
     ├── mythweave/recipe/ember_brazier.json          Crafting recipe
     ├── mythweave/loot_table/blocks/ember_brazier.json   Drops itself when mined
@@ -185,6 +195,7 @@ tools/
 ├── textures/cindercub.ps1             Paints the Cindercub texture + glow map; documents its UV layout
 ├── textures/emberlynx.ps1             Paints the Emberlynx texture + glow map; documents its UV layout
 ├── textures/ashenox.ps1               Paints the Ashenox texture + glow map; documents its UV layout
+├── textures/solflare.ps1              Paints the Solflare texture + glow map; documents its UV layout
 ├── textures/spawn_eggs.ps1            Paints every spawn egg (same shape, per-form colors)
 ├── textures/ember_brazier.ps1         Paints the brazier textures and flame animation
 └── previews/mythlings.ps1             Renders docs/images/*.png from the models (duplicates their cube lists)
@@ -214,7 +225,7 @@ docs/
 **A right-click on a Mythling** (`MythlingEntity.mobInteract`, run on both sides; only the
 server changes anything):
 1. **Wild:**
-   - with its bonding item, it bonds: `tame`, hearts, the `onBonded` hook (Cindercub's tail ignites);
+   - with its bonding item, it bonds: `tame`, hearts, the `onBonded` hook (Cindercub's tail flares);
    - with an empty hand, you get a hint.
 2. **Someone else's:** refused with a message.
 3. **Owner:**
@@ -241,18 +252,18 @@ These are in players' worlds and resource packs. **Never rename them**; add new 
 
 | Kind | Values |
 |---|---|
-| Entities | `mythweave:cindercub`, `mythweave:emberlynx`, `mythweave:ashenox` |
-| Items | `mythweave:cindercub_spawn_egg`, `mythweave:emberlynx_spawn_egg`, `mythweave:ashenox_spawn_egg`, `mythweave:ember_brazier` |
+| Entities | `mythweave:cindercub`, `mythweave:emberlynx`, `mythweave:ashenox`, `mythweave:solflare` |
+| Items | `mythweave:cindercub_spawn_egg`, `mythweave:emberlynx_spawn_egg`, `mythweave:ashenox_spawn_egg`, `mythweave:solflare_spawn_egg`, `mythweave:ember_brazier` |
 | Block | `mythweave:ember_brazier` (state `lit=true/false`) |
-| Sounds | `mythweave:entity.<cindercub/emberlynx/ashenox>.ambient`, `.hurt`, `.death` |
-| Model layers | `mythweave:cindercub#main`, `mythweave:emberlynx#main`, `mythweave:ashenox#main` |
+| Sounds | `mythweave:entity.<cindercub/emberlynx/ashenox/solflare>.ambient`, `.hurt`, `.death` |
+| Model layers | `mythweave:cindercub#main`, `mythweave:emberlynx#main`, `mythweave:ashenox#main`, `mythweave:solflare#main` |
 | Entity save data | `Owner`, `Sitting` (vanilla), `EmberCooldown`, `EvolvingTicks` (only mid-transformation), `Kindle` → `Points`, `Combat`, `Exploration`, `TicksWithOwner`, `BlocksTravelled`, `Biomes` |
 
 **Translation key namespaces** (`lang/en_us.json`):
 
 | Prefix | Used for |
 |---|---|
-| `entity.mythweave.*` | Creature and form names (`cindercub`, `emberlynx`, `ashenox`; `solflare` is ready for E4) |
+| `entity.mythweave.*` | Creature and form names (`cindercub`, `emberlynx`, `ashenox`, `solflare`) |
 | `item.mythweave.*`, `block.mythweave.*` | Item and block names |
 | `subtitles.mythweave.*` | Sound subtitles |
 | `message.mythweave.mythling.*` | Messages shared by every creature (bonded, sitting, not yours, …; `%s` = its name) |

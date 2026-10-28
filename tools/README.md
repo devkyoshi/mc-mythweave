@@ -12,6 +12,7 @@ powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 | `textures/cindercub.ps1` | `textures/entity/cindercub/cindercub.png` + `cindercub_glow.png` | you change Cindercub's colors or its model's UV layout |
 | `textures/emberlynx.ps1` | `textures/entity/emberlynx/emberlynx.png` + `emberlynx_glow.png` | you change Emberlynx's colors or its model's UV layout |
 | `textures/ashenox.ps1` | `textures/entity/ashenox/ashenox.png` + `ashenox_glow.png` | you change Ashenox's colors or its model's UV layout |
+| `textures/solflare.ps1` | `textures/entity/solflare/solflare.png` + `solflare_glow.png` | you change Solflare's colors or its model's UV layout |
 | `textures/spawn_eggs.ps1` | `textures/item/*_spawn_egg.png` | you change an egg or add a form (add a `New-Egg` line) |
 | `textures/ember_brazier.ps1` | `textures/block/ember_brazier_*.png` (+ flame `.mcmeta`) | you change the brazier |
 | `previews/mythlings.ps1` | `docs/images/*.png` (README renders and banner) | a Mythling model or texture changes |

@@ -56,7 +56,9 @@ public class AshenoxEntity extends MythlingEntity {
 				.add(Attributes.MOVEMENT_SPEED, 0.28)
 				.add(Attributes.ATTACK_DAMAGE, 6.0)
 				.add(Attributes.ARMOR, 4.0)
-				.add(Attributes.KNOCKBACK_RESISTANCE, 0.5);
+				.add(Attributes.KNOCKBACK_RESISTANCE, 0.5)
+				// 30% bigger than its model: about 1.4 blocks tall to the top of its head.
+				.add(Attributes.SCALE, 1.3);
 	}
 
 	@Override

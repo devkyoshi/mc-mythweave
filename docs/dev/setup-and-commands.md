@@ -190,6 +190,7 @@ powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 | `tools/textures/cindercub.ps1` | Cindercub texture + glow map |
 | `tools/textures/emberlynx.ps1` | Emberlynx texture + glow map |
 | `tools/textures/ashenox.ps1` | Ashenox texture + glow map |
+| `tools/textures/solflare.ps1` | Solflare texture + glow map |
 | `tools/textures/spawn_eggs.ps1` | Every spawn egg texture |
 | `tools/textures/ember_brazier.ps1` | Ember Brazier textures (+ animated flame) |
 | `tools/previews/mythlings.ps1` | README images in `docs/images/` |

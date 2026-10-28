@@ -49,7 +49,9 @@ public class EmberlynxEntity extends MythlingEntity {
 		return Animal.createAnimalAttributes()
 				.add(Attributes.MAX_HEALTH, 20.0)
 				.add(Attributes.MOVEMENT_SPEED, 0.3)
-				.add(Attributes.ATTACK_DAMAGE, 4.0);
+				.add(Attributes.ATTACK_DAMAGE, 4.0)
+				// 15% bigger than its model: about 1.1 blocks tall to the top of its head.
+				.add(Attributes.SCALE, 1.15);
 	}
 
 	/** Fights instead of fleeing: the base class adds the bite and defend-owner goals. */

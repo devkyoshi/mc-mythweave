@@ -33,9 +33,9 @@ Add-Type -AssemblyName System.Drawing
 
 # Palette: the Cindercub's colors, a shade deeper (it's grown up), plus the same ember, flame
 # and crystal colors so the line reads as one family.
-$orange       = @(222, 106, 40)
-$orangeLight  = @(240, 146, 72)
-$red          = @(168, 56, 30)
+$orange       = @(228, 94, 36)
+$orangeLight  = @(244, 136, 64)
+$red          = @(176, 46, 28)
 $cream        = @(248, 214, 168)
 $charcoal     = @(44, 36, 38)
 $eyeDark      = @(36, 22, 20)

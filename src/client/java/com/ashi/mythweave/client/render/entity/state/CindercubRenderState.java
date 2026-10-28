@@ -6,6 +6,4 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 public class CindercubRenderState extends LivingEntityRenderState {
 	/** From {@code TamableAnimal#isInSittingPose()}, which the server syncs to clients. */
 	public boolean isSitting;
-	/** From {@code TamableAnimal#isTame()} (also synced): bonded Cindercubs have a fire tail. */
-	public boolean isTame;
 }
