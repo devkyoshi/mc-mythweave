@@ -38,7 +38,7 @@ everything else.
 
 | | Cindercub | Emberlynx | Ashenox | Solflare |
 |---|---|---|---|---|
-| Look | ember fox kit: boxy head, cream muzzle, big charcoal ears, chunky charcoal paws, a huge glowing ember tail (docs/reference/cindercub, Asset Sheet-5) | taller, lean; fire tail and a small fire mane; horns grow | heavy, obsidian and magma plates, cracked glowing veins, big curved horns | sleek, sun-gold, radiant crest and a long fire tail like a comet trail |
+| Look | ember fox kit: big head, cream snout, cheek ruffs, tall stepped charcoal ears, thick legs on charcoal paws, a huge glowing ember tail; built at 1.5x voxel detail to match the concept art (docs/reference/cindercub) | taller, lean; fire tail and a small fire mane; horns grow | heavy, obsidian and magma plates, cracked glowing veins, big curved horns | sleek, sun-gold, radiant crest and a long fire tail like a comet trail |
 | Size (in game) | 0.6 × 0.9 | 0.69 × 1.09 | 1.04 × 1.43 | 0.91 × 1.43 |
 | Health | 12 | 20 | 32 | 24 |
 | Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s | same as stage 2 | 16 blocks, 6 s, lights several braziers |

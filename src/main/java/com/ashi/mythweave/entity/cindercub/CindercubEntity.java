@@ -5,9 +5,10 @@ import com.ashi.mythweave.ability.EmberSparkAbility;
 import com.ashi.mythweave.entity.base.MythlingEntity;
 import com.ashi.mythweave.evolution.EvolutionLine;
 import com.ashi.mythweave.evolution.EvolutionLines;
+import com.ashi.mythweave.registry.ModParticles;
 import com.ashi.mythweave.registry.ModSounds;
 
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -77,12 +78,12 @@ public class CindercubEntity extends MythlingEntity {
 		return true;
 	}
 
-	/** Bonding flares the ember tail: a flame burst and whoosh. */
+	/** Bonding flares the ember tail: a burst of embers and a whoosh. */
 	@Override
 	protected void onBonded(ServerLevel level, Player owner) {
 		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
-		level.sendParticles(ParticleTypes.FLAME, this.getX() + Mth.sin(yaw) * 0.3, this.getY() + 0.85,
-				this.getZ() - Mth.cos(yaw) * 0.3, 24, 0.15, 0.15, 0.15, 0.04);
+		level.sendParticles(ModParticles.EMBER, this.getX() + Mth.sin(yaw) * 0.45, this.getY() + 0.8,
+				this.getZ() - Mth.cos(yaw) * 0.45, 30, 0.25, 0.25, 0.25, 0.05);
 		this.playSound(SoundEvents.FIRECHARGE_USE, 0.6F, 1.4F);
 	}
 
@@ -122,11 +123,17 @@ public class CindercubEntity extends MythlingEntity {
 		// up even taller when sitting).
 		if (this.level().isClientSide()) {
 			if (this.isInSittingPose()) {
-				this.emitEmbers(0.3, 0.2, 0.5, 0.5, 4, 2);
+				this.emitEmbers(0.35, 0.25, 0.5, 0.5, 2, 1);
 			} else {
-				this.emitEmbers(0.3, 0.25, 0.55, 0.45, 4, 2);
+				this.emitEmbers(0.35, 0.35, 0.6, 0.45, 2, 1);
 			}
 		}
+	}
+
+	/** Glowing square embers, like the concept art, instead of vanilla flames. */
+	@Override
+	protected ParticleOptions emberParticle() {
+		return ModParticles.EMBER;
 	}
 
 	@Override

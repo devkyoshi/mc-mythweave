@@ -8,13 +8,20 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Cindercub, the ember fox (docs/reference/cindercub): a boxy fox kit with big dark eyes, a
- * cream muzzle, big stepped charcoal ears, chunky charcoal paws, and a huge
- * fluffy tail of glowing embers that rises up behind it, sweeping off to one side.
+ * Cindercub, the ember fox (docs/reference/cindercub): a fox kit with a long body, a
+ * pointed cream snout, cheek ruffs, dark eyes under a red brow, tall pointed dark ears,
+ * thick legs on dark paws, and a huge bushy tail of embers swept back, up and to one
+ * side.
+ *
+ * <p>Built at 1.5x detail to match the concept art: the mesh is modelled in units of 2/3 of a
+ * pixel and {@link MeshTransformer#scaling} shrinks it back to its in-game size (the same
+ * mechanism vanilla uses for baby models), so its voxels are finer than a vanilla mob's.
+ * Coordinates below are in those small units. Y points down and the ground is at y = 24.
  *
  * <p>Fire animation: the tail sways, ripples and curls like a whip, every segment flickers in
  * size on its own rhythm, and the flame tufts on its sides always burn upward. The head tilts
@@ -22,17 +29,19 @@ import net.minecraft.util.Mth;
  * {@code cindercub_glow.png}, drawn with a slow pulse by
  * {@link com.ashi.mythweave.client.render.entity.layer.PulsingGlowLayer}.
  *
- * <p>Model space is in pixels (16 = one block). Y points down and the ground is at y = 24.
- * Texture sheet is 64 x 64; the layout is documented in
+ * <p>Texture sheet is 128 x 128; the layout is documented in
  * {@code tools/textures/cindercub.ps1}, which paints the matching PNG.
  */
 public class CindercubModel extends EntityModel<CindercubRenderState> {
+	/** Model units per pixel: the mesh is built 1.5x and scaled back down when baked. */
+	private static final float DETAIL = 1.5F;
 	/** How steeply the tail rises from the rump (positive xRot lifts a part pointing back). */
-	private static final float TAIL_LIFT = 0.8F;
-	private static final float MID_CURL = 0.3F;
+	private static final float TAIL_LIFT = 0.4F;
+	private static final float MID_CURL = 0.25F;
+	private static final float UPPER_CURL = 0.3F;
 	private static final float TIP_CURL = 0.4F;
 	private static final float FLAME_CURL = 0.45F;
-	/** The tail plume sweeps off to one side, as in the concept sheets. */
+	/** The tail plume sweeps off to one side, as in the concept art. */
 	private static final float TAIL_SWEEP = 0.35F;
 
 	private final ModelPart body;
@@ -43,6 +52,7 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 	private final ModelPart tailMid;
 	private final ModelPart rightTuft;
 	private final ModelPart leftTuft;
+	private final ModelPart tailUpper;
 	private final ModelPart tailTip;
 	private final ModelPart tailFlame;
 	private final ModelPart rightHindLeg;
@@ -60,7 +70,8 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 		this.tailMid = this.tail.getChild("mid");
 		this.rightTuft = this.tailMid.getChild("right_tuft");
 		this.leftTuft = this.tailMid.getChild("left_tuft");
-		this.tailTip = this.tailMid.getChild("tip");
+		this.tailUpper = this.tailMid.getChild("upper");
+		this.tailTip = this.tailUpper.getChild("tip");
 		this.tailFlame = this.tailTip.getChild("flame");
 		this.rightHindLeg = root.getChild("right_hind_leg");
 		this.leftHindLeg = root.getChild("left_hind_leg");
@@ -72,62 +83,81 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 		MeshDefinition mesh = new MeshDefinition();
 		PartDefinition root = mesh.getRoot();
 
-		// Body: 6 wide, 5 tall, 8 long, on 5-pixel legs, y 14..19.
+		// Body: 9 wide, 8 tall, 15 long, y 7..15, with a cream chest bib at the front-bottom.
 		PartDefinition body = root.addOrReplaceChild("body",
-				CubeListBuilder.create().texOffs(0, 12).addBox(-3.0F, -2.5F, -4.0F, 6.0F, 5.0F, 8.0F),
-				PartPose.offset(0.0F, 16.5F, 0.0F));
-
-		// Head: a big box (8 x 6 x 6), y 10..16, pushed forward over the front of the body.
-		PartDefinition head = root.addOrReplaceChild("head",
-				CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -3.0F, -5.0F, 8.0F, 6.0F, 6.0F),
-				PartPose.offset(0.0F, 13.0F, -3.0F));
-		// Short cream muzzle across the bottom of the face, sticking out one pixel.
-		head.addOrReplaceChild("muzzle",
-				CubeListBuilder.create().texOffs(28, 0).addBox(-2.0F, 1.0F, -6.0F, 4.0F, 2.0F, 1.0F),
+				CubeListBuilder.create().texOffs(0, 20).addBox(-4.5F, -4.0F, -7.5F, 9.0F, 8.0F, 15.0F),
+				PartPose.offset(0.0F, 11.0F, 0.0F));
+		body.addOrReplaceChild("chest",
+				CubeListBuilder.create().texOffs(38, 8).addBox(-3.0F, -1.0F, -8.5F, 6.0F, 5.0F, 2.0F),
 				PartPose.ZERO);
-		// Big charcoal ears on the outer corners of the head, stepped: a 3x3x3 base with a
-		// cream-and-red inner ear, and a 2x2x2 tip set toward the outside. Each ear pivots at
-		// its base so it can twitch.
-		CubeListBuilder earBase = CubeListBuilder.create().texOffs(48, 0).addBox(-1.5F, -3.0F, -1.5F, 3.0F, 3.0F, 3.0F);
-		CubeListBuilder earTip = CubeListBuilder.create().texOffs(56, 12).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F);
-		PartDefinition rightEar = head.addOrReplaceChild("right_ear", earBase,
-				PartPose.offsetAndRotation(-2.5F, -3.0F, -2.0F, 0.0F, 0.0F, -0.1F));
-		rightEar.addOrReplaceChild("tip", earTip, PartPose.offset(-0.5F, -3.0F, 0.0F));
-		PartDefinition leftEar = head.addOrReplaceChild("left_ear", earBase,
-				PartPose.offsetAndRotation(2.5F, -3.0F, -2.0F, 0.0F, 0.0F, 0.1F));
-		leftEar.addOrReplaceChild("tip", earTip, PartPose.offset(0.5F, -3.0F, 0.0F));
 
-		// The ember tail, a plume bigger than the head: four segments, each the child of the
-		// one before so the tail can ripple like a whip. A 4x4x3 root at the rump rises,
-		// swells into a fluffy 8x8x7 middle (with a flame tuft on each side), then tapers to a
-		// 6x6x5 tip and a 4x4x3 flame, each curling further upward.
+		// Head: 10 x 8 x 9, y 2..10, set forward over the front of the body.
+		PartDefinition head = root.addOrReplaceChild("head",
+				CubeListBuilder.create().texOffs(0, 0).addBox(-5.0F, -6.0F, -7.0F, 10.0F, 8.0F, 9.0F),
+				PartPose.offset(0.0F, 8.0F, -7.5F));
+		// A pointed cream snout on the lower middle of the face, sticking out three units.
+		head.addOrReplaceChild("snout",
+				CubeListBuilder.create().texOffs(38, 0).addBox(-2.0F, -1.0F, -10.0F, 4.0F, 3.0F, 3.0F),
+				PartPose.ZERO);
+		// Small cheek ruffs on both sides, below and behind the eyes.
+		CubeListBuilder cheek = CubeListBuilder.create().texOffs(52, 0).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 3.0F, 3.0F);
+		head.addOrReplaceChild("right_cheek", cheek, PartPose.offset(-5.5F, -2.0F, -4.0F));
+		head.addOrReplaceChild("left_cheek", cheek, PartPose.offset(5.5F, -2.0F, -4.0F));
+		// Tall pointed ears on top of the head.
+		addEar(head, "right_ear", -1.0F);
+		addEar(head, "left_ear", 1.0F);
+
+		// The ember tail, a bushy plume bigger than the head: five segments, each the child of
+		// the one before so the tail can ripple like a whip. A 5x5x4 root at the top of the
+		// rump swells into an 11x11x8 middle (with a flame tuft on each side), then tapers
+		// through 9x9x7 and 6x6x5 to a 3x4x3 flame, each curling further upward.
 		PartDefinition tail = body.addOrReplaceChild("tail",
-				CubeListBuilder.create().texOffs(36, 12).addBox(-2.0F, -2.0F, 0.0F, 4.0F, 4.0F, 3.0F),
-				PartPose.offsetAndRotation(0.0F, -1.0F, 3.0F, TAIL_LIFT, 0.0F, 0.0F));
+				CubeListBuilder.create().texOffs(82, 8).addBox(-2.5F, -2.5F, 0.0F, 5.0F, 5.0F, 4.0F),
+				PartPose.offsetAndRotation(0.0F, -2.5F, 7.0F, TAIL_LIFT, 0.0F, 0.0F));
 		PartDefinition mid = tail.addOrReplaceChild("mid",
-				CubeListBuilder.create().texOffs(0, 25).addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 7.0F),
-				PartPose.offsetAndRotation(0.0F, 0.0F, 2.5F, MID_CURL, 0.0F, 0.0F));
-		CubeListBuilder tuft = CubeListBuilder.create().texOffs(52, 12).addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F);
-		mid.addOrReplaceChild("right_tuft", tuft, PartPose.offset(-4.0F, -2.0F, 3.5F));
-		mid.addOrReplaceChild("left_tuft", tuft, PartPose.offset(4.0F, -2.0F, 3.5F));
-		PartDefinition tip = mid.addOrReplaceChild("tip",
-				CubeListBuilder.create().texOffs(30, 25).addBox(-3.0F, -3.0F, 0.0F, 6.0F, 6.0F, 5.0F),
+				CubeListBuilder.create().texOffs(48, 20).addBox(-5.5F, -5.5F, 0.0F, 11.0F, 11.0F, 8.0F),
+				PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, MID_CURL, 0.0F, 0.0F));
+		CubeListBuilder tuft = CubeListBuilder.create().texOffs(110, 0).addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F);
+		mid.addOrReplaceChild("right_tuft", tuft, PartPose.offset(-5.5F, -2.0F, 4.0F));
+		mid.addOrReplaceChild("left_tuft", tuft, PartPose.offset(5.5F, -2.0F, 4.0F));
+		PartDefinition upper = mid.addOrReplaceChild("upper",
+				CubeListBuilder.create().texOffs(86, 20).addBox(-4.5F, -4.5F, 0.0F, 9.0F, 9.0F, 7.0F),
+				PartPose.offsetAndRotation(0.0F, 0.0F, 7.5F, UPPER_CURL, 0.0F, 0.0F));
+		PartDefinition tip = upper.addOrReplaceChild("tip",
+				CubeListBuilder.create().texOffs(0, 44).addBox(-3.0F, -3.0F, 0.0F, 6.0F, 6.0F, 5.0F),
 				PartPose.offsetAndRotation(0.0F, 0.0F, 6.5F, TIP_CURL, 0.0F, 0.0F));
 		tip.addOrReplaceChild("flame",
-				CubeListBuilder.create().texOffs(0, 40).addBox(-2.0F, -2.0F, 0.0F, 4.0F, 4.0F, 3.0F),
+				CubeListBuilder.create().texOffs(98, 0).addBox(-1.5F, -2.0F, 0.0F, 3.0F, 4.0F, 3.0F),
 				PartPose.offsetAndRotation(0.0F, 0.0F, 4.5F, FLAME_CURL, 0.0F, 0.0F));
 
-		// All four legs share one texture region: a 2 x 3 x 2 leg on a chunky 3 x 2 x 3
-		// charcoal paw, standing on the ground.
+		// All four legs share one texture region: a thick 3 x 7 x 3 leg on a chunky 4 x 3 x 4
+		// dark paw, standing on the ground.
 		CubeListBuilder leg = CubeListBuilder.create()
-				.texOffs(28, 12).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F)
-				.texOffs(50, 17).addBox(-1.5F, 3.0F, -1.5F, 3.0F, 2.0F, 3.0F);
-		root.addOrReplaceChild("right_hind_leg", leg, PartPose.offset(-1.75F, 19.0F, 2.5F));
-		root.addOrReplaceChild("left_hind_leg", leg, PartPose.offset(1.75F, 19.0F, 2.5F));
-		root.addOrReplaceChild("right_front_leg", leg, PartPose.offset(-1.75F, 19.0F, -2.5F));
-		root.addOrReplaceChild("left_front_leg", leg, PartPose.offset(1.75F, 19.0F, -2.5F));
+				.texOffs(54, 8).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 7.0F, 3.0F)
+				.texOffs(66, 8).addBox(-2.0F, 7.0F, -2.0F, 4.0F, 3.0F, 4.0F);
+		root.addOrReplaceChild("right_hind_leg", leg, PartPose.offset(-2.5F, 14.0F, 5.5F));
+		root.addOrReplaceChild("left_hind_leg", leg, PartPose.offset(2.5F, 14.0F, 5.5F));
+		root.addOrReplaceChild("right_front_leg", leg, PartPose.offset(-2.5F, 14.0F, -5.5F));
+		root.addOrReplaceChild("left_front_leg", leg, PartPose.offset(2.5F, 14.0F, -5.5F));
 
-		return LayerDefinition.create(mesh, 64, 64);
+		return LayerDefinition.create(mesh, 128, 128).apply(MeshTransformer.scaling(1.0F / DETAIL));
+	}
+
+	/**
+	 * One tall pointed ear: three dark tiers centred on each other and tapering to a point
+	 * (6x3x3, 4x3x2, 2x2x2), leaning back and tilted outward. It pivots at its base so it can
+	 * twitch. {@code side} is -1 for the right ear (at -x) and 1 for the left.
+	 */
+	private static void addEar(PartDefinition head, String name, float side) {
+		PartDefinition base = head.addOrReplaceChild(name,
+				CubeListBuilder.create().texOffs(60, 0).addBox(-3.0F, -3.0F, -1.5F, 6.0F, 3.0F, 3.0F),
+				PartPose.offsetAndRotation(3.0F * side, -6.0F, -3.0F, -0.15F, 0.0F, 0.25F * side));
+		PartDefinition middle = base.addOrReplaceChild("middle",
+				CubeListBuilder.create().texOffs(78, 0).addBox(-2.0F, -3.0F, -1.0F, 4.0F, 3.0F, 2.0F),
+				PartPose.offset(0.0F, -3.0F, 0.0F));
+		middle.addOrReplaceChild("tip",
+				CubeListBuilder.create().texOffs(90, 0).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
+				PartPose.offset(0.0F, -3.0F, 0.0F));
 	}
 
 	@Override
@@ -171,15 +201,18 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 		float f = age * (1.0F + speed * 0.5F); // a running Cindercub's fire dances faster
 
 		this.tail.yRot = TAIL_SWEEP + Mth.cos(age * 0.15F) * (0.12F + speed * 0.25F);
-		this.tailMid.yRot = Mth.sin(f * 0.25F - 0.9F) * 0.15F;
-		this.tailTip.yRot = Mth.sin(f * 0.25F - 1.8F) * 0.25F;
+		this.tailMid.yRot = Mth.sin(f * 0.25F - 0.9F) * 0.1F;
+		this.tailUpper.yRot = Mth.sin(f * 0.25F - 1.5F) * 0.15F;
+		this.tailTip.yRot = Mth.sin(f * 0.25F - 2.1F) * 0.22F;
 		this.tailFlame.yRot = Mth.sin(f * 0.25F - 2.7F) * 0.3F;
-		this.tailMid.xRot += 0.05F * Mth.sin(f * 0.2F);
-		this.tailTip.xRot += 0.08F * Mth.sin(f * 0.2F + 0.7F);
-		this.tailFlame.xRot += 0.12F * Mth.sin(f * 0.2F + 1.4F);
+		this.tailMid.xRot += 0.04F * Mth.sin(f * 0.2F);
+		this.tailUpper.xRot += 0.06F * Mth.sin(f * 0.2F + 0.5F);
+		this.tailTip.xRot += 0.08F * Mth.sin(f * 0.2F + 1.0F);
+		this.tailFlame.xRot += 0.12F * Mth.sin(f * 0.2F + 1.5F);
 
-		setScale(this.tailMid, 1.0F + 0.03F * Mth.sin(f * 0.9F));
-		setScale(this.tailTip, 1.0F + 0.06F * Mth.sin(f * 1.1F + 1.0F));
+		setScale(this.tailMid, 1.0F + 0.02F * Mth.sin(f * 0.9F));
+		setScale(this.tailUpper, 1.0F + 0.04F * Mth.sin(f * 1.0F + 0.6F));
+		setScale(this.tailTip, 1.0F + 0.06F * Mth.sin(f * 1.1F + 1.2F));
 		setScale(this.tailFlame, 1.0F + 0.12F * Mth.sin(f * 1.4F + 2.0F));
 
 		float midTilt = this.body.xRot + this.tail.xRot + this.tailMid.xRot;
@@ -202,18 +235,18 @@ public class CindercubModel extends EntityModel<CindercubRenderState> {
 	 */
 	private void setSittingPose() {
 		this.body.xRot = -0.5F;            // tilt: front up, back down
-		this.body.y += 3.4F;               // lower so the rump meets the ground
-		this.head.y += 1.8F;               // follow the chest's front-top corner as it tilts
-		this.head.z += 1.7F;
+		this.body.y += 5.9F;               // lower so the rump meets the ground
+		this.head.y += 2.8F;               // follow the chest's front-top corner as it tilts
+		this.head.z += 2.8F;
 		this.tail.xRot = TAIL_LIFT + 0.7F; // relative to the tilted body: stands up behind
 		this.rightHindLeg.xRot = -1.4F;    // fold forward, nearly flat
 		this.leftHindLeg.xRot = -1.4F;
-		this.rightHindLeg.y += 3.0F;
-		this.leftHindLeg.y += 3.0F;
-		// Folded legs would sit flush with the body's sides and flicker where the faces
-		// overlap; half a pixel outward reads as haunches instead.
-		this.rightHindLeg.x -= 0.5F;
-		this.leftHindLeg.x += 0.5F;
+		this.rightHindLeg.y += 6.5F;
+		this.leftHindLeg.y += 6.5F;
+		// Folded paws would sit flush with the body's sides and flicker where the faces
+		// overlap; pushing them out a little reads as haunches instead.
+		this.rightHindLeg.x -= 0.75F;
+		this.leftHindLeg.x += 0.75F;
 		this.rightFrontLeg.xRot = 0.0F;    // no walk swing while sitting
 		this.leftFrontLeg.xRot = 0.0F;
 	}

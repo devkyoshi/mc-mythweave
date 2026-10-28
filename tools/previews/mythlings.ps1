@@ -42,6 +42,12 @@ public class Mat {
 		t.m = new double[] { r[0],r[1],r[2],px, r[3],r[4],r[5],py, r[6],r[7],r[8],pz };
 		return t;
 	}
+	// Uniform scale about the ground (y = 24), like Minecraft's MeshTransformer.scaling.
+	public static Mat Scaling(double s) {
+		Mat t = new Mat();
+		t.m = new double[] { s,0,0,0, 0,s,0,24.016*(1-s), 0,0,s,0 };
+		return t;
+	}
 	static double[] Mul3(double[] a, double[] b) {
 		double[] c = new double[9];
 		for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) for (int k = 0; k < 3; k++) c[i*3+j] += a[i*3+k] * b[k*3+j];
@@ -74,6 +80,9 @@ public class Preview {
 	public double DepthBias = 0;
 	// If set, output pixels per model pixel (instead of fitting the image); see Render.
 	public double FixedScale = 0;
+	// Draw glow texels added on top of the lit texture (as the game does) instead of unlit;
+	// use for glow maps painted as dimmed add-on light (see tools/textures/cindercub.ps1).
+	public bool AdditiveGlow = false;
 	Bitmap tex, glow;
 	double yaw, pitch;
 
@@ -122,13 +131,16 @@ public class Preview {
 			for (int j = 0; j < h; j++) {
 				Color t = tex.GetPixel(u + i, v + j);
 				if (t.A == 0) continue;
-				// Glowing texels (runes, eyes, crystals, flames) ignore lighting, like in game.
-				double s = glow.GetPixel(u + i, v + j).A > 0 ? 1.0 : shade;
+				// Glowing texels ignore lighting (unlit full-bright), or with AdditiveGlow are added on top
+				// of the lit texel the way the game's "eyes" render type does.
+				Color gl = glow.GetPixel(u + i, v + j);
+				double s = !AdditiveGlow && gl.A > 0 ? 1.0 : shade;
+				double add = AdditiveGlow && gl.A > 0 ? 0.8 : 0.0;
 				double[][] c = texel(i, j);
 				Quad q = new Quad();
 				q.p = new double[4][];
 				for (int k = 0; k < 4; k++) q.p[k] = View(pose.Apply(c[k][0], c[k][1], c[k][2]));
-				q.c = Color.FromArgb(255, (int)(t.R * s), (int)(t.G * s), (int)(t.B * s));
+				q.c = Color.FromArgb(255, Math.Min(255, (int)(t.R * s + gl.R * add)), Math.Min(255, (int)(t.G * s + gl.G * add)), Math.Min(255, (int)(t.B * s + gl.B * add)));
 				q.bias = DepthBias;
 				quads.Add(q);
 			}
@@ -222,46 +234,54 @@ public class Preview {
 
 function New-Cindercub([double]$yaw, [double]$pitch, [bool]$sitting) {
 	$p = New-Object Preview $texturePath, $glowPath, $yaw, $pitch
-	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
+	$p.AdditiveGlow = $true
+	# CindercubModel is built at 1.5x detail and scaled back down (MeshTransformer.scaling).
+	$id = [Mat]::Scaling(1.0 / 1.5)
 
 	# Rest pose, from CindercubModel#createBodyLayer.
-	$bodyY = 16.5; $bodyXRot = 0.0; $headY = 13.0; $headZ = -3.0; $tailXRot = 0.8
-	$hindY = 19.0; $hindXRot = 0.0; $hindSpread = 0.0
+	$bodyY = 11.0; $bodyXRot = 0.0; $headY = 8.0; $headZ = -7.5; $tailXRot = 0.4
+	$hindY = 14.0; $hindXRot = 0.0; $hindSpread = 0.0
 	if ($sitting) {
 		# From CindercubModel#setSittingPose.
-		$bodyY += 3.4; $bodyXRot = -0.5; $headY += 1.8; $headZ += 1.7; $tailXRot += 0.7
-		$hindY += 3.0; $hindXRot = -1.4; $hindSpread = 0.5
+		$bodyY += 5.9; $bodyXRot = -0.5; $headY += 2.8; $headZ += 2.8; $tailXRot += 0.7
+		$hindY += 6.5; $hindXRot = -1.4; $hindSpread = 0.75
 	}
 
 	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
-	$p.Box($body, 0, 12, -3, -2.5, -4, 6, 5, 8)
-	# Ember tail: root, fluffy middle (with side tufts that burn upward), tip, flame.
-	$tail = $body.Then([Mat]::Pose(0, -1, 3, $tailXRot, 0.35, 0))   # swept to one side (TAIL_SWEEP)
-	$p.Box($tail, 36, 12, -2, -2, 0, 4, 4, 3)
-	$mid = $tail.Then([Mat]::Pose(0, 0, 2.5, 0.3, 0, 0))
-	$p.Box($mid, 0, 25, -4, -4, 0, 8, 8, 7)
-	foreach ($x in -4, 4) {
-		$p.Box($mid.Then([Mat]::Pose($x, -2, 3.5, -($bodyXRot + $tailXRot + 0.3), 0, 0)), 52, 12, -0.5, -2, -0.5, 1, 2, 1)
+	$p.Box($body, 0, 20, -4.5, -4, -7.5, 9, 8, 15)
+	$p.Box($body, 38, 8, -3, -1, -8.5, 6, 5, 2)                                   # chest bib
+	# Ember tail: root, bushy middle (with side tufts that burn upward), upper, tip, flame.
+	$tail = $body.Then([Mat]::Pose(0, -2.5, 7, $tailXRot, 0.35, 0))   # swept to one side (TAIL_SWEEP)
+	$p.Box($tail, 82, 8, -2.5, -2.5, 0, 5, 5, 4)
+	$mid = $tail.Then([Mat]::Pose(0, 0, 3, 0.25, 0, 0))
+	$p.Box($mid, 48, 20, -5.5, -5.5, 0, 11, 11, 8)
+	foreach ($x in -5.5, 5.5) {
+		$p.Box($mid.Then([Mat]::Pose($x, -2, 4, -($bodyXRot + $tailXRot + 0.25), 0, 0)), 110, 0, -1, -3, -1, 2, 3, 2)
 	}
-	$tip = $mid.Then([Mat]::Pose(0, 0, 6.5, 0.4, 0, 0))
-	$p.Box($tip, 30, 25, -3, -3, 0, 6, 6, 5)
-	$p.Box($tip.Then([Mat]::Pose(0, 0, 4.5, 0.45, 0, 0)), 0, 40, -2, -2, 0, 4, 4, 3)
+	$upper = $mid.Then([Mat]::Pose(0, 0, 7.5, 0.3, 0, 0))
+	$p.Box($upper, 86, 20, -4.5, -4.5, 0, 9, 9, 7)
+	$tip = $upper.Then([Mat]::Pose(0, 0, 6.5, 0.4, 0, 0))
+	$p.Box($tip, 0, 44, -3, -3, 0, 6, 6, 5)
+	$p.Box($tip.Then([Mat]::Pose(0, 0, 4.5, 0.45, 0, 0)), 98, 0, -1.5, -2, 0, 3, 4, 3)
 
 	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
-	$p.Box($head, 0, 0, -4, -3, -5, 8, 6, 6)
-	$p.Box($head, 28, 0, -2, 1, -6, 4, 2, 1)
-	foreach ($ear in @(@(-2.5, -0.1, -0.5), @(2.5, 0.1, 0.5))) {
-		$earPose = $head.Then([Mat]::Pose($ear[0], -3, -2, 0, 0, $ear[1]))
-		$p.Box($earPose, 48, 0, -1.5, -3, -1.5, 3, 3, 3)
-		$p.Box($earPose.Then([Mat]::Pose($ear[2], -3, 0, 0, 0, 0)), 56, 12, -1, -2, -1, 2, 2, 2)
+	$p.Box($head, 0, 0, -5, -6, -7, 10, 8, 9)
+	$p.Box($head, 38, 0, -2, -1, -10, 4, 3, 3)                                    # snout
+	foreach ($x in -5.5, 5.5) { $p.Box($head.Then([Mat]::Pose($x, -2, -4, 0, 0, 0)), 52, 0, -0.5, 0, -1.5, 1, 3, 3) }
+	foreach ($side in -1, 1) {
+		$ear = $head.Then([Mat]::Pose(3 * $side, -6, -3, -0.15, 0, 0.25 * $side))
+		$p.Box($ear, 60, 0, -3, -3, -1.5, 6, 3, 3)
+		$earMid = $ear.Then([Mat]::Pose(0, -3, 0, 0, 0, 0))
+		$p.Box($earMid, 78, 0, -2, -3, -1, 4, 3, 2)
+		$p.Box($earMid.Then([Mat]::Pose(0, -3, 0, 0, 0, 0)), 90, 0, -1, -2, -1, 2, 2, 2)
 	}
 
 	# Legs touch the body where they join; a small bias lets the body win those edges.
 	$p.DepthBias = 0.05
-	foreach ($leg in @(@((-1.75 - $hindSpread), $hindY, 2.5, $hindXRot), @((1.75 + $hindSpread), $hindY, 2.5, $hindXRot), @(-1.75, 19, -2.5, 0), @(1.75, 19, -2.5, 0))) {
+	foreach ($leg in @(@((-2.5 - $hindSpread), $hindY, 5.5, $hindXRot), @((2.5 + $hindSpread), $hindY, 5.5, $hindXRot), @(-2.5, 14, -5.5, 0), @(2.5, 14, -5.5, 0))) {
 		$legPose = $id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0))
-		$p.Box($legPose, 28, 12, -1, 0, -1, 2, 3, 2)
-		$p.Box($legPose, 50, 17, -1.5, 3, -1.5, 3, 2, 3)
+		$p.Box($legPose, 54, 8, -1.5, 0, -1.5, 3, 7, 3)
+		$p.Box($legPose, 66, 8, -2, 7, -2, 4, 3, 4)
 	}
 	return $p
 }
@@ -476,13 +496,13 @@ for ($i = 0; $i -lt $forms.Count; $i++) {
 $g.Dispose()
 Save $line 'cindercub_line.png'
 
-# Texture sheet, scaled 8x with nearest-neighbour on a dark checkerboard.
+# Texture sheet (128 x 128), scaled 4x with nearest-neighbour on a dark checkerboard.
 $tex = [System.Drawing.Image]::FromFile($texturePath)
 $sheet = New-Object System.Drawing.Bitmap 512, 512
 $g = [System.Drawing.Graphics]::FromImage($sheet)
-for ($x = 0; $x -lt 64; $x++) { for ($y = 0; $y -lt 64; $y++) {
+for ($x = 0; $x -lt 128; $x++) { for ($y = 0; $y -lt 128; $y++) {
 	$shade = if ((($x + $y) % 2) -eq 0) { 38 } else { 48 }
-	$g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, $shade, $shade, $shade + 4))), $x * 8, $y * 8, 8, 8)
+	$g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, $shade, $shade, $shade + 4))), $x * 4, $y * 4, 4, 4)
 } }
 $g.InterpolationMode = 'NearestNeighbor'; $g.PixelOffsetMode = 'Half'
 $g.DrawImage($tex, 0, 0, 512, 512)

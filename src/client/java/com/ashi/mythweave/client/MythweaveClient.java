@@ -1,6 +1,7 @@
 package com.ashi.mythweave.client;
 
 import com.ashi.mythweave.client.registry.ModModelLayers;
+import com.ashi.mythweave.client.registry.ModParticleProviders;
 import com.ashi.mythweave.client.registry.ModRenderers;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -12,5 +13,6 @@ public class MythweaveClient implements ClientModInitializer {
 		// Model layers first: renderers bake them.
 		ModModelLayers.register();
 		ModRenderers.register();
+		ModParticleProviders.register();
 	}
 }

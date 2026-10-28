@@ -9,6 +9,7 @@ import com.ashi.mythweave.entity.cindercub.CindercubEntity;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -22,6 +23,8 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 	private static final Identifier TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub.png");
 	/** Transparent except the parts that glow (the ember tail and the eye shine). */
 	private static final Identifier GLOW_TEXTURE = Mythweave.id("textures/entity/cindercub/cindercub_glow.png");
+	/** Minimum block light the body is drawn with (0-15; a torch gives 14). */
+	private static final int EMBER_LIGHT = 9;
 
 	public CindercubRenderer(EntityRendererProvider.Context context) {
 		// 0.35 = shadow radius in blocks, sized for the 0.6-wide hitbox.
@@ -38,6 +41,15 @@ public class CindercubRenderer extends MobRenderer<CindercubEntity, CindercubRen
 	public void extractRenderState(CindercubEntity entity, CindercubRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
 		state.isSitting = entity.isInSittingPose();
+	}
+
+	/**
+	 * Its own embers light it: never darker than block light {@link #EMBER_LIGHT}, so at night
+	 * the whole fox stays visible in a warm glow instead of only its tail.
+	 */
+	@Override
+	protected int getBlockLightLevel(CindercubEntity entity, BlockPos pos) {
+		return Math.max(EMBER_LIGHT, super.getBlockLightLevel(entity, pos));
 	}
 
 	@Override

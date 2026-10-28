@@ -68,6 +68,7 @@ Package root `com.ashi.mythweave` (written `…` below).
 │                                      Also holds MOD_ID, the LOGGER and id("path") → mythweave:path.
 ├── registry/                          Everything registered with the game, one class per kind
 │   ├── ModSounds.java                 Sound events: entity.<cindercub|emberlynx|ashenox|solflare>.ambient / hurt / death
+│   ├── ModParticles.java              Particle types: mythweave:ember (Cindercub's glowing square embers)
 │   ├── ModEntities.java               Entity types (CINDERCUB, EMBERLYNX, ASHENOX, SOLFLARE: model-scale size, eye height) + attributes,
 │   │                                  and mythlingForm(id): form id → entity type, used by evolution
 │   ├── ModBlocks.java                 Blocks (EMBER_BRAZIER: strength, sound, light while lit)
@@ -128,10 +129,13 @@ client/
 ├── MythweaveClient.java               Client entry point (fabric.mod.json "client"). Calls the client registries.
 ├── registry/
 │   ├── ModModelLayers.java            Model layer ids (CINDERCUB, EMBERLYNX, ASHENOX = mythweave:<name>#main)
-│   └── ModRenderers.java              Entity type → renderer (every entity type needs one)
+│   ├── ModRenderers.java              Entity type → renderer (every entity type needs one)
+│   └── ModParticleProviders.java      Particle type → how it is drawn (EmberParticle)
+├── particle/
+│   └── EmberParticle.java             Tiny glowing square ember: rises, drifts, spins, flickers, cools gold → red
 ├── model/entity/
 │   ├── CindercubModel.java            Cube layout and all animation: walk, head look, idle tilt, ear twitch,
-│   │                                  sit pose, fur tail (wild) vs fire tail (bonded) with its flicker
+│   │                                  sit pose, ember tail ripple and flicker (built at 1.5x detail)
 │   ├── EmberlynxModel.java            Taller lynx: fire mane, flame ear tufts, long rippling fire tail, sit pose
 │   ├── AshenoxModel.java              Heavy volcanic fox: obsidian plates, magma mane, curved horns, thick fire tail
 │   └── SolflareModel.java             Radiant fox: long legs, flame crest, two fans of flame wings, comet tail
@@ -162,12 +166,13 @@ resources/
 │   ├── icon.png                       Mod icon in the mod list
 │   ├── lang/en_us.json                Every player-visible text: names, messages, subtitles
 │   ├── sounds.json                    What each sound event plays (currently vanilla fox sounds, by event)
+│   ├── particles/ember.json           Sprite list for mythweave:ember (textures/particle/ember.png)
 │   ├── blockstates/ember_brazier.json Picks the model per LIT state
 │   ├── models/block/                  ember_brazier.json (unlit), ember_brazier_lit.json (with flame planes)
 │   ├── models/item/                   <form>_spawn_egg.json for cindercub, emberlynx, ashenox, solflare
 │   ├── items/                         Item appearances: the three spawn eggs, ember_brazier.json
 │   └── textures/
-│       ├── entity/cindercub/          cindercub.png (64×64 texture), cindercub_glow.png (glow map)
+│       ├── entity/cindercub/          cindercub.png (128×128 texture, model built at 1.5x detail), cindercub_glow.png (glow map)
 │       ├── entity/emberlynx/          emberlynx.png (64×64 texture), emberlynx_glow.png (glow map)
 │       ├── entity/ashenox/            ashenox.png (64×64 texture), ashenox_glow.png (glow map)
 │       ├── entity/solflare/           solflare.png (64×64 texture), solflare_glow.png (glow map)
@@ -193,6 +198,7 @@ resources/
 tools/
 ├── README.md                          What each script does and when to re-run it
 ├── textures/cindercub.ps1             Paints the Cindercub texture + glow map; documents its UV layout
+├── textures/ember_particle.ps1        Paints the ember particle sprite
 ├── textures/emberlynx.ps1             Paints the Emberlynx texture + glow map; documents its UV layout
 ├── textures/ashenox.ps1               Paints the Ashenox texture + glow map; documents its UV layout
 ├── textures/solflare.ps1              Paints the Solflare texture + glow map; documents its UV layout
@@ -213,7 +219,7 @@ docs/
 ## How it runs
 
 **Startup (both sides), from `Mythweave.onInitialize()`:**
-1. `ModSounds`, then `ModEntities`, `ModBlocks`, `ModItems`, `ModCreativeTabs`. Order matters:
+1. `ModSounds`, `ModParticles`, then `ModEntities`, `ModBlocks`, `ModItems`, `ModCreativeTabs`. Order matters:
    items refer to entity types and blocks.
 2. `ModEvents.register()`, which hooks the Kindle listeners (Fabric `ServerLivingEntityEvents`)
    and the `/mythweave` command (Fabric `CommandRegistrationCallback`).
@@ -221,6 +227,7 @@ docs/
 **Startup (client only), from `MythweaveClient.onInitializeClient()`:**
 1. `ModModelLayers.register()`: model cube layouts.
 2. `ModRenderers.register()`: renderers, which bake those layers.
+3. `ModParticleProviders.register()`: how Mythweave particles look.
 
 **A right-click on a Mythling** (`MythlingEntity.mobInteract`, run on both sides; only the
 server changes anything):

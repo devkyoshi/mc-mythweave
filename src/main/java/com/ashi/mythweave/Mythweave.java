@@ -5,6 +5,7 @@ import com.ashi.mythweave.registry.ModBlocks;
 import com.ashi.mythweave.registry.ModCreativeTabs;
 import com.ashi.mythweave.registry.ModEntities;
 import com.ashi.mythweave.registry.ModItems;
+import com.ashi.mythweave.registry.ModParticles;
 import com.ashi.mythweave.registry.ModSounds;
 
 import net.fabricmc.api.ModInitializer;
@@ -30,6 +31,7 @@ public class Mythweave implements ModInitializer {
 
 		// Entity types and blocks first: items refer to CINDERCUB and EMBER_BRAZIER.
 		ModSounds.initialize();
+		ModParticles.initialize();
 		ModEntities.initialize();
 		ModBlocks.initialize();
 		ModItems.initialize();

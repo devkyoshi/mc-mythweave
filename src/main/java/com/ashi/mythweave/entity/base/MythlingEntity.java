@@ -4,6 +4,7 @@ import com.ashi.mythweave.evolution.Evolution;
 import com.ashi.mythweave.evolution.EvolutionRules;
 import com.ashi.mythweave.evolution.Kindle;
 
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -203,9 +204,13 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 		if (this.isInWaterOrRain()) {
 			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
 		} else {
-			this.level().addParticle(this.random.nextInt(4) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMALL_FLAME,
-					x, y, z, 0.0, 0.015 + this.random.nextDouble() * 0.02, 0.0);
+			this.level().addParticle(this.emberParticle(), x, y, z, 0.0, 0.015 + this.random.nextDouble() * 0.02, 0.0);
 		}
+	}
+
+	/** The particle {@link #emitEmbers} spawns: vanilla flames, mostly small ones. Override to change it. */
+	protected ParticleOptions emberParticle() {
+		return this.random.nextInt(4) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMALL_FLAME;
 	}
 
 	/**

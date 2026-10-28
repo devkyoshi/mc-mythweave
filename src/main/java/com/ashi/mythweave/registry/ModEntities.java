@@ -32,12 +32,12 @@ public final class ModEntities {
 			"cindercub",
 			// CREATURE = passive animal category (counts toward the animal spawn cap later).
 			// 0.6 wide x 0.9 tall, the size in the concept sheets (docs/reference/cindercub).
-			// The height covers the model up to the top of its head (14 of 16 pixels); the ears
-			// and the ember tail stick out above it. Eye height matches the model's eyes
-			// (11 pixels up).
+			// The height covers the model up to the top of its head (14.7 of 16 pixels);
+			// the ears and the ember tail stick out above it. Eye height matches the model's
+			// eyes (12.3 pixels up).
 			EntityType.Builder.of(CindercubEntity::new, MobCategory.CREATURE)
 					.sized(0.6f, 0.9f)
-					.eyeHeight(0.69f)
+					.eyeHeight(0.77f)
 	);
 
 	public static final EntityType<EmberlynxEntity> EMBERLYNX = register(
