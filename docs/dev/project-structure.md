@@ -60,7 +60,7 @@ Generated or local only, and git-ignored: `build/` (compiled output and JARs), `
 
 ## Common code: `src/main/java`
 
-Package root `com.ashi.mythweave` (written `…` below).
+Package root `com.mythweave` (written `…` below).
 
 ```text
 …/
@@ -122,7 +122,7 @@ mixins there when one is really needed.
 
 ## Client code: `src/client/java`
 
-Package root `com.ashi.mythweave.client`.
+Package root `com.mythweave.client`.
 
 ```text
 client/

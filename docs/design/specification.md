@@ -4,7 +4,7 @@
 the source of truth for planning and implementing the project.\
 **Project name:** Mythweave\
 **Mod ID:** `mythweave`\
-**Java package:** `com.ashi.mythweave`\
+**Java package:** `com.mythweave`\
 **Target:** Minecraft Java Edition 26.3 with Fabric\
 **Language:** Java\
 **First creature:** Cindercub\
@@ -246,7 +246,7 @@ Keep the initial codebase simple. The names below are suggestions; align
 them with the generated template and current Fabric conventions.
 
 ``` text
-src/main/java/com/ashi/mythweave/
+src/main/java/com/mythweave/
 ├── Mythweave.java
 ├── registry/
 │   ├── ModEntityTypes.java

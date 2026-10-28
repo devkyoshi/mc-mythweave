@@ -415,7 +415,7 @@ name. What belongs where, and step-by-step checklists for adding creatures, form
 and blocks, are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```text
-src/main/java/com/ashi/mythweave/           Common code (runs on client and server)
+src/main/java/com/mythweave/                Common code (runs on client and server)
 ├── Mythweave.java                          Mod entry point: calls the registries, then events
 ├── registry/                               Every registration, one class per kind
 │   ├── ModEntities.java                    Entity types and their attributes
@@ -440,7 +440,7 @@ src/main/java/com/ashi/mythweave/           Common code (runs on client and serv
 ├── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
 └── event/ModEvents.java                    Hooks listeners and commands into the game
 
-src/client/java/com/ashi/mythweave/client/  Client-only code (never loaded on a server)
+src/client/java/com/mythweave/client/       Client-only code (never loaded on a server)
 ├── MythweaveClient.java                    Client entry point: calls the client registries
 ├── registry/
 │   ├── ModModelLayers.java                 Model layer ids (+ registration)

@@ -27,7 +27,7 @@
 #   tail tuft  (110, 0, 2, 3, 2)     tail flame (98, 0,  3, 4, 3)    chest      (38, 8,  6, 5, 2)
 #   leg        (54, 8,  3, 7, 3)     paw        (66, 8,  4, 3, 4)    tail root  (82, 8,  5, 5, 4)
 #   body       (0,  20, 9, 8, 15)    tail mid   (48, 20, 11, 11, 8)  tail upper (86, 20, 9, 9, 7)
-#   tail tip   (0,  44, 6, 6, 5)
+#   tail tip   (0,  44, 6, 6, 5)     eyelid     (110, 8, 2, 3, 0)   (a flat plane: front 2x3 at 110,8)
 
 param(
 	[string]$Out = (Join-Path $PSScriptRoot '..\..\src\main\resources\assets\mythweave\textures\entity\cindercub\cindercub.png')
@@ -193,6 +193,12 @@ Shade-Box 78 0 4 3 2 $dark 0.5
 Fill 81 3 2 2 $red                                 # inner ear
 # Tip (90, 0, 2, 2, 2): darkest.
 Fill-Box 90 0 2 2 2 $brownDark
+
+# ---- Eyelids (110, 8, 2, 3, 0): flat planes over the eyes, shown only while it sleeps. Orange
+#      fur with the closed eye as a dark line along the bottom; front (110,8), back (112,8).
+Fill 110 8 4 2 $orange
+Fill 110 9 4 1 $orangeDeep
+Fill 110 10 4 1 $brownDark
 
 # ---- Chest bib (38, 8, 6, 5, 2): warm cream, shading down.
 Shade-Box 38 8 6 5 2 $creamy 0.6

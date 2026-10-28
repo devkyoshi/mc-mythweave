@@ -1,0 +1,34 @@
+package com.mythweave.client.registry;
+
+import com.mythweave.Mythweave;
+import com.mythweave.client.MythweaveClient;
+import com.mythweave.client.model.entity.AshenoxModel;
+import com.mythweave.client.model.entity.CindercubModel;
+import com.mythweave.client.model.entity.EmberlynxModel;
+import com.mythweave.client.model.entity.SolflareModel;
+
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+
+import net.minecraft.client.model.geom.ModelLayerLocation;
+
+/**
+ * Every entity model layer, in one place. A layer is a model's cube layout, registered so a
+ * renderer can "bake" it ({@code context.bakeLayer(ModModelLayers.CINDERCUB)}).
+ */
+public final class ModModelLayers {
+	public static final ModelLayerLocation CINDERCUB = new ModelLayerLocation(Mythweave.id("cindercub"), "main");
+	public static final ModelLayerLocation EMBERLYNX = new ModelLayerLocation(Mythweave.id("emberlynx"), "main");
+	public static final ModelLayerLocation ASHENOX = new ModelLayerLocation(Mythweave.id("ashenox"), "main");
+	public static final ModelLayerLocation SOLFLARE = new ModelLayerLocation(Mythweave.id("solflare"), "main");
+
+	private ModModelLayers() {
+	}
+
+	/** Called from {@link MythweaveClient#onInitializeClient()}, before {@link ModRenderers}. */
+	public static void register() {
+		ModelLayerRegistry.registerModelLayer(CINDERCUB, CindercubModel::createBodyLayer);
+		ModelLayerRegistry.registerModelLayer(EMBERLYNX, EmberlynxModel::createBodyLayer);
+		ModelLayerRegistry.registerModelLayer(ASHENOX, AshenoxModel::createBodyLayer);
+		ModelLayerRegistry.registerModelLayer(SOLFLARE, SolflareModel::createBodyLayer);
+	}
+}

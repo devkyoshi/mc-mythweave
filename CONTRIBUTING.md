@@ -28,7 +28,7 @@ The full developer docs are in [docs/dev/](docs/dev/README.md):
 
 The code is **layered by type**, the usual Minecraft-mod convention: one package per kind of
 thing, with creatures nested by name inside the packages that need it. (`...` is
-`com/ashi/mythweave`.)
+`com/mythweave`.)
 
 **Common code** (`src/main/java/...`):
 

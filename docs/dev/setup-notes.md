@@ -28,7 +28,8 @@ template's. The current layout is in the README's *Project structure* section an
 Source: Fabric's example mod (`template-mod-template-26.3`). Only renamed, no
 version or build-logic changes:
 
-- Mod id `template-mod` → `mythweave`; package `com.example` → `com.ashi.mythweave`.
+- Mod id `template-mod` → `mythweave`; package `com.example` → `com.ashi.mythweave` (later
+  shortened to `com.mythweave`).
 - `TemplateMod` → `Mythweave`, `TemplateModClient` → `client.MythweaveClient`.
 - Mixin configs → `mythweave.mixins.json` / `mythweave.client.mixins.json`.
 - Assets folder → `assets/mythweave/`.
@@ -41,14 +42,14 @@ version or build-logic changes:
 ## Source tree
 
 ```text
-src/main/java/com/ashi/mythweave/
+src/main/java/com/mythweave/
 ├── Mythweave.java            # common entry point (MOD_ID, LOGGER, id())
 └── mixin/ExampleMixin.java
 src/main/resources/
 ├── fabric.mod.json
 ├── mythweave.mixins.json
 └── assets/mythweave/icon.png
-src/client/java/com/ashi/mythweave/client/
+src/client/java/com/mythweave/client/
 ├── MythweaveClient.java      # client entry point (renderers go here)
 └── mixin/ExampleClientMixin.java
 src/client/resources/mythweave.client.mixins.json

@@ -17,10 +17,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.ashi.mythweave.Mythweave"
+			"com.mythweave.Mythweave"
 		],
 		"client": [
-			"com.ashi.mythweave.client.MythweaveClient"
+			"com.mythweave.client.MythweaveClient"
 		]
 	},
 	"mixins": [

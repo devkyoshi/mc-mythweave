@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "com.ashi.mythweave.client.mixin",
+	"package": "com.mythweave.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [],
 	"injectors": {
