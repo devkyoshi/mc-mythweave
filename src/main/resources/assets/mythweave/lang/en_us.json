@@ -2,11 +2,9 @@
   "entity.mythweave.cindercub": "Cindercub",
   "entity.mythweave.emberlynx": "Emberlynx",
   "entity.mythweave.ashenox": "Ashenox",
-  "entity.mythweave.solflare": "Solflare",
   "item.mythweave.cindercub_spawn_egg": "Cindercub Spawn Egg",
   "item.mythweave.emberlynx_spawn_egg": "Emberlynx Spawn Egg",
   "item.mythweave.ashenox_spawn_egg": "Ashenox Spawn Egg",
-  "item.mythweave.solflare_spawn_egg": "Solflare Spawn Egg",
   "block.mythweave.ember_brazier": "Ember Brazier",
 
   "subtitles.mythweave.entity.cindercub.ambient": "Cindercub yips",
@@ -18,9 +16,6 @@
   "subtitles.mythweave.entity.ashenox.ambient": "Ashenox rumbles",
   "subtitles.mythweave.entity.ashenox.hurt": "Ashenox hurts",
   "subtitles.mythweave.entity.ashenox.death": "Ashenox dies",
-  "subtitles.mythweave.entity.solflare.ambient": "Solflare chirrs",
-  "subtitles.mythweave.entity.solflare.hurt": "Solflare hurts",
-  "subtitles.mythweave.entity.solflare.death": "Solflare dies",
 
   "message.mythweave.mythling.bonded": "%s has bonded with you!",
   "message.mythweave.mythling.wants_item": "This %s sniffs at you curiously. Maybe it would like some %s?",
@@ -33,11 +28,8 @@
   "message.mythweave.ember_spark.recharging": "%s's ember is still recharging (%s s).",
   "message.mythweave.ember_spark.no_brazier": "%s looks around, but it can't see an unlit Ember Brazier within %s blocks.",
 
-  "message.mythweave.kindle.status": "%s · Kindle %s/%s · %s",
+  "message.mythweave.kindle.status": "%s · Kindle %s/%s · next: %s",
   "message.mythweave.kindle.status_final": "%s · Kindle %s · fully evolved",
-  "message.mythweave.kindle.leaning.none": "no leaning yet",
-  "message.mythweave.kindle.leaning.combat": "leaning toward %s (battle)",
-  "message.mythweave.kindle.leaning.exploration": "leaning toward %s (exploration)",
   "message.mythweave.kindle.new_biome": "%s sniffs the air of a new place! (+%s Kindle)",
 
   "message.mythweave.evolution.started": "%s is evolving!",

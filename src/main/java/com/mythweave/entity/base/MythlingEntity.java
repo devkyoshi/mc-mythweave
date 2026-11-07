@@ -188,19 +188,29 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	 * @param oneInMoving spawn chance per tick while moving (1 in n)
 	 */
 	protected void emitEmbers(double back, double backSpan, double up, double upSpan, int oneInIdle, int oneInMoving) {
+		this.emitEmbers(0.0, back, backSpan, up, upSpan, oneInIdle, oneInMoving);
+	}
+
+	/**
+	 * Like {@link #emitEmbers(double, double, double, double, int, int)}, starting {@code side}
+	 * blocks to the creature's left (negative: right) of its centre line, e.g. for side tails.
+	 */
+	protected void emitEmbers(double side, double back, double backSpan, double up, double upSpan, int oneInIdle,
+			int oneInMoving) {
 		boolean moving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4;
 		if (this.random.nextInt(moving ? oneInMoving : oneInIdle) != 0) {
 			return;
 		}
-		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite. Offsets are for
-		// the model at scale 1 and grow with the form's size.
+		// The entity faces (-sin(yaw), cos(yaw)), so "behind" is the opposite and its left is
+		// (cos(yaw), sin(yaw)). Offsets are for the model at scale 1 and grow with the form's size.
 		float scale = this.getScale();
 		double along = this.random.nextDouble();
 		double b = (back + along * backSpan) * scale;
+		double s = side * scale;
 		float yaw = this.yBodyRot * Mth.DEG_TO_RAD;
-		double x = this.getX() + Mth.sin(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
+		double x = this.getX() + Mth.sin(yaw) * b + Mth.cos(yaw) * s + (this.random.nextDouble() - 0.5) * 0.15;
 		double y = this.getY() + (up + along * upSpan) * scale;
-		double z = this.getZ() - Mth.cos(yaw) * b + (this.random.nextDouble() - 0.5) * 0.15;
+		double z = this.getZ() - Mth.cos(yaw) * b + Mth.sin(yaw) * s + (this.random.nextDouble() - 0.5) * 0.15;
 		if (this.isInWaterOrRain()) {
 			this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.04, 0.0);
 		} else {
@@ -213,6 +223,18 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	 * up to follow. Override to react (Cindercub is happy to be noticed).
 	 */
 	protected void onOwnerToggledSit(Player owner, boolean sit) {
+	}
+
+	/**
+	 * Whether this form is a mount: its owner rides it with an empty-handed click, and
+	 * sneak-clicks to sit (see {@link #mobInteract}). The form handles the riding itself.
+	 */
+	protected boolean isRideable() {
+		return false;
+	}
+
+	/** Server-side. The owner just climbed onto a rideable form. Override to react. */
+	protected void onOwnerMounted(Player owner) {
 	}
 
 	/** The particle {@link #emitEmbers} spawns: vanilla flames, mostly small ones. Override to change it. */
@@ -287,6 +309,9 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 	 * <p>Priority: bonding a wild one; refusing non-owners; for the owner, sneaking with an
 	 * empty hand shows Kindle status, then {@link #onOwnerUseItem}, then vanilla interactions
 	 * (leads, etc.), then the sit toggle.
+	 *
+	 * <p>A rideable form ({@link #isRideable}) differs for the owner's empty hand: a click
+	 * climbs on, a sneak-click sits it down, and a sneak-click while it sits shows Kindle.
 	 */
 	@Override
 	public InteractionResult mobInteract(Player player, InteractionHand hand) {
@@ -332,8 +357,24 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 			return super.mobInteract(player, hand);
 		}
 
+		// Owner, empty main hand, on a mount: climb on (standing it up first); sneak-click to
+		// sit it down (handled by the sit toggle below), or, while it sits, to see Kindle.
+		boolean emptyMainHand = stack.isEmpty() && hand == InteractionHand.MAIN_HAND;
+		if (this.isRideable() && emptyMainHand && !player.isSecondaryUseActive()) {
+			if (server) {
+				this.setOrderedToSit(false);
+				this.setInSittingPose(false);
+				this.getNavigation().stop();
+				this.setTarget(null);
+				if (player.startRiding(this)) {
+					this.onOwnerMounted(player);
+				}
+			}
+			return InteractionResult.SUCCESS.withoutItem();
+		}
+
 		// Owner, sneaking, empty main hand: show Kindle (evolution progress) instead of sitting.
-		if (player.isSecondaryUseActive() && stack.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+		if (player.isSecondaryUseActive() && emptyMainHand && (!this.isRideable() || this.isOrderedToSit())) {
 			if (server) {
 				player.sendOverlayMessage(this.kindle.status(this));
 			}

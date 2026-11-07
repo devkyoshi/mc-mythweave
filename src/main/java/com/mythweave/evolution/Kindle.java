@@ -1,7 +1,6 @@
 package com.mythweave.evolution;
 
 import com.mythweave.entity.base.MythlingEntity;
-import com.mythweave.evolution.EvolutionRules.Branch;
 import com.mythweave.evolution.EvolutionRules.KindleSource;
 
 import com.mojang.serialization.Codec;
@@ -18,16 +17,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * One Mythling's Kindle: the bond XP that drives evolution, plus how much of it leans toward
- * each stage-3 branch. Server-side only: it is never synced to clients (players see it via
- * the status message), and it is saved with the entity under "Kindle".
+ * One Mythling's Kindle: the bond XP that drives evolution. Server-side only: it is never
+ * synced to clients (players see it via the status message), and it is saved with the entity
+ * under "Kindle".
  *
  * <p>Only a bonded Mythling earns Kindle. Numbers and rules come from {@link EvolutionRules}.
  */
 public final class Kindle {
 	private int points;
-	private int combat;
-	private int exploration;
 	private final Set<String> visitedBiomes = new HashSet<>();
 	private int ticksWithOwner;
 	private double blocksTravelled;
@@ -39,10 +36,6 @@ public final class Kindle {
 
 	public int points() {
 		return this.points;
-	}
-
-	public Branch leaning() {
-		return EvolutionRules.leaning(this.combat, this.exploration);
 	}
 
 	/** True if the owner is alive, in the same dimension, and within {@link EvolutionRules#OWNER_RANGE}. */
@@ -107,28 +100,21 @@ public final class Kindle {
 
 	/** Server-side. Adds Kindle from a source, if the Mythling is bonded. */
 	public void gain(MythlingEntity mythling, KindleSource source) {
-		this.add(mythling, source.kindle, source.affinity);
+		this.add(mythling, source.kindle);
 	}
 
-	/** Server-side. Adds raw Kindle (and affinity toward a branch); also used by the test command. */
-	public void add(MythlingEntity mythling, int amount, Branch affinity) {
+	/** Server-side. Adds raw Kindle; also used by the test command. */
+	public void add(MythlingEntity mythling, int amount) {
 		if (!mythling.isTame() || amount <= 0) {
 			return;
 		}
 		this.points += amount;
-		switch (affinity) {
-			case COMBAT -> this.combat += amount;
-			case EXPLORATION -> this.exploration += amount;
-			case NONE -> { }
-		}
 		// Reaching a goal is noticed by Evolution.checkReady (once a second), which evolves it.
 	}
 
 	/** Copies everything from another Kindle: used when a Mythling evolves into a new entity. */
 	public void copyFrom(Kindle other) {
 		this.points = other.points;
-		this.combat = other.combat;
-		this.exploration = other.exploration;
 		this.visitedBiomes.clear();
 		this.visitedBiomes.addAll(other.visitedBiomes);
 		this.ticksWithOwner = other.ticksWithOwner;
@@ -136,23 +122,17 @@ public final class Kindle {
 		this.lastSurvivedHitTick = other.lastSurvivedHitTick;
 	}
 
-	/** The one-line status shown to the owner: name, Kindle toward the next goal, leaning. */
+	/** The one-line status shown to the owner: name, Kindle toward the next goal, next form. */
 	public Component status(MythlingEntity mythling) {
-		int goal = EvolutionRules.kindleToEvolveFrom(EvolutionRules.stageOf(mythling.evolutionLine(), mythling.formId()));
+		EvolutionLine line = mythling.evolutionLine();
+		int stage = EvolutionRules.stageOf(line, mythling.formId());
+		int goal = EvolutionRules.kindleToEvolveFrom(stage);
 		if (goal < 0) {
 			return Component.translatable("message.mythweave.kindle.status_final", mythling.getDisplayName(), this.points);
 		}
-		// "leaning toward <form> (battle)": the form's name comes from this species' line.
-		Branch leaning = this.leaning();
-		Component leaningText = switch (leaning) {
-			case NONE -> Component.translatable("message.mythweave.kindle.leaning.none");
-			case COMBAT -> Component.translatable("message.mythweave.kindle.leaning.combat",
-					EvolutionLine.formName(mythling.evolutionLine().formFor(leaning)));
-			case EXPLORATION -> Component.translatable("message.mythweave.kindle.leaning.exploration",
-					EvolutionLine.formName(mythling.evolutionLine().formFor(leaning)));
-		};
+		String next = stage == 1 ? line.stage2() : line.stage3();
 		return Component.translatable("message.mythweave.kindle.status", mythling.getDisplayName(),
-				this.points, goal, leaningText);
+				this.points, goal, EvolutionLine.formName(next));
 	}
 
 	/** Sends an action-bar message to the owner, if they're online. */
@@ -165,8 +145,6 @@ public final class Kindle {
 	public void save(ValueOutput output) {
 		ValueOutput out = output.child("Kindle");
 		out.putInt("Points", this.points);
-		out.putInt("Combat", this.combat);
-		out.putInt("Exploration", this.exploration);
 		out.putInt("TicksWithOwner", this.ticksWithOwner);
 		out.putInt("BlocksTravelled", (int) this.blocksTravelled);
 		out.store("Biomes", Codec.STRING.listOf(), List.copyOf(this.visitedBiomes));
@@ -176,8 +154,6 @@ public final class Kindle {
 		ValueInput in = input.childOrEmpty("Kindle");
 		// Clamp so hand-edited or corrupt data can't go negative.
 		this.points = Math.max(0, in.getIntOr("Points", 0));
-		this.combat = Math.max(0, in.getIntOr("Combat", 0));
-		this.exploration = Math.max(0, in.getIntOr("Exploration", 0));
 		this.ticksWithOwner = Math.max(0, in.getIntOr("TicksWithOwner", 0));
 		this.blocksTravelled = Math.max(0, in.getIntOr("BlocksTravelled", 0));
 		this.visitedBiomes.clear();

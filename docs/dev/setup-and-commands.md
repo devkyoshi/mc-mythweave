@@ -170,7 +170,7 @@ Your dev player needs to be an operator. In singleplayer, create the world with 
 |---|---|
 | `/summon mythweave:cindercub` | Spawn a Cindercub (or use the spawn egg from the Spawn Eggs tab) |
 | `/mythweave kindle get @e[type=mythweave:cindercub,limit=1,sort=nearest]` | Show a Mythling's Kindle status |
-| `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150` | Add Kindle (1–1000). Add `combat` or `exploration` at the end to push the branch |
+| `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150` | Add Kindle (1–1000) |
 | `/summon mythweave:cindercub ~ ~ ~ {Owner:[I;1,2,3,4]}` | A Cindercub owned by a nonexistent player (tests ownership handling) |
 | `/time set midnight`, `/weather rain` | Check glow and fire effects at night, steam in rain |
 
@@ -189,8 +189,7 @@ powershell -ExecutionPolicy Bypass -File tools/textures/cindercub.ps1
 |---|---|
 | `tools/textures/cindercub.ps1` | Cindercub texture + glow map |
 | `tools/textures/emberlynx.ps1` | Emberlynx texture + glow map |
-| `tools/textures/ashenox.ps1` | Ashenox texture + glow map |
-| `tools/textures/solflare.ps1` | Solflare texture + glow map |
+| `tools/models/ashenox_gen.ps1` | Ashenox model, texture + glow map, generated from its design sheet |
 | `tools/textures/spawn_eggs.ps1` | Every spawn egg texture |
 | `tools/textures/ember_brazier.ps1` | Ember Brazier textures (+ animated flame) |
 | `tools/previews/mythlings.ps1` | README images in `docs/images/` |

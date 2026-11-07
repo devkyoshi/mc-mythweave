@@ -1,10 +1,10 @@
-# Renders README preview images of the Mythlings (Cindercub, Emberlynx, Ashenox, Solflare) from their real
+# Renders README preview images of the Mythlings (Cindercub, Ashenox, Emberlynx) from their real
 # textures and the same cube layouts as their models (no game needed). Outputs to docs/images/.
 #
 # Usage (from the project root):
 #   powershell -ExecutionPolicy Bypass -File tools\previews\mythlings.ps1
 #
-# New-Cindercub / New-Emberlynx / New-Ashenox / New-Solflare duplicate each model's createBodyLayer and setSittingPose.
+# New-Cindercub / New-Emberlynx / New-Ashenox duplicate each model's createBodyLayer and setSittingPose.
 # If you change a model, update it here too. In-game screenshots (F2) are always the real truth.
 
 $ErrorActionPreference = 'Stop'
@@ -15,8 +15,6 @@ $lynxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures
 $lynxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\emberlynx\emberlynx_glow.png'
 $oxTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox.png'
 $oxGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\ashenox\ashenox_glow.png'
-$solTexturePath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\solflare\solflare.png'
-$solGlowPath = Join-Path $root 'src\main\resources\assets\mythweave\textures\entity\solflare\solflare_glow.png'
 $outDir = Join-Path $root 'docs\images'
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
@@ -341,111 +339,48 @@ function New-Emberlynx([double]$yaw, [double]$pitch, [bool]$sitting) {
 	return $p
 }
 
-# Ashenox, from AshenoxModel#createBodyLayer and #setSittingPose (flames at rest).
+# Ashenox, from tools/models/ashenox_parts.json (written by tools/models/ashenox_gen.ps1, the same
+# generator that writes AshenoxModelGeometry.java), plus AshenoxModel#setSittingPose.
+$oxParts = (Get-Content (Join-Path $root 'tools\models\ashenox_parts.json') -Raw | ConvertFrom-Json)
+
 function New-Ashenox([double]$yaw, [double]$pitch, [bool]$sitting) {
 	$p = New-Object Preview $oxTexturePath, $oxGlowPath, $yaw, $pitch
-	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
-
-	$bodyY = 15.0; $bodyXRot = 0.0; $headY = 13.0; $headZ = -6.0; $tailXRot = 0.35
-	$hindY = 18.0; $hindZ = 4.0; $hindXRot = 0.0; $hindSpread = 0.0
+	$p.AdditiveGlow = $true
+	$u = [double]$oxParts.detail
+	# Pose changes by part name (model units, like AshenoxModel): position offsets and rotations.
+	$pose = @{}
 	if ($sitting) {
-		$bodyY += 4.0; $bodyXRot = -0.4; $headY += 1.9; $headZ += 1.6; $tailXRot = 0.1
-		$hindY += 4.0; $hindZ -= 0.5; $hindXRot = -1.45; $hindSpread = 0.6
-	}
-
-	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
-	$p.Box($body, 0, 13, -3.5, -3, -6, 7, 6, 12)
-	foreach ($z in -0.5, 3.5) { $p.Box($body.Then([Mat]::Pose(0, -2.5, $z, -0.12, 0, 0)), 38, 13, -4, -2, -2, 8, 2, 4) }
-	$mane = $body.Then([Mat]::Pose(0, -3, -4.5, 0, 0, 0))
-	$p.Box($mane, 38, 19, -4, -3, -2, 8, 4, 4)
-	for ($i = 0; $i -lt 4; $i++) {
-		$tz = if ($i % 2 -eq 0) { 0 } else { -0.5 }
-		$p.Box($mane.Then([Mat]::Pose(-3 + $i * 2, -3, $tz, -$bodyXRot, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
-	}
-
-	$tail = $body.Then([Mat]::Pose(0, -2, 6, $tailXRot, 0.1, 0))
-	$p.Box($tail, 0, 31, -2, -2, 0, 4, 4, 4)
-	$tilt = $bodyXRot + $tailXRot
-	$p.Box($tail.Then([Mat]::Pose(0, -2, 2, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
-	$mid = $tail.Then([Mat]::Pose(0, 0, 4, 0.15, 0, 0)); $tilt += 0.15
-	$p.Box($mid, 16, 31, -1.5, -1.5, 0, 3, 3, 4)
-	$p.Box($mid.Then([Mat]::Pose(0, -1.5, 2, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
-	$mid2 = $mid.Then([Mat]::Pose(0, 0, 4, 0.2, 0, 0)); $tilt += 0.2
-	$p.Box($mid2, 30, 31, -1.5, -1.5, 0, 3, 3, 3)
-	$p.Box($mid2.Then([Mat]::Pose(0, -1.5, 1.5, -$tilt, 0, 0)), 32, 6, -0.5, -2, -0.5, 1, 2, 1)
-	$tip = $mid2.Then([Mat]::Pose(0, 0, 3, 0.25, 0, 0)); $tilt += 0.25
-	$p.Box($tip, 42, 31, -1, -1, 0, 2, 2, 2)
-	$p.Box($tip.Then([Mat]::Pose(0, -1, 1, -$tilt, 0, 0)), 36, 6, -0.5, -2, -0.5, 1, 2, 1)
-
-	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
-	$p.Box($head, 0, 0, -3.5, -6, -7, 7, 6, 7)
-	$p.Box($head, 28, 0, -2, -3, -10, 4, 3, 3)
-	$p.Box($head.Then([Mat]::Pose(-2.5, -6, -2, 0, 0, -0.3)), 42, 0, -1, -3, 0, 2, 3, 1)
-	$p.Box($head.Then([Mat]::Pose(2.5, -6, -2, 0, 0, 0.3)), 48, 0, -1, -3, 0, 2, 3, 1)
-	foreach ($horn in @(@(-2.0, -0.55), @(2.0, 0.55))) {
-		$h = $head.Then([Mat]::Pose($horn[0], -6, -4.5, -0.25, 0, $horn[1]))
-		$p.Box($h, 54, 0, -1, -4, -1, 2, 4, 2)
-		$p.Box($h.Then([Mat]::Pose(0, -4, 0, -0.7, 0, 0)), 28, 6, -0.5, -3, -0.5, 1, 3, 1)
-	}
-
-	$p.DepthBias = 0.05
-	foreach ($leg in @(@((-2 - $hindSpread), $hindY, $hindZ, $hindXRot), @((2 + $hindSpread), $hindY, $hindZ, $hindXRot), @(-2, 18, -4, 0), @(2, 18, -4, 0))) {
-		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 39, -1.5, 0, -1.5, 3, 6, 3)
-	}
-	return $p
-}
-
-# Solflare, from SolflareModel#createBodyLayer and #setSittingPose (flames at rest).
-function New-Solflare([double]$yaw, [double]$pitch, [bool]$sitting) {
-	$p = New-Object Preview $solTexturePath, $solGlowPath, $yaw, $pitch
-	$id = [Mat]::Pose(0, 0, 0, 0, 0, 0)
-
-	$bodyY = 13.5; $bodyXRot = 0.0; $headY = 11.5; $headZ = -4.5; $tailXRot = 0.55
-	$hindY = 16.0; $hindZ = 4.0; $hindXRot = 0.0; $hindSpread = 0.0
-	if ($sitting) {
-		$bodyY += 6.0; $bodyXRot = -0.45; $headY += 3.6; $headZ += 2.2; $tailXRot = 0.15
-		$hindY += 6.0; $hindZ -= 0.5; $hindXRot = -1.45; $hindSpread = 0.5
-	}
-
-	$body = $id.Then([Mat]::Pose(0, $bodyY, 0, $bodyXRot, 0, 0))
-	$p.Box($body, 0, 11, -2.5, -2.5, -5.5, 5, 5, 11)
-	$p.Box($body.Then([Mat]::Pose(0, 1, -5, 0, 0, 0)), 32, 11, -3, -1.5, -1.5, 6, 3, 3)
-	foreach ($wing in @(@(-2.5, -0.5), @(2.5, 0.5))) {
-		$w = $body.Then([Mat]::Pose($wing[0], -2, -2.5, 0, 0, $wing[1]))
-		$blades = @(@(50, 11, 10, -0.25), @(56, 11, 8, -0.7), @(32, 17, 6, -1.15))
-		for ($i = 0; $i -lt 3; $i++) {
-			$b = $blades[$i]
-			$p.Box($w.Then([Mat]::Pose(0, 0, $i * 0.8, $b[3], 0, 0)), $b[0], $b[1], -0.5, -$b[2], -1, 1, $b[2], 2)
+		$pose['body'] = @{ dy = 4.0 * $u; rx = -0.5 }
+		$pose['head'] = @{ rx = 0.5 }
+		$pose['chest'] = @{ rx = 0.5 }
+		$pose['tail_center'] = @{ rx = 0.55 }
+		$pose['tail_left'] = @{ rx = 0.3; ry = 1.3 }
+		$pose['tail_right'] = @{ rx = 0.3; ry = -1.3 }
+		foreach ($leg in 'right_hind_leg', 'left_hind_leg') {
+			$side = if ($leg -like 'right*') { -1 } else { 1 }
+			$pose[$leg] = @{ dx = 0.5 * $u * $side; dy = 5.0 * $u; dz = -1.5 * $u; rx = -1.5 }
 		}
+		$pose['lower'] = @{ hindRx = 1.5 }
 	}
-
-	# Comet tail: base, two segments, tip; tongues and plume counter-rotated upright.
-	$tail = $body.Then([Mat]::Pose(0, -1.5, 5.5, $tailXRot, 0.12, 0))
-	$p.Box($tail, 38, 17, -1.5, -1.5, 0, 3, 3, 3)
-	$tilt = $bodyXRot + $tailXRot
-	$p.Box($tail.Then([Mat]::Pose(0, -1.5, 1.5, -$tilt, 0, 0)), 56, 0, -0.5, -2, -0.5, 1, 2, 1)
-	$seg = $tail; $len = 3
-	foreach ($curl in 0.12, 0.16) {
-		$seg = $seg.Then([Mat]::Pose(0, 0, $len, $curl, 0, 0)); $tilt += $curl; $len = 4
-		$p.Box($seg, 0, 27, -1, -1, 0, 2, 2, 4)
-		$p.Box($seg.Then([Mat]::Pose(0, -1, 2, -$tilt, 0, 0)), 56, 0, -0.5, -2, -0.5, 1, 2, 1)
-	}
-	$tip = $seg.Then([Mat]::Pose(0, 0, 4, 0.2, 0, 0)); $tilt += 0.2
-	$p.Box($tip, 12, 27, -1, -1, 0, 2, 2, 3)
-	$p.Box($tip.Then([Mat]::Pose(0, -1, 1.5, -$tilt, 0, 0)), 60, 0, -0.5, -2, -0.5, 1, 2, 1)
-
-	$head = $id.Then([Mat]::Pose(0, $headY, $headZ, 0, 0, 0))
-	$p.Box($head, 0, 0, -3, -5, -6, 6, 5, 6)
-	$p.Box($head, 24, 0, -1.5, -2, -9, 3, 2, 3)
-	$p.Box($head.Then([Mat]::Pose(-2, -5, -2.5, 0, 0, -0.15)), 36, 0, -1, -5, 0, 2, 5, 1)
-	$p.Box($head.Then([Mat]::Pose(2, -5, -2.5, 0, 0, 0.15)), 42, 0, -1, -5, 0, 2, 5, 1)
-	$p.Box($head.Then([Mat]::Pose(0, -5, -5, -0.5, 0, 0)), 52, 0, -0.5, -3, -0.5, 1, 3, 1)
-	$p.Box($head.Then([Mat]::Pose(0, -5, -3.5, -0.65, 0, 0)), 48, 0, -0.5, -4, -0.5, 1, 4, 1)
-	$p.Box($head.Then([Mat]::Pose(0, -5, -2, -0.8, 0, 0)), 48, 0, -0.5, -4, -0.5, 1, 4, 1)
-
-	$p.DepthBias = 0.05
-	foreach ($leg in @(@((-1.5 - $hindSpread), $hindY, $hindZ, $hindXRot), @((1.5 + $hindSpread), $hindY, $hindZ, $hindXRot), @(-1.5, 16, -4, 0), @(1.5, 16, -4, 0))) {
-		$p.Box($id.Then([Mat]::Pose($leg[0], $leg[1], $leg[2], $leg[3], 0, 0)), 0, 33, -1, 0, -1, 2, 8, 2)
+	$mats = @{}
+	$mats[''] = [Mat]::Scaling(1.0 / $u)
+	$p.DepthBias = 0
+	foreach ($part in $oxParts.parts) {
+		$pv = $part.pivot; $rt = $part.rot
+		$x = [double]$pv[0]; $y = [double]$pv[1]; $z = [double]$pv[2]
+		$rx = [double]$rt[0]; $ry = [double]$rt[1]; $rz = [double]$rt[2]
+		$o = $pose[$part.name]
+		if ($o) {
+			if ($o.dx) { $x += $o.dx }; if ($o.dy) { $y += $o.dy }; if ($o.dz) { $z += $o.dz }
+			if ($null -ne $o.rx) { $rx = $o.rx }; if ($null -ne $o.ry) { $ry = $o.ry }
+		}
+		if ($part.name -eq 'lower' -and $pose['lower'] -and $part.parent -like '*hind_leg*') { $rx = $pose['lower'].hindRx }
+		$m = $mats[$part.parent].Then([Mat]::Pose($x, $y, $z, $rx, $ry, $rz))
+		$mats[$part.id] = $m
+		if ($part.name -eq 'eyelids') { continue }   # only shown while asleep
+		foreach ($b in $part.boxes) {
+			$p.Box($m, [int]$b[0], [int]$b[1], [double]$b[2], [double]$b[3], [double]$b[4], [int]$b[5], [int]$b[6], [int]$b[7])
+		}
 	}
 	return $p
 }
@@ -469,13 +404,31 @@ Save (New-Emberlynx 60 15 $true).Render(640, $true) 'emberlynx_sitting.png'
 Save (New-Ashenox 35 20 $false).Render(640, $true) 'ashenox.png'
 Save (New-Ashenox 230 20 $false).Render(640, $true) 'ashenox_back.png'
 Save (New-Ashenox 60 15 $true).Render(640, $true) 'ashenox_sitting.png'
-Save (New-Solflare 35 20 $false).Render(640, $true) 'solflare.png'
-Save (New-Solflare 230 20 $false).Render(640, $true) 'solflare_back.png'
-Save (New-Solflare 60 15 $true).Render(640, $true) 'solflare_sitting.png'
 
-# The line at real size: each form drawn at its in-game SCALE (Cindercub 1.0, Emberlynx 1.15,
-# Ashenox and Solflare 1.3, from each entity's createAttributes), feet on one ground line.
-$line = New-Object System.Drawing.Bitmap 1600, 440
+# Ashenox reference views (as on docs/reference/ashenox): front, back, left, right, top,
+# three-quarter, in one labelled sheet.
+$views = @(
+	@(0, 8, 'Front'), @(180, 8, 'Back'), @(90, 5, 'Left'),
+	@(270, 5, 'Right'), @(0, 89, 'Top'), @(35, 20, 'Three-quarter'))
+$sheet = New-Object System.Drawing.Bitmap 1200, 860
+$g = [System.Drawing.Graphics]::FromImage($sheet)
+$g.Clear([System.Drawing.Color]::FromArgb(255, 58, 58, 66))
+$g.SmoothingMode = 'AntiAlias'; $g.TextRenderingHint = 'AntiAliasGridFit'
+$viewFont = New-Object System.Drawing.Font 'Segoe UI', 22, ([System.Drawing.FontStyle]::Regular), ([System.Drawing.GraphicsUnit]::Pixel)
+$viewBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 235, 235, 235))
+for ($i = 0; $i -lt $views.Count; $i++) {
+	$v = $views[$i]
+	$x = ($i % 3) * 400; $y = [Math]::Floor($i / 3) * 430
+	$g.DrawImage((New-Ashenox $v[0] $v[1] $false).Render(400, $v[1] -lt 80), $x, $y, 400, 400)
+	$size = $g.MeasureString($v[2], $viewFont)
+	$g.DrawString($v[2], $viewFont, $viewBrush, $x + (400 - $size.Width) / 2, $y + 396)
+}
+$g.Dispose()
+Save $sheet 'ashenox_views.png'
+
+# The line at real size: each form drawn at its in-game SCALE (Cindercub 1.0, Ashenox 1.0 with
+# its horse-sized model, Emberlynx 1.15, from each entity's createAttributes), feet on one ground line.
+$line = New-Object System.Drawing.Bitmap 1200, 440
 $g = [System.Drawing.Graphics]::FromImage($line)
 $g.Clear([System.Drawing.Color]::FromArgb(255, 34, 28, 30))
 $g.SmoothingMode = 'AntiAlias'; $g.TextRenderingHint = 'AntiAliasGridFit'
@@ -483,12 +436,11 @@ $labelFont = New-Object System.Drawing.Font 'Segoe UI', 22, ([System.Drawing.Fon
 $labelBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 243, 211, 163))
 $forms = @(
 	@((New-Cindercub 35 12 $false), 1.0, 'Cindercub'),
-	@((New-Emberlynx 35 12 $false), 1.15, 'Emberlynx'),
-	@((New-Ashenox 35 12 $false), 1.3, 'Ashenox'),
-	@((New-Solflare 35 12 $false), 1.3, 'Solflare'))
+	@((New-Ashenox 35 12 $false), 1.0, 'Ashenox'),
+	@((New-Emberlynx 35 12 $false), 1.15, 'Emberlynx'))
 for ($i = 0; $i -lt $forms.Count; $i++) {
 	$f = $forms[$i]
-	$f[0].FixedScale = 9.0 * $f[1]
+	$f[0].FixedScale = 7.0 * $f[1]
 	$g.DrawImage($f[0].Render(400, $true), $i * 400, 0, 400, 400)
 	$size = $g.MeasureString($f[2], $labelFont)
 	$g.DrawString($f[2], $labelFont, $labelBrush, $i * 400 + (400 - $size.Width) / 2, 398)

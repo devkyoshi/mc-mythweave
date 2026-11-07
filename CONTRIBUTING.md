@@ -144,7 +144,7 @@ it its own `entity/<form>/` package. Then:
 - **Size:** set the form's `Attributes.SCALE` in `createAttributes()` (keep the `ModEntities`
   hitbox at model size; SCALE multiplies it). Each stage should be bigger than the one before;
   evolution grows the creature to the new size and waits for room on its own.
-- Use `EmberlynxEntity` / `AshenoxEntity` / `SolflareEntity` and their models as the template for
+- Use `EmberlynxEntity` / `AshenoxEntity` and their models as the template for
   a later form.
 
 ## Checklist: blocks and abilities
@@ -174,7 +174,7 @@ Before opening a pull request:
 4. For multiplayer behaviour, run `.\dev.cmd multiplayer` (server, Player1 and Player2).
 5. Load an **existing** world, not only a fresh one, so you catch broken saves.
 
-`/mythweave kindle add <mythlings> <amount> [combat|exploration]` (operators) speeds up
+`/mythweave kindle add <mythlings> <amount>` (operators) speeds up
 evolution testing.
 
 ## Git workflow

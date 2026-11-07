@@ -26,8 +26,8 @@ import java.util.List;
 /**
  * Ember Spark, the Cindercub line's signature ability: the Mythling flicks a spark at the
  * nearest unlit {@link EmberBrazierBlock} it can see and lights it. It grows with evolution,
- * so each form has its own constant: {@link #CINDERCUB} (8 blocks, 15 s), {@link #EMBERLYNX}
- * (12 blocks, 10 s) and {@link #SOLFLARE} (16 blocks, 6 s, up to three braziers at once).
+ * so each form has its own constant: {@link #CINDERCUB} (8 blocks, 15 s) and {@link #EMBERLYNX}
+ * (12 blocks, 10 s; Ashenox shares it).
  *
  * <p>Triggered by the owner using Blaze Powder on their Mythling. Everything here runs on the
  * server, which also owns the cooldown, so a client can't skip it. The effect is bounded: it
@@ -37,7 +37,6 @@ import java.util.List;
 public final class EmberSparkAbility implements Ability<MythlingEntity> {
 	public static final EmberSparkAbility CINDERCUB = new EmberSparkAbility(8, 15 * 20, 1);
 	public static final EmberSparkAbility EMBERLYNX = new EmberSparkAbility(12, 10 * 20, 1);
-	public static final EmberSparkAbility SOLFLARE = new EmberSparkAbility(16, 6 * 20, 3);
 
 	/** How far up/down from the Mythling the search reaches. */
 	private static final int VERTICAL_RANGE = 4;

@@ -91,25 +91,59 @@ A bonded Cindercub earns **Kindle**, the bond energy that will let it evolve. It
 - seeing hostile mobs defeated nearby (+8),
 - surviving hits from them (+2, at most once every 10 s).
 
-Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
-
 - **Check progress:** sneak and right-click your Cindercub with an empty hand to see, for
-  example, *"Cindercub · Kindle 37/150 · leaning toward Solflare (exploration)"*.
-- **At 150 Kindle it evolves** into an **Emberlynx**, and **at 400** into its final form,
-  chosen by how it leans: **Ashenox** if you've fought together, **Solflare** if you've explored
-  together (see [docs/design/evolution.md](docs/design/evolution.md)).
-- **Each stage is bigger.** While it transforms it grows to its new size, and it only starts
-  where the new form has room (otherwise it tells you once and waits until you lead it
+  example, *"Cindercub · Kindle 37/150 · next: Ashenox"*.
+- **At 150 Kindle it evolves** into an **Ashenox**, and **at 400** into its final form, the
+  **Emberlynx** (see [docs/design/evolution.md](docs/design/evolution.md)).
+- **It only evolves where there's room.** While it transforms it grows to its new size, and it
+  only starts where the new form fits (otherwise it tells you once and waits until you lead it
   somewhere open).
 
-<p align="center"><img src="docs/images/cindercub_line.png" alt="Cindercub, Emberlynx, Ashenox and Solflare side by side at their in-game sizes"></p>
+<p align="center"><img src="docs/images/cindercub_line.png" alt="Cindercub, Ashenox and Emberlynx side by side at their in-game sizes"></p>
 
-| | Cindercub | Emberlynx | Ashenox | Solflare |
-|---|---|---|---|---|
-| Stage | 1 | 2 | 3 (battle) | 3 (exploration) |
-| Hitbox, width × height (blocks) | 0.5 × 0.7 | 0.69 × 1.09 | 1.04 × 1.43 | 0.91 × 1.43 |
+| | Cindercub | Ashenox | Emberlynx |
+|---|---|---|---|
+| Stage | 1 | 2 (rideable) | 3 (final) |
+| Hitbox, width × height (blocks) | 0.5 × 0.7 | 0.9 × 1.6 | 0.69 × 1.09 |
 
-### Evolution: Emberlynx
+### Evolution: Ashenox
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/ashenox.png" width="260" alt="Ashenox standing"><br><sub>Ashenox</sub></td>
+    <td align="center"><img src="docs/images/ashenox_back.png" width="260" alt="Ashenox from behind, showing its three blazing tails"><br><sub>Three blazing tails</sub></td>
+    <td align="center"><img src="docs/images/ashenox_sitting.png" width="260" alt="Ashenox sitting with its tails curled around it"><br><sub>Sitting</sub></td>
+  </tr>
+</table>
+
+When a bonded Cindercub reaches **150 Kindle** it evolves on its own, as soon as it's standing
+on solid ground. It glows, rises off the ground spinning inside a spiral of flame, and after
+three seconds bursts into an **Ashenox**: a majestic, horse-sized fire fox in charcoal and
+volcanic red, with a cream chest ruff, tall flame-tipped ears, glowing amber eyes, glowing
+spirals on its flanks and **three blazing tails**. It keeps its name, its bond to you, whether
+it was sitting, and all its Kindle, and it arrives at full health.
+
+**You can ride it.** Right-click your Ashenox with an empty hand to climb on; no saddle
+needed. Steer with your movement keys, sprint to make it run, and hold jump to charge a leap
+(like a horse). Only you can ride your own Ashenox, one rider at a time.
+
+<p align="center"><img src="docs/images/ashenox_views.png" width="720" alt="Ashenox from the front, back, left, right, top and three-quarter view"></p>
+
+| | Cindercub | Ashenox |
+|---|---|---|
+| Health | 12 | 32, plus 4 armor; resists knockback |
+| Bite | none | 6 |
+| **Rideable** | no | **yes**: walk, sprint, charged jumps; steps up full blocks |
+| **Magma Bite** | none | its bites set mobs on fire, and mobs that hit it up close get burned. Never players, never blocks |
+| In a fight | runs away when hurt | **defends you**: attacks whatever hurts you or it (never creepers, tamed animals or your friends) |
+| Fire and lava | burns | **immune** |
+| Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s |
+| Size | 0.5 × 0.7 | 0.9 × 1.6 (horse-sized) |
+
+It also lies down to sleep (sitting at night, or after sitting for two minutes), raises its
+head and tails when hostile mobs come near, and wags all three tails when you climb on.
+
+### Final form: Emberlynx
 
 <table>
   <tr>
@@ -119,70 +153,18 @@ Fighting pulls it toward **Ashenox**; exploring pulls it toward **Solflare**.
   </tr>
 </table>
 
-When a bonded Cindercub reaches **150 Kindle** it evolves on its own, as soon as it's standing
-on solid ground. It glows, rises off the ground spinning inside a spiral of flame, and after
-three seconds bursts into an **Emberlynx**. It keeps its name, its bond to you, whether it was
-sitting, and all its Kindle, and it arrives at full health.
+An Ashenox becomes an **Emberlynx** at **400 Kindle**: an ember lynx with a fire mane,
+flame-tufted ears, longer crystal horns and a long fire tail. It's the end of its line: it keeps
+earning Kindle, but evolves no further. (Its size and stats are due a rework to suit a final
+form.)
 
-| | Cindercub | Emberlynx |
-|---|---|---|
-| Look | chibi kit, fire tail | taller ember lynx: fire mane, flame-tufted ears, longer crystal horns, long fire tail |
-| Health | 12 | 20 |
-| Ember Spark | 8 blocks, 15 s | 12 blocks, 10 s |
-| In a fight | runs away when hurt | **defends you**: attacks whatever hurts you or it (never creepers, tamed animals or your friends) |
-| Size | 0.5 × 0.7 | 0.69 × 1.09 |
-
-### Final form: Ashenox
-
-<table>
-  <tr>
-    <td align="center"><img src="docs/images/ashenox.png" width="260" alt="Ashenox standing"><br><sub>Ashenox</sub></td>
-    <td align="center"><img src="docs/images/ashenox_back.png" width="260" alt="Ashenox from behind, showing its obsidian plates, magma mane and fire tail"><br><sub>Obsidian plates and magma mane</sub></td>
-    <td align="center"><img src="docs/images/ashenox_sitting.png" width="260" alt="Ashenox sitting"><br><sub>Sitting</sub></td>
-  </tr>
-</table>
-
-An Emberlynx that has **fought beside you** (leaning toward battle) becomes an **Ashenox** at
-**400 Kindle**: a heavy volcanic fox armored in obsidian, cracked with glowing magma veins,
-with big crystal-tipped horns, a magma mane, glowing lava paws and a thick fire tail.
-
-| | Emberlynx | Ashenox |
-|---|---|---|
-| Health | 20 | 32, plus 4 armor; resists knockback |
-| Bite | 4 | 6 |
-| **Magma Bite** | none | its bites set mobs on fire, and mobs that hit it up close get burned. Never players, never blocks |
-| Fire and lava | burns | **immune** |
-| Ember Spark | 12 blocks, 10 s | 12 blocks, 10 s |
-| Size | 0.69 × 1.09 | 1.04 × 1.43 |
-
-It's the end of its line: it keeps earning Kindle, but evolves no further.
-
-### Final form: Solflare
-
-<table>
-  <tr>
-    <td align="center"><img src="docs/images/solflare.png" width="260" alt="Solflare standing"><br><sub>Solflare</sub></td>
-    <td align="center"><img src="docs/images/solflare_back.png" width="260" alt="Solflare from behind, showing its flame wings and comet tail"><br><sub>Flame wings and comet tail</sub></td>
-    <td align="center"><img src="docs/images/solflare_sitting.png" width="260" alt="Solflare sitting"><br><sub>Sitting</sub></td>
-  </tr>
-</table>
-
-An Emberlynx that has **explored with you** (travelling, new biomes, Ember Spark) becomes a
-**Solflare** at **400 Kindle**: a radiant guardian fox in cream and sun-gold with red-orange
-markings, long legs, tall flame-tipped ears, a crest of three flame blades, two fans of flame
-wings at the shoulders and a long comet tail.
-
-| | Emberlynx | Solflare |
-|---|---|---|
-| Health | 20 | 24 |
-| Speed | 0.3 | 0.36 (swift) |
-| Bite | 4 | 4 |
-| **Sunwarden aura** | none | while you're within 8 blocks: **Fire Resistance** and **Speed I** (only you, never other players) |
-| Fire and lava | burns | **immune** |
-| Ember Spark | 12 blocks, 10 s | **16 blocks, 6 s, up to 3 braziers at once** |
-| Size | 0.69 × 1.09 | 0.91 × 1.43 |
-
-Like the Ashenox it still defends you, keeps earning Kindle, and evolves no further.
+| | Emberlynx |
+|---|---|
+| Health | 20 |
+| Bite | 4 |
+| In a fight | defends you |
+| Ember Spark | 12 blocks, 10 s |
+| Size | 0.69 × 1.09 |
 
 ### The Ember Brazier
 
@@ -209,7 +191,8 @@ so it never spreads fire, burns nearby blocks, or hurts anyone who touches it.
 | Anyone (wild Cindercub) | Empty hand | A hint about what it likes. |
 | Owner | Blaze Powder | **Ember Spark:** lights the nearest visible unlit Ember Brazier within 8 blocks. 15 s cooldown. No powder used. |
 | Owner | Empty hand (or an item with no other use on it) | Toggles sit / follow. |
-| Owner, sneaking | Empty hand | Shows its Kindle (evolution progress) and which way it's leaning. |
+| Owner, sneaking | Empty hand | Shows its Kindle (evolution progress) and its next form. |
+| Owner (Ashenox) | Empty hand | **Climbs on** (it stands up first if sitting). Sneak-click sits it down; sneak-click while it sits shows Kindle. |
 | Owner | Lead, name tag, … | Works like on any vanilla animal. |
 | Another player | Blaze Powder or empty hand | *"This Cindercub is already bonded to another player."* Nothing changes. |
 
@@ -249,16 +232,14 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
 - [x] **Design pass: mythical and cute.** Chibi proportions, big eyes, crystal horns and spine
   shards, glowing rune marks, fox tail that ignites into a rippling fire tail when bonded,
   fire animations (flicker, breathing glow, embers), idle head tilt and ear twitches.
-- [ ] **Evolution.** Bond XP ("Kindle") evolves Cindercub → Emberlynx → Ashenox or Solflare.
+- [ ] **Evolution.** Bond XP ("Kindle") evolves Cindercub → Ashenox → Emberlynx.
   See [docs/design/evolution.md](docs/design/evolution.md).
-  - [x] **E1: Kindle.** Earn, save and check Kindle and branch leaning; test command.
-  - [x] **E2: Evolution and Emberlynx.** The transformation at 150 Kindle; Emberlynx with
-    its model, texture, spawn egg, stronger Ember Spark and defend-owner AI.
-  - [x] **E3: Ashenox.** The combat stage-3 form: model, texture, spawn egg, Magma Bite,
-    fire immunity.
-  - [x] **E4: Solflare, and bigger stages.** The exploration stage-3 form: model, texture,
-    spawn egg, Sunwarden aura, Ember Spark for up to three braziers, fire immunity. Every
-    stage is now drawn bigger (SCALE attribute), and grows during its transformation.
+  - [x] **E1: Kindle.** Earn, save and check Kindle; test command.
+  - [x] **E2: Evolution.** The transformation at 150 and 400 Kindle.
+  - [x] **E3: Ashenox.** The rideable stage-2 form, rebuilt from its design sheet: horse-sized
+    three-tailed fire fox, riding (walk, sprint, charged jump), sleep, alert and happy
+    animations, Magma Bite, fire immunity.
+  - [ ] **E4: Emberlynx as the final form.** Resize and rebalance it for stage 3.
   - [ ] E5: balance
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
@@ -379,31 +360,33 @@ A quick in-game test of everything that works so far. Use a Creative world with 
     dark spots and an ember fleck. A sitting Cindercub's hind legs don't flicker.
 
 12. *(Kindle)* Sneak + right-click your bonded Cindercub with an empty hand: you see its
-    Kindle status. Use Ember Spark and check again: +5, leaning Solflare. Walk into a new
-    biome together: "+10 Kindle" message. Kill a zombie next to it: +8, leaning shifts.
+    Kindle status ("next: Ashenox"). Use Ember Spark and check again: +5. Walk into a new
+    biome together: "+10 Kindle" message. Kill a zombie next to it: +8.
     Save, quit, reload: the numbers are unchanged. A wild one earns nothing.
 13. *(Test command, operators)* `/mythweave kindle get @e[type=mythweave:cindercub,limit=1,sort=nearest]`
-    prints the status. Add `combat` or `exploration` to the `add` command (below) to push the leaning.
+    prints the status.
 14. *(Evolution)* `/mythweave kindle add @e[type=mythweave:cindercub,distance=..5] 150` on a bonded
-    Cindercub standing on the ground: within a second it starts evolving (message, rising,
-    spinning, flame spiral), and after 3 s it bursts into an Emberlynx. Check that it still
-    follows you, obeys sit/stand, kept its name tag and Kindle (sneak-click), and lights
-    braziers up to 12 blocks away every 10 s. Hit a zombie near you: it attacks the zombie.
+    Cindercub standing on open ground: within a second it starts evolving (message, rising,
+    spinning, flame spiral), and after 3 s it bursts into an Ashenox. Check that it kept its
+    name tag and Kindle (sneak-click while it sits), and lights braziers up to 12 blocks away
+    every 10 s. Hit a zombie near you: it bites the zombie and the zombie catches fire; let a
+    zombie hit the Ashenox: the zombie catches fire. Walk it through lava: it doesn't burn.
     Save and reload mid-transformation: it resumes.
-15. *(Ashenox)* `/mythweave kindle add @e[type=mythweave:emberlynx,distance=..5] 250 combat` on a
-    bonded Emberlynx: it evolves into an Ashenox. It keeps following you and obeying sit/stand,
-    and sneak-click says "fully evolved". Hit a zombie near you: the Ashenox bites it and the
-    zombie catches fire; let a zombie hit the Ashenox: the zombie catches fire. Walk it through
-    lava: it doesn't burn. Nearby grass and wood never catch fire. Players are never set on fire.
-16. *(Solflare)* The same command with `exploration` instead of `combat`: it evolves into a
-    Solflare. Within a couple of seconds you get Fire Resistance and Speed I (ambient icons);
-    walk more than 8 blocks away and they wear off after a few seconds. Place three unlit
-    braziers within 16 blocks and use Blaze Powder on it: all three light, and it recharges in
-    6 s. Walk it through lava: it doesn't burn. Another player near it gets no effects.
-17. *(Size)* Each stage is visibly bigger than the last (see the lineup image above), and grows
-    smoothly during its transformation. Put a bonded Cindercub with 150 Kindle under a
-    one-block-high ceiling: it says once that it needs more room and waits; break the ceiling
-    and it evolves. Older saved Emberlynx and Ashenox load at their new size.
+15. *(Ashenox look and animations)* F3+B: the hitbox (0.9 × 1.6) fits the model. All three
+    tails stay separate from every angle and sway on their own; embers drift from the three
+    tips (more when running). It breathes while idle, turns its head and ears, sits with its
+    tails curled around it, lies down asleep at night when sitting (eyes closed), lifts its
+    head and tails when a zombie is within 8 blocks, and wags when you climb on.
+16. *(Riding)* Right-click your Ashenox with an empty hand: you sit on its back, clear of the
+    head, neck and tails. Walk, sprint (it runs with a bounding gait) and hold jump to leap;
+    it steps up full blocks. Sneak to get off. Sneak-click it: it sits; sneak-click again: Kindle
+    status; click: it stands and you climb on. Another player can't ride it, and nobody can
+    climb on while you ride. With a second client, the other player sees you ride smoothly.
+17. *(Final form)* `/mythweave kindle add @e[type=mythweave:ashenox,distance=..5] 250` on a
+    bonded Ashenox nobody is riding: it evolves into an Emberlynx; sneak-click says "fully
+    evolved". It never starts evolving while someone rides it.
+18. *(Room)* Put a bonded Cindercub with 150 Kindle under a low ceiling: it says once that it
+    needs more room and waits; break the ceiling and it evolves.
 
 Run `./gradlew build` before committing; it must end in `BUILD SUCCESSFUL`.
 
@@ -427,9 +410,9 @@ src/main/java/com/mythweave/                Common code (runs on client and serv
 │   ├── base/Mythling.java                  Interface: kindle(), evolutionLine()
 │   └── cindercub/CindercubEntity.java      Cindercub: stats, sounds, Ember Spark hook, embers
 ├── evolution/
-│   ├── EvolutionRules.java                 Thresholds, Kindle sources, branch logic
-│   ├── EvolutionLine.java                  One species' forms (stage 1 → 2 → two stage-3s)
-│   ├── EvolutionLines.java                 Every species' line (Cindercub → Emberlynx → …)
+│   ├── EvolutionRules.java                 Thresholds, Kindle sources, stageOf / nextForm
+│   ├── EvolutionLine.java                  One species' forms (stage 1 → 2 → 3)
+│   ├── EvolutionLines.java                 Every species' line (Cindercub → Ashenox → Emberlynx)
 │   ├── Kindle.java                         One Mythling's Kindle: earning, saving, status
 │   └── KindleEvents.java                   Kindle from fights nearby (Fabric events)
 ├── ability/

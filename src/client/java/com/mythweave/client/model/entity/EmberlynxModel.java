@@ -12,7 +12,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Emberlynx, stage 2 of the Cindercub line: grown up from the kit but still friendly. Taller
+ * Emberlynx, stage 3 (final) of the Cindercub line: grown up from the kit but still friendly. Taller
  * legs and a longer body, a head in proportion, a short muzzle, tall ears ending in flame
  * tufts, longer swept-back crystal horns, three spine shards, a fire mane over the shoulders,
  * and a long tail of fire (three segments and a tip).

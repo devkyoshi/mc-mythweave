@@ -128,8 +128,9 @@ creature ignite arbitrary blocks in the world.
 
 ### Future evolution (not in the first milestone)
 
--   **Ashenox:** A combat-focused, volcanic fox evolution.
--   **Solflare:** A utility/exploration-focused evolution.
+-   **Ashenox:** stage 2, a horse-sized, rideable three-tailed fire fox
+    (see docs/reference/prompts/ashenox.md).
+-   **Emberlynx:** stage 3, the final form.
 -   Evolution should eventually be driven by explicit conditions, not by
     hard-coded assumptions spread across entity code.
 

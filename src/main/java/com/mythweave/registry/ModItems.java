@@ -22,25 +22,18 @@ public final class ModItems {
 			new Item.Properties().spawnEgg(ModEntities.CINDERCUB)
 	);
 
-	// Mainly for testing: normally you get an Emberlynx by evolving a Cindercub.
+	// Mainly for testing: normally you get an Emberlynx by evolving an Ashenox.
 	public static final Item EMBERLYNX_SPAWN_EGG = register(
 			"emberlynx_spawn_egg",
 			SpawnEggItem::new,
 			new Item.Properties().spawnEgg(ModEntities.EMBERLYNX)
 	);
 
-	// Mainly for testing: normally you get an Ashenox by evolving an Emberlynx.
+	// Mainly for testing: normally you get an Ashenox by evolving a Cindercub.
 	public static final Item ASHENOX_SPAWN_EGG = register(
 			"ashenox_spawn_egg",
 			SpawnEggItem::new,
 			new Item.Properties().spawnEgg(ModEntities.ASHENOX)
-	);
-
-	// Mainly for testing: normally you get a Solflare by evolving an Emberlynx.
-	public static final Item SOLFLARE_SPAWN_EGG = register(
-			"solflare_spawn_egg",
-			SpawnEggItem::new,
-			new Item.Properties().spawnEgg(ModEntities.SOLFLARE)
 	);
 
 	// Block items use the block's name ("block.mythweave.ember_brazier"), like vanilla's.
