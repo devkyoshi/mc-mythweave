@@ -84,16 +84,10 @@
   "screen.mythweave.journal.evolution.final": "This is its final form.",
   "screen.mythweave.journal.evolution.progress": "Kindle %s / %s",
   "screen.mythweave.journal.evolution.next": "Next: %s at %s Kindle.",
-  "screen.mythweave.journal.evolution.branches": "Next: %s (combat) or %s (exploration) at %s Kindle.",
   "screen.mythweave.journal.evolution.ready": "Ready to evolve into %s!",
-  "screen.mythweave.journal.affinity": "Affinity: combat %s · exploration %s",
-  "screen.mythweave.journal.leaning.none": "Affinity: balanced — play together to choose a path.",
-  "screen.mythweave.journal.leaning.combat": "Affinity: combat, leaning toward %s.",
-  "screen.mythweave.journal.leaning.exploration": "Affinity: exploration, leaning toward %s.",
 
   "mythling.mythweave.element.fire": "Fire",
   "mythling.mythweave.element.earth": "Earth",
-  "mythling.mythweave.element.light": "Light",
 
   "mythling.mythweave.cindercub.rarity": "Common",
   "mythling.mythweave.cindercub.habitat": "Warm forests and ashen clearings",
@@ -112,12 +106,5 @@
   "mythling.mythweave.ashenox.description": "A heavy, horned guardian plated in cooling magma. It was shaped by countless fights and will stand between its bondmate and any foe.",
   "mythling.mythweave.ashenox.ability.ember_spark": "Ember Spark",
   "mythling.mythweave.ashenox.ability.magma_bite": "Magma Bite",
-  "mythling.mythweave.ashenox.ability.fire_immune": "Fireproof",
-
-  "mythling.mythweave.solflare.rarity": "Rare",
-  "mythling.mythweave.solflare.habitat": "High ridges and sunlit ruins",
-  "mythling.mythweave.solflare.description": "A long-legged wanderer with wings of captured sunlight. It was shaped by far horizons and shares its bondmate's love of the open world.",
-  "mythling.mythweave.solflare.ability.ember_spark": "Ember Spark",
-  "mythling.mythweave.solflare.ability.sunwarden": "Sunwarden",
-  "mythling.mythweave.solflare.ability.fire_immune": "Fireproof"
+  "mythling.mythweave.ashenox.ability.fire_immune": "Fireproof"
 }

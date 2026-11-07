@@ -20,8 +20,6 @@ import java.util.UUID;
  * @param formId      its entity id path, e.g. "cindercub"
  * @param name        its custom name, or "" if it has none
  * @param kindle      total Kindle
- * @param combat      Kindle earned by fighting (combat branch affinity)
- * @param exploration Kindle earned by exploring (exploration branch affinity)
  * @param sitting     whether it is ordered to sit
  * @param evolving    whether it is currently evolving
  * @param health      current health
@@ -32,8 +30,6 @@ public record TamedMythling(
 		String formId,
 		String name,
 		int kindle,
-		int combat,
-		int exploration,
 		boolean sitting,
 		boolean evolving,
 		float health,
@@ -44,8 +40,6 @@ public record TamedMythling(
 			Codec.STRING.fieldOf("form").forGetter(TamedMythling::formId),
 			Codec.STRING.optionalFieldOf("name", "").forGetter(TamedMythling::name),
 			Codec.INT.optionalFieldOf("kindle", 0).forGetter(TamedMythling::kindle),
-			Codec.INT.optionalFieldOf("combat", 0).forGetter(TamedMythling::combat),
-			Codec.INT.optionalFieldOf("exploration", 0).forGetter(TamedMythling::exploration),
 			Codec.BOOL.optionalFieldOf("sitting", false).forGetter(TamedMythling::sitting),
 			Codec.BOOL.optionalFieldOf("evolving", false).forGetter(TamedMythling::evolving),
 			Codec.FLOAT.optionalFieldOf("health", 0.0F).forGetter(TamedMythling::health),
@@ -58,8 +52,6 @@ public record TamedMythling(
 				buf.writeUtf(value.formId());
 				buf.writeUtf(value.name());
 				buf.writeVarInt(value.kindle());
-				buf.writeVarInt(value.combat());
-				buf.writeVarInt(value.exploration());
 				buf.writeBoolean(value.sitting());
 				buf.writeBoolean(value.evolving());
 				buf.writeFloat(value.health());
@@ -69,8 +61,6 @@ public record TamedMythling(
 					buf.readUUID(),
 					buf.readUtf(),
 					buf.readUtf(),
-					buf.readVarInt(),
-					buf.readVarInt(),
 					buf.readVarInt(),
 					buf.readBoolean(),
 					buf.readBoolean(),

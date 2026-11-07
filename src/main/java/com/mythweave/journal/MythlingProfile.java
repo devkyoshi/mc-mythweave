@@ -1,18 +1,14 @@
 package com.mythweave.journal;
 
-import com.mythweave.evolution.EvolutionLine;
-
 import net.minecraft.world.item.Item;
 
 import java.util.List;
 
 /**
- * The journal's static information about one Mythling form. Stats and evolution rules are
- * derived from the entity type and {@link com.mythweave.evolution.EvolutionRules}; only the
- * descriptive fields live here.
+ * The journal's static information about one Mythling form. Stats are
+ * derived from the entity type; only the descriptive fields live here.
  *
  * @param formId         entity id path, e.g. "cindercub"
- * @param line           the evolution line this form belongs to
  * @param spawnEgg       item shown as the small journal icon
  * @param bondingItem    item that bonds a wild one
  * @param elementKeys    translation keys for the form's elements, e.g. fire or earth
@@ -23,7 +19,6 @@ import java.util.List;
  */
 public record MythlingProfile(
 		String formId,
-		EvolutionLine line,
 		Item spawnEgg,
 		Item bondingItem,
 		List<String> elementKeys,

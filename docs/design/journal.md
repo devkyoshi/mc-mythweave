@@ -96,9 +96,8 @@ rules:
 
 - the form's stage (`stageOf`),
 - the Kindle threshold for the next stage (`kindleToEvolveFrom`),
-- the current Kindle and combat/exploration affinity for a tamed Mythling,
-- the form it is ready to become (`nextForm`), or the branch it is leaning toward
-  (`leaning`), or both stage-3 options when it has no leaning yet.
+- the current Kindle for a tamed Mythling,
+- the form it is ready to become (`nextForm`), or the next form in its line.
 
 The page scrolls with the mouse wheel when the window is too short for all of it.
 

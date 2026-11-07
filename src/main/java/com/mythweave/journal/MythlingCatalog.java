@@ -32,7 +32,6 @@ import java.util.Optional;
 public final class MythlingCatalog {
 	private static final String ELEMENT_FIRE = "mythling.mythweave.element.fire";
 	private static final String ELEMENT_EARTH = "mythling.mythweave.element.earth";
-	private static final String ELEMENT_LIGHT = "mythling.mythweave.element.light";
 
 	private static final List<MythlingProfile> PROFILES = buildProfiles();
 	private static final Map<String, MythlingProfile> BY_ID = buildIndex();
@@ -44,7 +43,7 @@ public final class MythlingCatalog {
 		List<MythlingProfile> profiles = new ArrayList<>();
 		for (EvolutionLine line : EvolutionLines.ALL) {
 			profiles.add(new MythlingProfile(
-					line.base(), line, ModItems.CINDERCUB_SPAWN_EGG, Items.BLAZE_POWDER,
+					line.base(), ModItems.CINDERCUB_SPAWN_EGG, Items.BLAZE_POWDER,
 					List.of(ELEMENT_FIRE),
 					"mythling.mythweave.cindercub.rarity",
 					"mythling.mythweave.cindercub.habitat",
@@ -55,18 +54,7 @@ public final class MythlingCatalog {
 					)
 			));
 			profiles.add(new MythlingProfile(
-					line.stage2(), line, ModItems.EMBERLYNX_SPAWN_EGG, Items.BLAZE_POWDER,
-					List.of(ELEMENT_FIRE),
-					"mythling.mythweave.emberlynx.rarity",
-					"mythling.mythweave.emberlynx.habitat",
-					"mythling.mythweave.emberlynx.description",
-					List.of(
-							"mythling.mythweave.emberlynx.ability.ember_spark",
-							"mythling.mythweave.emberlynx.ability.defender"
-					)
-			));
-			profiles.add(new MythlingProfile(
-					line.combatForm(), line, ModItems.ASHENOX_SPAWN_EGG, Items.BLAZE_POWDER,
+					line.stage2(), ModItems.ASHENOX_SPAWN_EGG, Items.BLAZE_POWDER,
 					List.of(ELEMENT_FIRE, ELEMENT_EARTH),
 					"mythling.mythweave.ashenox.rarity",
 					"mythling.mythweave.ashenox.habitat",
@@ -78,15 +66,14 @@ public final class MythlingCatalog {
 					)
 			));
 			profiles.add(new MythlingProfile(
-					line.explorationForm(), line, ModItems.SOLFLARE_SPAWN_EGG, Items.BLAZE_POWDER,
-					List.of(ELEMENT_FIRE, ELEMENT_LIGHT),
-					"mythling.mythweave.solflare.rarity",
-					"mythling.mythweave.solflare.habitat",
-					"mythling.mythweave.solflare.description",
+					line.stage3(), ModItems.EMBERLYNX_SPAWN_EGG, Items.BLAZE_POWDER,
+					List.of(ELEMENT_FIRE),
+					"mythling.mythweave.emberlynx.rarity",
+					"mythling.mythweave.emberlynx.habitat",
+					"mythling.mythweave.emberlynx.description",
 					List.of(
-							"mythling.mythweave.solflare.ability.ember_spark",
-							"mythling.mythweave.solflare.ability.sunwarden",
-							"mythling.mythweave.solflare.ability.fire_immune"
+							"mythling.mythweave.emberlynx.ability.ember_spark",
+							"mythling.mythweave.emberlynx.ability.defender"
 					)
 			));
 		}
@@ -117,14 +104,17 @@ public final class MythlingCatalog {
 
 	/** A form's stage in its line: 1, 2, 3, or 0 if it isn't in a known line. */
 	public static int stageOf(String formId) {
-		return profile(formId)
-				.map(profile -> EvolutionRules.stageOf(profile.line(), formId))
-				.orElse(0);
+		return lineOf(formId).map(line -> EvolutionRules.stageOf(line, formId)).orElse(0);
 	}
 
 	/** The evolution line a form belongs to, if known. */
 	public static Optional<EvolutionLine> lineOf(String formId) {
-		return profile(formId).map(MythlingProfile::line);
+		for (EvolutionLine line : EvolutionLines.ALL) {
+			if (EvolutionRules.stageOf(line, formId) > 0) {
+				return Optional.of(line);
+			}
+		}
+		return Optional.empty();
 	}
 
 	public static Optional<EntityType<? extends MythlingEntity>> entityType(String formId) {

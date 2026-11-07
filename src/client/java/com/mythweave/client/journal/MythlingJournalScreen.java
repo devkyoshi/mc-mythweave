@@ -4,7 +4,6 @@ import com.mythweave.client.MythweaveClient;
 import com.mythweave.entity.base.MythlingEntity;
 import com.mythweave.evolution.EvolutionLine;
 import com.mythweave.evolution.EvolutionRules;
-import com.mythweave.evolution.EvolutionRules.Branch;
 import com.mythweave.journal.JournalAttachments;
 import com.mythweave.journal.JournalData;
 import com.mythweave.journal.MythlingCatalog;
@@ -659,13 +658,8 @@ public class MythlingJournalScreen extends Screen {
 
 		TamedMythling tamed = entry.tamed();
 		int kindle = tamed == null ? 0 : tamed.kindle();
-		Branch leaning = tamed == null
-				? Branch.NONE : EvolutionRules.leaning(tamed.combat(), tamed.exploration());
 
 		if (tamed != null) {
-			graphics.text(this.font, Component.translatable(
-					"screen.mythweave.journal.affinity", tamed.combat(), tamed.exploration()), x, y, TEXT_DIM);
-			y += this.font.lineHeight;
 			graphics.text(this.font, Component.translatable(
 					"screen.mythweave.journal.evolution.progress", kindle, needed), x, y, TEXT);
 			y += this.font.lineHeight;
@@ -673,44 +667,17 @@ public class MythlingJournalScreen extends Screen {
 			y += 2;
 		}
 
-		String next = EvolutionRules.nextForm(line, entry.formId(), kindle, leaning);
+		String next = EvolutionRules.nextForm(line, entry.formId(), kindle);
 		if (next != null) {
 			graphics.text(this.font, Component.translatable(
 					"screen.mythweave.journal.evolution.ready", EvolutionLine.formName(next)), x, y, GOOD);
 			return y + this.font.lineHeight;
 		}
 
-		if (stage == 1) {
-			graphics.text(this.font, Component.translatable("screen.mythweave.journal.evolution.next",
-					EvolutionLine.formName(line.stage2()), EvolutionRules.STAGE_2_KINDLE), x, y, TEXT_DIM);
-			return y + this.font.lineHeight;
-		}
-
-		if (tamed != null && leaning != Branch.NONE) {
-			String target = line.formFor(leaning);
-			graphics.text(this.font, Component.translatable("screen.mythweave.journal.evolution.next",
-					EvolutionLine.formName(target), EvolutionRules.STAGE_3_KINDLE), x, y, TEXT_DIM);
-			y += this.font.lineHeight;
-			graphics.text(this.font, Component.translatable(
-							leaning == Branch.COMBAT
-									? "screen.mythweave.journal.leaning.combat"
-									: "screen.mythweave.journal.leaning.exploration",
-							EvolutionLine.formName(target)),
-					x, y, TEXT_DIM);
-			return y + this.font.lineHeight;
-		}
-
-		graphics.text(this.font, Component.translatable("screen.mythweave.journal.evolution.branches",
-				EvolutionLine.formName(line.combatForm()),
-				EvolutionLine.formName(line.explorationForm()),
-				EvolutionRules.STAGE_3_KINDLE), x, y, TEXT_DIM);
-		y += this.font.lineHeight;
-		if (tamed != null) {
-			graphics.text(this.font, Component.translatable("screen.mythweave.journal.leaning.none"),
-					x, y, TEXT_DIM);
-			y += this.font.lineHeight;
-		}
-		return y;
+		String target = stage == 1 ? line.stage2() : line.stage3();
+		graphics.text(this.font, Component.translatable("screen.mythweave.journal.evolution.next",
+				EvolutionLine.formName(target), needed), x, y, TEXT_DIM);
+		return y + this.font.lineHeight;
 	}
 
 	// ------------------------------------------------------------------

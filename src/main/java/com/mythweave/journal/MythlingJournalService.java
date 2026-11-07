@@ -177,8 +177,6 @@ public final class MythlingJournalService {
 						? mythling.getCustomName().getString()
 						: "",
 				mythling.kindle().points(),
-				mythling.kindle().combat(),
-				mythling.kindle().exploration(),
 				mythling.isOrderedToSit(),
 				mythling.isEvolving(),
 				mythling.getHealth(),

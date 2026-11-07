@@ -180,7 +180,7 @@ to open your creature journal. It has two tabs:
 
 The detail page shows the form's element, rarity, habitat, description, stats and abilities,
 plus a live evolution page for your own companions: current stage, Kindle progress toward the
-next threshold, combat/exploration leaning, and the form it will become. It scrolls with the
+next threshold, and the form it will become. It scrolls with the
 mouse wheel when the window is short. The journal is a reading UI: it doesn't pause the world,
 and the server keeps it up to date while it is open.
 
