@@ -61,8 +61,8 @@ public final class Evolution {
 			}
 			return;
 		}
-		// Only start somewhere sensible: standing on the ground, not swimming or riding.
-		if (!mythling.onGround() || mythling.isInWater() || mythling.isPassenger()) {
+		// Only start somewhere sensible: standing on the ground, not swimming, riding or ridden.
+		if (!mythling.onGround() || mythling.isInWater() || mythling.isPassenger() || mythling.isVehicle()) {
 			return;
 		}
 		// The new form is bigger: wait until it fits here, rise included (say so once).
@@ -81,7 +81,7 @@ public final class Evolution {
 	/** The form it's ready to become right now, or null. */
 	private static @Nullable String nextFormId(MythlingEntity mythling) {
 		Kindle kindle = mythling.kindle();
-		return EvolutionRules.nextForm(mythling.evolutionLine(), mythling.formId(), kindle.points(), kindle.leaning());
+		return EvolutionRules.nextForm(mythling.evolutionLine(), mythling.formId(), kindle.points());
 	}
 
 	/** A form's real size: its model-sized hitbox times its SCALE. */

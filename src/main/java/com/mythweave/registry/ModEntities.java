@@ -5,7 +5,6 @@ import com.mythweave.entity.ashenox.AshenoxEntity;
 import com.mythweave.entity.base.MythlingEntity;
 import com.mythweave.entity.cindercub.CindercubEntity;
 import com.mythweave.entity.emberlynx.EmberlynxEntity;
-import com.mythweave.entity.solflare.SolflareEntity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
@@ -25,7 +24,7 @@ import java.util.Optional;
  *
  * <p>Sizes here match each model at scale 1. A form's {@code SCALE} attribute (in its
  * {@code createAttributes()}) multiplies the hitbox, eye height and model together, so later
- * stages are bigger: Cindercub 1.0, Emberlynx 1.15, Ashenox and Solflare 1.3.
+ * stages are bigger. Ashenox is the exception: its model is built at full horse size, scale 1.0.
  */
 public final class ModEntities {
 	public static final EntityType<CindercubEntity> CINDERCUB = register(
@@ -42,9 +41,9 @@ public final class ModEntities {
 
 	public static final EntityType<EmberlynxEntity> EMBERLYNX = register(
 			"emberlynx",
-			// Stage 2 of the Cindercub line: taller and leaner. 0.6 wide x 0.95 tall covers the
-			// model to the top of its head (15.5 of 16 pixels); ears, tufts, horns and the fire
-			// mane stick out above. Eyes are 13.5 pixels up. Scale 1.15: 0.69 x 1.09 in game.
+			// Stage 3 (final) of the Cindercub line: taller and leaner. 0.6 wide x 0.95 tall
+			// covers the model to the top of its head (15.5 of 16 pixels); ears, tufts, horns and
+			// the fire mane stick out above. Eyes are 13.5 pixels up. Scale 1.15: 0.69 x 1.09 in game.
 			EntityType.Builder.of(EmberlynxEntity::new, MobCategory.CREATURE)
 					.sized(0.6f, 0.95f)
 					.eyeHeight(0.84f)
@@ -52,25 +51,14 @@ public final class ModEntities {
 
 	public static final EntityType<AshenoxEntity> ASHENOX = register(
 			"ashenox",
-			// Stage 3 (combat) of the Cindercub line: heavy and armored. 0.8 wide x 1.1 tall
-			// covers the body and head (top at 17 of 16 pixels); horns and mane stick out above.
-			// Eyes are 14.5 pixels up. Fire-immune: a volcanic creature doesn't burn in lava.
-			// Scale 1.3: 1.04 x 1.43 in game.
+			// Stage 2 of the Cindercub line: a horse-sized, rideable fire fox (scale 1.0, model
+			// at full size). 0.9 wide x 1.6 tall covers it to the ear tips (25 of 16 pixels);
+			// the tails reach out behind. Eyes are 19 pixels up. The rider sits at
+			// AshenoxEntity.RIDER_SEAT. Fire-immune: a fire fox doesn't burn in lava.
 			EntityType.Builder.of(AshenoxEntity::new, MobCategory.CREATURE)
-					.sized(0.8f, 1.1f)
-					.eyeHeight(0.9f)
-					.fireImmune()
-	);
-
-	public static final EntityType<SolflareEntity> SOLFLARE = register(
-			"solflare",
-			// Stage 3 (exploration) of the Cindercub line: lean and long-legged. 0.7 wide x 1.1
-			// tall covers the body and head (top at 17.5 of 16 pixels); ears, crest and wings
-			// stick out above. Eyes are 15 pixels up. Fire-immune: it's made of sunfire.
-			// Scale 1.3: 0.91 x 1.43 in game.
-			EntityType.Builder.of(SolflareEntity::new, MobCategory.CREATURE)
-					.sized(0.7f, 1.1f)
-					.eyeHeight(0.94f)
+					.sized(0.9f, 1.6f)
+					.eyeHeight(1.18f)
+					.passengerAttachments(AshenoxEntity.RIDER_SEAT)
 					.fireImmune()
 	);
 
@@ -82,8 +70,7 @@ public final class ModEntities {
 	private static final Map<String, EntityType<? extends MythlingEntity>> MYTHLING_FORMS = Map.of(
 			"cindercub", CINDERCUB,
 			"emberlynx", EMBERLYNX,
-			"ashenox", ASHENOX,
-			"solflare", SOLFLARE
+			"ashenox", ASHENOX
 	);
 
 	private ModEntities() {
@@ -107,6 +94,5 @@ public final class ModEntities {
 		FabricDefaultAttributeRegistry.register(CINDERCUB, CindercubEntity.createAttributes());
 		FabricDefaultAttributeRegistry.register(EMBERLYNX, EmberlynxEntity.createAttributes());
 		FabricDefaultAttributeRegistry.register(ASHENOX, AshenoxEntity.createAttributes());
-		FabricDefaultAttributeRegistry.register(SOLFLARE, SolflareEntity.createAttributes());
 	}
 }

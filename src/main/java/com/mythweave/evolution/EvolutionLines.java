@@ -5,8 +5,8 @@ package com.mythweave.evolution;
  * returns its line from {@code Mythling#evolutionLine()}. See docs/design/evolution.md.
  */
 public final class EvolutionLines {
-	/** Cindercub -> Emberlynx -> Ashenox (combat) or Solflare (exploration). */
-	public static final EvolutionLine CINDERCUB = new EvolutionLine("cindercub", "emberlynx", "ashenox", "solflare");
+	/** Cindercub -> Ashenox -> Emberlynx. */
+	public static final EvolutionLine CINDERCUB = new EvolutionLine("cindercub", "ashenox", "emberlynx");
 
 	private EvolutionLines() {
 	}

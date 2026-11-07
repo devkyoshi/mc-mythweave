@@ -8,8 +8,7 @@ import org.jspecify.annotations.Nullable;
  * these rules. See docs/design/evolution.md.
  *
  * <p>These rules are shared by every species. Which forms a species evolves into is its
- * {@link EvolutionLine} (all in {@link EvolutionLines}): stage 1 -> stage 2 -> one of two
- * stage-3 forms, picked by {@link Branch}.
+ * {@link EvolutionLine} (all in {@link EvolutionLines}): stage 1 -> stage 2 -> stage 3.
  */
 public final class EvolutionRules {
 	/** Kindle needed for stage 2, and for stage 3 (counted from zero, not on top of stage 2). */
@@ -29,37 +28,26 @@ public final class EvolutionRules {
 	/** Surviving hits pays out at most once per this many ticks (10 seconds), so it can't be farmed. */
 	public static final int SURVIVED_HIT_COOLDOWN_TICKS = 10 * 20;
 
-	/** Which stage-3 form the Mythling is drawn toward. */
-	public enum Branch {
-		NONE,
-		/** Earned by fighting together; leads to {@link EvolutionLine#combatForm()} (e.g. Ashenox). */
-		COMBAT,
-		/** Earned by exploring together; leads to {@link EvolutionLine#explorationForm()} (e.g. Solflare). */
-		EXPLORATION
-	}
-
-	/** Everything that earns Kindle: how much, and which branch it pulls toward. */
+	/** Everything that earns Kindle, and how much. */
 	public enum KindleSource {
-		TIME_WITH_OWNER(1, Branch.NONE),
-		EMBER_SPARK(5, Branch.EXPLORATION),
-		TRAVEL(3, Branch.EXPLORATION),
-		NEW_BIOME(10, Branch.EXPLORATION),
-		HOSTILE_DEFEATED(8, Branch.COMBAT),
-		SURVIVED_HIT(2, Branch.COMBAT);
+		TIME_WITH_OWNER(1),
+		EMBER_SPARK(5),
+		TRAVEL(3),
+		NEW_BIOME(10),
+		HOSTILE_DEFEATED(8),
+		SURVIVED_HIT(2);
 
 		public final int kindle;
-		public final Branch affinity;
 
-		KindleSource(int kindle, Branch affinity) {
+		KindleSource(int kindle) {
 			this.kindle = kindle;
-			this.affinity = affinity;
 		}
 	}
 
 	private EvolutionRules() {
 	}
 
-	/** A form's stage in its line: 1 (base), 2, or 3 (either branch); 0 if it isn't in the line. */
+	/** A form's stage in its line: 1 (base), 2 or 3; 0 if it isn't in the line. */
 	public static int stageOf(EvolutionLine line, String formId) {
 		if (formId.equals(line.base())) {
 			return 1;
@@ -67,7 +55,7 @@ public final class EvolutionRules {
 		if (formId.equals(line.stage2())) {
 			return 2;
 		}
-		return formId.equals(line.combatForm()) || formId.equals(line.explorationForm()) ? 3 : 0;
+		return formId.equals(line.stage3()) ? 3 : 0;
 	}
 
 	/** Kindle needed to evolve out of a stage, or -1 if it's the final stage. */
@@ -81,26 +69,14 @@ public final class EvolutionRules {
 
 	/**
 	 * The form a Mythling should evolve into right now, or null if it isn't ready: not enough
-	 * Kindle, already final, or (stage 2 -> 3) no branch leaning yet. Stage 3 is whichever
-	 * branch has more affinity, so how you play decides it.
+	 * Kindle, or already final.
 	 */
-	public static @Nullable String nextForm(EvolutionLine line, String formId, int kindle, Branch leaning) {
+	public static @Nullable String nextForm(EvolutionLine line, String formId, int kindle) {
 		int stage = stageOf(line, formId);
 		int needed = kindleToEvolveFrom(stage);
 		if (needed < 0 || kindle < needed) {
 			return null;
 		}
-		if (stage == 1) {
-			return line.stage2();
-		}
-		return leaning == Branch.NONE ? null : line.formFor(leaning);
-	}
-
-	/** The branch with more affinity; a tie (including 0 - 0) leans nowhere yet. */
-	public static Branch leaning(int combat, int exploration) {
-		if (combat == exploration) {
-			return Branch.NONE;
-		}
-		return combat > exploration ? Branch.COMBAT : Branch.EXPLORATION;
+		return stage == 1 ? line.stage2() : line.stage3();
 	}
 }

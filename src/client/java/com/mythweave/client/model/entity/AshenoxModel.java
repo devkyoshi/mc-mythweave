@@ -1,149 +1,85 @@
 package com.mythweave.client.model.entity;
 
 import com.mythweave.client.render.entity.state.AshenoxRenderState;
+import com.mythweave.entity.ashenox.AshenoxEntity;
 
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Ashenox, the combat stage-3 form of the Cindercub line: a heavy volcanic fox. A broad body
- * on thick legs, two obsidian plates across the back (cracked with glowing magma in the
- * texture), a magma mane, a strong jaw, small swept ears, big two-part horns that sweep out and curve back,
- * and a thick tail of fire.
+ * Ashenox, stage 2 of the Cindercub line: a horse-sized fire fox you can ride, generated from
+ * its design sheet (docs/reference/ashenox) by {@code tools/models/ashenox_gen.ps1}. The mesh
+ * ({@link AshenoxModelGeometry}) is carved from the sheet's side and front silhouettes at 2.5x
+ * voxel detail and painted with the sheet's own colours; the three flame-plume tails are chains
+ * of tapering segments (centre, left, right), each with its own pivot and rhythm.
  *
- * <p>Fire animation as on the Emberlynx (rippling tail, flickering tongues and mane, all
- * burning upward), slower and heavier. The glowing parts come from {@code ashenox_glow.png}.
+ * <p>Parts: body (with the chest ruff, the head with its ears and sleep eyelids, and the three
+ * tails) and four two-part legs hanging from the root, so the feet stay planted when the body
+ * moves. About 1.6 blocks to the ear tips, 2 blocks from nose to tail tips.
  *
- * <p>Model space is in pixels (16 = one block), y down, ground at y = 24. Texture sheet is
- * 64 x 64; the layout is documented in {@code tools/textures/ashenox.ps1}.
+ * <p>Animated in code from {@link AshenoxRenderState}: idle breathing and tail sway, a walk
+ * (diagonal pairs) that blends into a bounding run, sitting, lying down asleep, looking around,
+ * a happy bounce, an alert stance, and a steadier carriage while ridden. Positions here are in
+ * model units ({@link #U} per pixel), because the mesh is scaled down only at its root.
  */
 public class AshenoxModel extends EntityModel<AshenoxRenderState> {
-	private static final float TAIL_LIFT = 0.35F;
+	/** Model units per pixel. */
+	private static final float U = AshenoxModelGeometry.DETAIL;
+	/** Each tail's own sway rhythm (centre, left, right), so the three never move as one. */
+	private static final float[] TAIL_PHASE = {0.0F, 2.1F, 4.2F};
+	private static final float[] TAIL_SPEED = {0.08F, 0.067F, 0.094F};
 
 	private final ModelPart body;
-	private final ModelPart mane;
-	private final ModelPart[] maneTongues;
+	private final ModelPart chest;
 	private final ModelPart head;
 	private final ModelPart rightEar;
 	private final ModelPart leftEar;
-	private final ModelPart tail;
-	private final ModelPart tailMid;
-	private final ModelPart tailMid2;
-	private final ModelPart tailTip;
-	private final ModelPart plume;
-	private final ModelPart[] tailTongues;
-	private final ModelPart rightHindLeg;
-	private final ModelPart leftHindLeg;
+	private final ModelPart eyelids;
+	/** Centre, left, right; each is the tail's segments from the rump out, then its flame. */
+	private final ModelPart[][] tails;
 	private final ModelPart rightFrontLeg;
 	private final ModelPart leftFrontLeg;
+	private final ModelPart rightHindLeg;
+	private final ModelPart leftHindLeg;
+	private final ModelPart rightFrontLower;
+	private final ModelPart leftFrontLower;
+	private final ModelPart rightHindLower;
+	private final ModelPart leftHindLower;
 
 	public AshenoxModel(ModelPart root) {
 		super(root);
 		this.body = root.getChild("body");
-		this.mane = this.body.getChild("mane");
-		this.maneTongues = new ModelPart[4];
-		for (int i = 0; i < 4; i++) {
-			this.maneTongues[i] = this.mane.getChild("tongue_" + i);
-		}
-		this.head = root.getChild("head");
+		this.chest = this.body.getChild("chest");
+		this.head = this.body.getChild("head");
 		this.rightEar = this.head.getChild("right_ear");
 		this.leftEar = this.head.getChild("left_ear");
-		this.tail = this.body.getChild("tail");
-		this.tailMid = this.tail.getChild("mid");
-		this.tailMid2 = this.tailMid.getChild("mid2");
-		this.tailTip = this.tailMid2.getChild("tip");
-		this.plume = this.tailTip.getChild("plume");
-		this.tailTongues = new ModelPart[] {
-				this.tail.getChild("tongue"), this.tailMid.getChild("tongue"), this.tailMid2.getChild("tongue")};
-		this.rightHindLeg = root.getChild("right_hind_leg");
-		this.leftHindLeg = root.getChild("left_hind_leg");
+		this.eyelids = this.head.getChild("eyelids");
+		String[] names = {"tail_center", "tail_left", "tail_right"};
+		int segments = AshenoxModelGeometry.TAIL_SEGMENTS;
+		this.tails = new ModelPart[3][segments + 1];
+		for (int i = 0; i < 3; i++) {
+			ModelPart part = this.body.getChild(names[i]);
+			this.tails[i][0] = part;
+			for (int s = 1; s < segments; s++) {
+				part = part.getChild("seg" + s);
+				this.tails[i][s] = part;
+			}
+			this.tails[i][segments] = part.getChild("flame");
+		}
 		this.rightFrontLeg = root.getChild("right_front_leg");
 		this.leftFrontLeg = root.getChild("left_front_leg");
+		this.rightHindLeg = root.getChild("right_hind_leg");
+		this.leftHindLeg = root.getChild("left_hind_leg");
+		this.rightFrontLower = this.rightFrontLeg.getChild("lower");
+		this.leftFrontLower = this.leftFrontLeg.getChild("lower");
+		this.rightHindLower = this.rightHindLeg.getChild("lower");
+		this.leftHindLower = this.leftHindLeg.getChild("lower");
 	}
 
 	public static LayerDefinition createBodyLayer() {
-		MeshDefinition mesh = new MeshDefinition();
-		PartDefinition root = mesh.getRoot();
-		CubeListBuilder flame = CubeListBuilder.create().texOffs(32, 6).addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F);
-
-		// Body: 7 wide, 6 tall, 12 long, on 6-pixel legs (y 12..18).
-		PartDefinition body = root.addOrReplaceChild("body",
-				CubeListBuilder.create().texOffs(0, 13).addBox(-3.5F, -3.0F, -6.0F, 7.0F, 6.0F, 12.0F),
-				PartPose.offset(0.0F, 15.0F, 0.0F));
-		// Two obsidian plates across the back, half a pixel wider than the body on each side
-		// (so their sides never sit flush with the body's), tilted slightly like scales.
-		CubeListBuilder plate = CubeListBuilder.create().texOffs(38, 13).addBox(-4.0F, -2.0F, -2.0F, 8.0F, 2.0F, 4.0F);
-		body.addOrReplaceChild("plate_front", plate, PartPose.offsetAndRotation(0.0F, -2.5F, -0.5F, -0.12F, 0.0F, 0.0F));
-		body.addOrReplaceChild("plate_back", plate, PartPose.offsetAndRotation(0.0F, -2.5F, 3.5F, -0.12F, 0.0F, 0.0F));
-		// Magma mane over the shoulders with four tongues of flame.
-		PartDefinition mane = body.addOrReplaceChild("mane",
-				CubeListBuilder.create().texOffs(38, 19).addBox(-4.0F, -3.0F, -2.0F, 8.0F, 4.0F, 4.0F),
-				PartPose.offset(0.0F, -3.0F, -4.5F));
-		for (int i = 0; i < 4; i++) {
-			mane.addOrReplaceChild("tongue_" + i, flame, PartPose.offset(-3.0F + i * 2.0F, -3.0F, i % 2 == 0 ? 0.0F : -0.5F));
-		}
-
-		// Thick fire tail: 4x4x4 base, a 3x3x4 and a 3x3x3 segment, a 2x2x2 tip and a plume.
-		PartDefinition tail = body.addOrReplaceChild("tail",
-				CubeListBuilder.create().texOffs(0, 31).addBox(-2.0F, -2.0F, 0.0F, 4.0F, 4.0F, 4.0F),
-				PartPose.offsetAndRotation(0.0F, -2.0F, 6.0F, TAIL_LIFT, 0.0F, 0.0F));
-		tail.addOrReplaceChild("tongue", flame, PartPose.offset(0.0F, -2.0F, 2.0F));
-		PartDefinition mid = tail.addOrReplaceChild("mid",
-				CubeListBuilder.create().texOffs(16, 31).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 4.0F),
-				PartPose.offset(0.0F, 0.0F, 4.0F));
-		mid.addOrReplaceChild("tongue", flame, PartPose.offset(0.0F, -1.5F, 2.0F));
-		PartDefinition mid2 = mid.addOrReplaceChild("mid2",
-				CubeListBuilder.create().texOffs(30, 31).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 3.0F),
-				PartPose.offset(0.0F, 0.0F, 4.0F));
-		mid2.addOrReplaceChild("tongue", flame, PartPose.offset(0.0F, -1.5F, 1.5F));
-		PartDefinition tip = mid2.addOrReplaceChild("tip",
-				CubeListBuilder.create().texOffs(42, 31).addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, 2.0F),
-				PartPose.offset(0.0F, 0.0F, 3.0F));
-		tip.addOrReplaceChild("plume",
-				CubeListBuilder.create().texOffs(36, 6).addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
-				PartPose.offset(0.0F, -1.0F, 1.0F));
-
-		// Head (7 x 6 x 7) just in front of the body, a strong 4 x 3 x 3 jaw, small ears swept
-		// out, and big horns: a 2x4x2 base curving into a 1x3x1 tip.
-		PartDefinition head = root.addOrReplaceChild("head",
-				CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -6.0F, -7.0F, 7.0F, 6.0F, 7.0F),
-				PartPose.offset(0.0F, 13.0F, -6.0F));
-		head.addOrReplaceChild("snout",
-				CubeListBuilder.create().texOffs(28, 0).addBox(-2.0F, -3.0F, -10.0F, 4.0F, 3.0F, 3.0F),
-				PartPose.ZERO);
-		head.addOrReplaceChild("right_ear",
-				CubeListBuilder.create().texOffs(42, 0).addBox(-1.0F, -3.0F, 0.0F, 2.0F, 3.0F, 1.0F),
-				PartPose.offsetAndRotation(-2.5F, -6.0F, -2.0F, 0.0F, 0.0F, -0.3F));
-		head.addOrReplaceChild("left_ear",
-				CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, -3.0F, 0.0F, 2.0F, 3.0F, 1.0F),
-				PartPose.offsetAndRotation(2.5F, -6.0F, -2.0F, 0.0F, 0.0F, 0.3F));
-		addHorn(head, "right_horn", -2.0F, -0.55F);
-		addHorn(head, "left_horn", 2.0F, 0.55F);
-
-		// Thick legs (3 x 6 x 3).
-		CubeListBuilder leg = CubeListBuilder.create().texOffs(0, 39).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 6.0F, 3.0F);
-		root.addOrReplaceChild("right_hind_leg", leg, PartPose.offset(-2.0F, 18.0F, 4.0F));
-		root.addOrReplaceChild("left_hind_leg", leg, PartPose.offset(2.0F, 18.0F, 4.0F));
-		root.addOrReplaceChild("right_front_leg", leg, PartPose.offset(-2.0F, 18.0F, -4.0F));
-		root.addOrReplaceChild("left_front_leg", leg, PartPose.offset(2.0F, 18.0F, -4.0F));
-
-		return LayerDefinition.create(mesh, 64, 64);
-	}
-
-	/** A big horn: a 2x4x2 base angled out and a little back, curving back into a 1x3x1 tip. */
-	private static void addHorn(PartDefinition head, String name, float x, float zRot) {
-		PartDefinition horn = head.addOrReplaceChild(name,
-				CubeListBuilder.create().texOffs(54, 0).addBox(-1.0F, -4.0F, -1.0F, 2.0F, 4.0F, 2.0F),
-				PartPose.offsetAndRotation(x, -6.0F, -4.5F, -0.25F, 0.0F, zRot));
-		horn.addOrReplaceChild("tip",
-				CubeListBuilder.create().texOffs(28, 6).addBox(-0.5F, -3.0F, -0.5F, 1.0F, 3.0F, 1.0F),
-				PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, -0.7F, 0.0F, 0.0F));
+		return AshenoxModelGeometry.createBodyLayer();
 	}
 
 	@Override
@@ -151,95 +87,187 @@ public class AshenoxModel extends EntityModel<AshenoxRenderState> {
 		// super.setupAnim resets every part to its default pose before we apply this frame's pose.
 		super.setupAnim(state);
 		float age = state.ageInTicks;
-
-		this.head.xRot = state.xRot * Mth.DEG_TO_RAD;
-		this.head.yRot = state.yRot * Mth.DEG_TO_RAD;
-
-		// A heavier walk: shorter leg swing.
-		float pos = state.walkAnimationPos;
-		float speed = state.walkAnimationSpeed;
-		this.rightHindLeg.xRot = Mth.cos(pos * 0.6662F) * 1.0F * speed;
-		this.leftHindLeg.xRot = Mth.cos(pos * 0.6662F + Mth.PI) * 1.0F * speed;
-		this.rightFrontLeg.xRot = Mth.cos(pos * 0.6662F + Mth.PI) * 1.0F * speed;
-		this.leftFrontLeg.xRot = Mth.cos(pos * 0.6662F) * 1.0F * speed;
-
-		// Idle: a slow, slight head tilt and ear flicks.
+		float sleep = state.sleepAmount;
+		float awake = 1.0F - sleep;
+		float alert = state.alertAmount * awake;
+		float speed = state.isSitting ? 0.0F : Math.min(1.0F, state.walkAnimationSpeed);
+		float run = state.isRunning ? speed : 0.0F;
 		float idle = 1.0F - Math.min(1.0F, speed * 2.0F);
-		this.head.zRot = Mth.sin(age * 0.03F) * 0.05F * idle;
-		this.rightEar.zRot += Mth.sin(age * 0.17F) * 0.05F;
-		this.leftEar.zRot -= Mth.sin(age * 0.17F + 1.3F) * 0.05F;
+		float happy = state.happyTime >= 0.0F ? Mth.sin(state.happyTime / AshenoxEntity.HAPPY_TICKS * Mth.PI) : 0.0F;
 
-		this.tail.yRot = Mth.cos(age * 0.1F) * (0.1F + speed * 0.2F);
+		this.eyelids.visible = sleep > 0.5F;
 
 		if (state.isSitting) {
 			this.setSittingPose();
 		}
+		if (sleep > 0.0F) {
+			this.blendSleepingPose(sleep);
+		}
+		if (!state.isSitting) {
+			this.animateLegs(state.walkAnimationPos, speed, run);
+		}
 
-		this.animateFire(age, speed);
+		// Ridden: a steady, level carriage with the head a little lower, and the tails swept
+		// back so they stay clear of the rider.
+		if (state.isRidden) {
+			this.head.xRot += 0.12F;
+			this.head.y += 0.5F * U;
+			this.tails[0][0].xRot -= 0.25F;
+			this.tails[1][0].xRot -= 0.1F;
+			this.tails[2][0].xRot -= 0.1F;
+		}
+
+		// Alert: head raised, ears pricked forward and upright, tails lifted.
+		this.head.xRot -= 0.3F * alert;
+		this.head.y -= 1.0F * U * alert;
+		this.rightEar.xRot -= 0.2F * alert;
+		this.leftEar.xRot -= 0.2F * alert;
+		for (ModelPart[] tail : this.tails) {
+			tail[0].xRot += 0.25F * alert;
+		}
+
+		// Idle breathing: the body rises and falls slowly, the ruff swells. Not while ridden.
+		if (!state.isRidden) {
+			float breath = Mth.sin(age * 0.08F);
+			this.body.y += breath * 0.3F * U * idle;
+			this.chest.zScale = 1.0F + 0.04F * breath * idle;
+		}
+
+		// Happy: a bouncy little trot in place and a quick head tilt.
+		if (happy > 0.0F) {
+			float t = state.happyTime;
+			this.body.y -= Math.abs(Mth.sin(t * 0.6F)) * 1.5F * U * happy;
+			this.head.zRot += Mth.sin(t * 0.5F) * 0.2F * happy;
+			this.rightFrontLeg.xRot -= Math.max(0.0F, Mth.sin(t * 0.6F)) * 0.5F * happy;
+			this.leftFrontLeg.xRot -= Math.max(0.0F, -Mth.sin(t * 0.6F)) * 0.5F * happy;
+		}
+
+		this.animateHead(state, idle, alert, awake);
+		this.animateTails(age, speed, run, happy, state.happyTime, awake);
+		this.animateEars(age, awake);
 	}
 
-	/** Every flame flickers on its own rhythm; the tail ripples; tongues and plume burn upward. */
-	private void animateFire(float age, float speed) {
-		float f = age * (0.9F + speed * 0.5F);
+	/** Walk: diagonal pairs with bending knees. Run: front and hind pairs bound together. */
+	private void animateLegs(float pos, float speed, float run) {
+		float walk = 1.0F - run;
+		float w = pos * 0.6662F;
+		float r = pos * 0.5F;
 
-		this.tailMid.yRot = Mth.sin(f * 0.2F - 0.9F) * 0.22F;
-		this.tailMid2.yRot = Mth.sin(f * 0.2F - 1.8F) * 0.27F;
-		this.tailTip.yRot = Mth.sin(f * 0.2F - 2.7F) * 0.32F;
-		this.tailMid.xRot = 0.15F + 0.05F * Mth.sin(f * 0.16F);
-		this.tailMid2.xRot = 0.2F + 0.07F * Mth.sin(f * 0.16F + 0.6F);
-		this.tailTip.xRot = 0.25F + 0.09F * Mth.sin(f * 0.16F + 1.2F);
-		setScale(this.tail, 1.0F + 0.03F * Mth.sin(f * 0.8F));
-		setScale(this.tailMid, 1.0F + 0.05F * Mth.sin(f * 1.0F + 1.0F));
-		setScale(this.tailMid2, 1.0F + 0.06F * Mth.sin(f * 1.1F + 2.0F));
-		setScale(this.tailTip, 0.9F * (1.0F + 0.1F * Mth.sin(f * 1.3F + 3.0F)));
+		this.rightHindLeg.xRot = walk * Mth.cos(w) * 0.8F * speed + run * Mth.cos(r + Mth.PI) * 1.0F * speed;
+		this.leftHindLeg.xRot = walk * Mth.cos(w + Mth.PI) * 0.8F * speed + run * Mth.cos(r + Mth.PI + 0.4F) * 1.0F * speed;
+		this.rightFrontLeg.xRot = walk * Mth.cos(w + Mth.PI) * 0.8F * speed + run * Mth.cos(r) * 1.0F * speed;
+		this.leftFrontLeg.xRot = walk * Mth.cos(w) * 0.8F * speed + run * Mth.cos(r + 0.4F) * 1.0F * speed;
 
-		float tilt = this.body.xRot + this.tail.xRot;
-		ModelPart[] chain = {this.tail, this.tailMid, this.tailMid2};
-		for (int i = 0; i < this.tailTongues.length; i++) {
-			if (i > 0) {
-				tilt += chain[i].xRot;
-			}
-			this.tailTongues[i].xRot = -tilt;
-			this.tailTongues[i].yScale = 1.1F + 0.45F * Mth.sin(f * 1.2F + i * 2.1F);
-		}
-		float tipTilt = tilt + this.tailTip.xRot;
-		this.plume.xRot = -tipTilt + 0.15F * Mth.sin(f * 0.5F);
-		this.plume.zRot = 0.15F * Mth.cos(f * 0.43F);
-		this.plume.yScale = 1.4F + 0.4F * Mth.sin(f * 1.0F) + 0.15F * Mth.sin(f * 2.3F);
+		// Knees bend while a leg swings forward: front knees fold back, hind hocks forward.
+		this.rightFrontLower.xRot = Math.max(0.0F, Mth.sin(w + Mth.PI)) * 0.7F * speed;
+		this.leftFrontLower.xRot = Math.max(0.0F, Mth.sin(w)) * 0.7F * speed;
+		this.rightHindLower.xRot = -Math.max(0.0F, Mth.sin(w)) * 0.6F * speed;
+		this.leftHindLower.xRot = -Math.max(0.0F, Mth.sin(w + Mth.PI)) * 0.6F * speed;
 
-		setScale(this.mane, 1.0F + 0.03F * Mth.sin(f * 0.7F));
-		for (int i = 0; i < this.maneTongues.length; i++) {
-			this.maneTongues[i].xRot = -this.body.xRot;
-			this.maneTongues[i].yScale = 1.1F + 0.5F * Mth.sin(f * 1.1F + i * 1.7F);
-		}
-	}
-
-	private static void setScale(ModelPart part, float scale) {
-		part.xScale = scale;
-		part.yScale = scale;
-		part.zScale = scale;
+		// Running: the body rocks and bobs with each bound, and the head reaches forward.
+		this.body.xRot += Mth.sin(r) * 0.08F * run;
+		this.body.y -= Math.abs(Mth.cos(r)) * 0.8F * U * run;
+		this.head.xRot += 0.15F * run;
 	}
 
 	/**
-	 * Sitting: the body tilts back so the chest is up and the rump is on the ground, the hind
-	 * legs fold flat, the front legs stay straight, and the tail lies back. Offsets keep the
-	 * head on the chest and the haunches clear of the body's sides.
+	 * Looking: the head follows where the entity looks (relative to the body), with a slow
+	 * scan while idle and the ears turning the same way.
+	 */
+	private void animateHead(AshenoxRenderState state, float idle, float alert, float awake) {
+		float scan = state.isRidden ? 0.0F : Mth.sin(state.ageInTicks * 0.021F) * 0.18F * idle * (1.0F - alert);
+		float yaw = (state.yRot * Mth.DEG_TO_RAD + scan) * awake;
+		this.head.yRot += yaw;
+		this.head.xRot += state.xRot * Mth.DEG_TO_RAD * awake;
+		this.rightEar.yRot += yaw * 0.3F;
+		this.leftEar.yRot += yaw * 0.3F;
+	}
+
+	/**
+	 * Each tail sways on its own rhythm, rippling from the rump to the flame; faster when
+	 * moving or happy. Running streams them back. The flames flicker.
+	 */
+	private void animateTails(float age, float speed, float run, float happy, float happyTime, float awake) {
+		float energy = (0.05F + 0.05F * speed) * (0.35F + 0.65F * awake);
+		for (int i = 0; i < 3; i++) {
+			ModelPart[] tail = this.tails[i];
+			float phase = TAIL_PHASE[i];
+			float f = age * TAIL_SPEED[i] * (1.0F + speed);
+			tail[0].yRot += Mth.sin(f + phase) * energy * 2.0F;
+			tail[0].xRot += Mth.sin(f * 0.8F + phase) * 0.05F - 0.35F * run;
+			for (int s = 1; s < tail.length; s++) {
+				tail[s].yRot += Mth.sin(f - 0.5F * s + phase) * energy;
+				tail[s].xRot += Mth.sin(f * 1.3F - 0.4F * s + phase) * 0.02F;
+			}
+			if (happy > 0.0F) {
+				tail[0].yRot += Mth.sin(happyTime * 1.2F + phase) * 0.35F * happy;
+			}
+			// Flame flicker: the flame tufts pulse in size on their own beat.
+			ModelPart flame = tail[tail.length - 1];
+			flame.yScale = 1.0F + 0.2F * Mth.sin(age * 0.6F + phase);
+			flame.xScale = 1.0F + 0.12F * Mth.sin(age * 0.75F + phase + 1.0F);
+			flame.zScale = 1.0F + 0.15F * Mth.sin(age * 0.5F + phase + 2.0F);
+		}
+	}
+
+	/** Ear flicks now and then (unless asleep). */
+	private void animateEars(float age, float awake) {
+		this.rightEar.zRot -= Math.max(0.0F, Mth.sin(age * 0.11F) - 0.9F) * 2.5F * awake;
+		this.leftEar.zRot += Math.max(0.0F, Mth.sin(age * 0.11F + 2.3F) - 0.9F) * 2.5F * awake;
+	}
+
+	/**
+	 * Sitting: the chest up and the rump on the ground, hind legs folded flat, front legs
+	 * straight, the head kept level, the ruff hanging straight, and the side tails curled
+	 * around both sides so all three stay visible.
 	 */
 	private void setSittingPose() {
-		this.body.xRot = -0.4F;
-		this.body.y += 4.0F;
-		this.head.y += 1.9F;
-		this.head.z += 1.6F;
-		this.tail.xRot = 0.1F;
-		this.rightHindLeg.xRot = -1.45F;
-		this.leftHindLeg.xRot = -1.45F;
-		this.rightHindLeg.y += 4.0F;
-		this.leftHindLeg.y += 4.0F;
-		this.rightHindLeg.z -= 0.5F;
-		this.leftHindLeg.z -= 0.5F;
-		this.rightHindLeg.x -= 0.6F;
-		this.leftHindLeg.x += 0.6F;
-		this.rightFrontLeg.xRot = 0.0F;
-		this.leftFrontLeg.xRot = 0.0F;
+		this.body.y += 4.0F * U;
+		this.body.xRot = -0.5F;
+		this.head.xRot = 0.5F;
+		this.chest.xRot = 0.5F;
+		this.tails[0][0].xRot = 0.55F;
+		this.tails[1][0].xRot = 0.3F;
+		this.tails[1][0].yRot = 1.3F;
+		this.tails[2][0].xRot = 0.3F;
+		this.tails[2][0].yRot = -1.3F;
+		for (ModelPart leg : new ModelPart[] {this.rightHindLeg, this.leftHindLeg}) {
+			leg.y += 5.0F * U;
+			leg.z -= 1.5F * U;
+			leg.xRot = -1.5F;
+		}
+		this.rightHindLeg.x -= 0.5F * U;
+		this.leftHindLeg.x += 0.5F * U;
+		this.rightHindLower.xRot = 1.5F;
+		this.leftHindLower.xRot = 1.5F;
+	}
+
+	/**
+	 * Asleep (only ever from sitting): lying flat with the front legs stretched forward, the
+	 * head resting on them, the ears drooping, and the side tails wrapped around the body.
+	 * Offsets are from the rest pose (the defaults come from the generated mesh).
+	 */
+	private void blendSleepingPose(float s) {
+		float bodyY = this.body.getInitialPose().y() + 6.5F * U;
+		this.body.y = Mth.lerp(s, this.body.y, bodyY);
+		this.body.xRot = Mth.lerp(s, this.body.xRot, 0.0F);
+		this.chest.xRot = Mth.lerp(s, this.chest.xRot, 0.0F);
+		this.head.xRot = Mth.lerp(s, this.head.xRot, 0.2F);
+		this.head.y = Mth.lerp(s, this.head.y, this.head.getInitialPose().y() + 2.0F * U);
+		this.rightEar.zRot = Mth.lerp(s, this.rightEar.zRot, -0.6F);
+		this.leftEar.zRot = Mth.lerp(s, this.leftEar.zRot, 0.6F);
+		this.tails[0][0].xRot = Mth.lerp(s, this.tails[0][0].xRot, -0.1F);
+		this.tails[1][0].xRot = Mth.lerp(s, this.tails[1][0].xRot, -0.15F);
+		this.tails[1][0].yRot = Mth.lerp(s, this.tails[1][0].yRot, 1.9F);
+		this.tails[2][0].xRot = Mth.lerp(s, this.tails[2][0].xRot, -0.15F);
+		this.tails[2][0].yRot = Mth.lerp(s, this.tails[2][0].yRot, -1.9F);
+		for (ModelPart leg : new ModelPart[] {this.rightFrontLeg, this.leftFrontLeg}) {
+			leg.y = Mth.lerp(s, leg.y, leg.getInitialPose().y() + 6.5F * U);
+			leg.z = Mth.lerp(s, leg.z, leg.getInitialPose().z() - 1.0F * U);
+			leg.xRot = Mth.lerp(s, leg.xRot, -1.5F);
+		}
+		for (ModelPart leg : new ModelPart[] {this.rightHindLeg, this.leftHindLeg}) {
+			leg.y = Mth.lerp(s, leg.y, leg.getInitialPose().y() + 6.5F * U);
+		}
 	}
 }

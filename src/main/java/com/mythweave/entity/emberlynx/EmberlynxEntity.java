@@ -25,9 +25,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Emberlynx, stage 2 of the Cindercub line: a taller, leaner ember lynx with a fire mane,
- * flame-tufted ears, longer crystal horns and a long fire tail. Cindercubs become one at
- * {@link com.mythweave.evolution.EvolutionRules#STAGE_2_KINDLE} Kindle.
+ * Emberlynx, stage 3 (final) of the Cindercub line: a taller, leaner ember lynx with a fire mane,
+ * flame-tufted ears, longer crystal horns and a long fire tail. An Ashenox becomes one at
+ * {@link com.mythweave.evolution.EvolutionRules#STAGE_3_KINDLE} Kindle.
  *
  * <ul>
  *   <li>Sturdier (20 HP) and quicker than a Cindercub, and it hits back (4 damage).</li>

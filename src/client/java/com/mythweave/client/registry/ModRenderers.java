@@ -4,7 +4,6 @@ import com.mythweave.client.MythweaveClient;
 import com.mythweave.client.render.entity.AshenoxRenderer;
 import com.mythweave.client.render.entity.CindercubRenderer;
 import com.mythweave.client.render.entity.EmberlynxRenderer;
-import com.mythweave.client.render.entity.SolflareRenderer;
 import com.mythweave.registry.ModEntities;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -23,6 +22,5 @@ public final class ModRenderers {
 		EntityRenderers.register(ModEntities.CINDERCUB, CindercubRenderer::new);
 		EntityRenderers.register(ModEntities.EMBERLYNX, EmberlynxRenderer::new);
 		EntityRenderers.register(ModEntities.ASHENOX, AshenoxRenderer::new);
-		EntityRenderers.register(ModEntities.SOLFLARE, SolflareRenderer::new);
 	}
 }
