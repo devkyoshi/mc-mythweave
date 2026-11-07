@@ -1,6 +1,8 @@
 package com.mythweave;
 
 import com.mythweave.event.ModEvents;
+import com.mythweave.journal.JournalAttachments;
+import com.mythweave.network.OpenJournalPayload;
 import com.mythweave.registry.ModBlocks;
 import com.mythweave.registry.ModCreativeTabs;
 import com.mythweave.registry.ModEntities;
@@ -9,6 +11,7 @@ import com.mythweave.registry.ModParticles;
 import com.mythweave.registry.ModSounds;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import net.minecraft.resources.Identifier;
 
@@ -36,6 +39,9 @@ public class Mythweave implements ModInitializer {
 		ModBlocks.initialize();
 		ModItems.initialize();
 		ModCreativeTabs.initialize();
+		// The journal's player attachment and the packet that opens its screen.
+		JournalAttachments.initialize();
+		PayloadTypeRegistry.clientboundPlay().register(OpenJournalPayload.TYPE, OpenJournalPayload.STREAM_CODEC);
 		// Then everything that reacts to the game: event listeners and commands.
 		ModEvents.register();
 

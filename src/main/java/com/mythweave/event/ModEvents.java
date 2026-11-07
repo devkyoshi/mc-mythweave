@@ -3,6 +3,7 @@ package com.mythweave.event;
 import com.mythweave.Mythweave;
 import com.mythweave.command.MythweaveCommands;
 import com.mythweave.evolution.KindleEvents;
+import com.mythweave.journal.JournalEvents;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
@@ -18,6 +19,8 @@ public final class ModEvents {
 	public static void register() {
 		// Kindle from fights near Mythlings (hostile deaths, survived hits).
 		KindleEvents.register();
+		// Discovery and tamed-companion tracking for the journal.
+		JournalEvents.register();
 		// /mythweave commands.
 		CommandRegistrationCallback.EVENT.register(
 				(dispatcher, buildContext, selection) -> MythweaveCommands.register(dispatcher));

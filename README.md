@@ -166,6 +166,26 @@ form.)
 | Ember Spark | 12 blocks, 10 s |
 | Size | 0.69 × 1.09 |
 
+### The Mythweave Journal
+
+Press **J** (rebindable under *Options → Controls → Mythweave*) or run `/mythweave journal`
+to open your creature journal. It has two tabs:
+
+- **Tamed** lists every Mythling bonded to you in this world, including companions waiting in
+  unloaded chunks. Each card shows its name plus its form or Kindle; the detail page adds
+  health and whether it is sitting, following or evolving.
+- **Mythlings** lists every form in the mod. Forms you haven't met yet show as `???`: their
+  name, model, lore, stats, abilities and evolution paths stay hidden until you see one within
+  **24 blocks** or bond with it.
+
+The detail page shows the form's element, rarity, habitat, description, stats and abilities,
+plus a live evolution page for your own companions: current stage, Kindle progress toward the
+next threshold, combat/exploration leaning, and the form it will become. It scrolls with the
+mouse wheel when the window is short. The journal is a reading UI: it doesn't pause the world,
+and the server keeps it up to date while it is open.
+
+See [docs/design/journal.md](docs/design/journal.md) for how it works.
+
 ### The Ember Brazier
 
 An iron bowl of coals that only a Cindercub can light. Lit, it glows at full brightness
@@ -241,9 +261,13 @@ Mythweave is built in small, tested phases. Each one works in-game before the ne
     animations, Magma Bite, fire immunity.
   - [ ] **E4: Emberlynx as the final form.** Resize and rebalance it for stage 3.
   - [ ] E5: balance
+- [x] **Creature journal.** Press **J** or run `/mythweave journal`: a Tamed tab (including
+  unloaded companions) and a Mythlings tab where undiscovered forms are `???`. Shows live
+  stage, Kindle thresholds, affinity, next form, stats and lore. See
+  [docs/design/journal.md](docs/design/journal.md).
 
 **Later ideas** (after Cindercub is solid): more Mythlings, natural spawning in warm biomes,
-the *Aether Shard* bonding item, magical shrines, and a creature journal.
+the *Aether Shard* bonding item, and magical shrines.
 
 ## Installing (players)
 
@@ -420,11 +444,14 @@ src/main/java/com/mythweave/                Common code (runs on client and serv
 │   ├── AbilityCooldown.java                Per-creature cooldown: tick, save, load
 │   └── EmberSparkAbility.java              Ember Spark: target search, effects
 ├── block/EmberBrazierBlock.java            Ember Brazier: lit state, shape, particles
-├── command/MythweaveCommands.java          /mythweave kindle get|add (operators, for testing)
+├── journal/                                Player journal: data, catalog, attachment, server service
+├── network/OpenJournalPayload.java         S2C packet that opens the journal screen
+├── command/MythweaveCommands.java          /mythweave journal (everyone); kindle get|add (operators)
 └── event/ModEvents.java                    Hooks listeners and commands into the game
 
 src/client/java/com/mythweave/client/       Client-only code (never loaded on a server)
-├── MythweaveClient.java                    Client entry point: calls the client registries
+├── MythweaveClient.java                    Client entry point: registries, J keybind, journal packet
+├── journal/MythlingJournalScreen.java      The journal UI: tabs, cards, 3D preview, evolution page
 ├── registry/
 │   ├── ModModelLayers.java                 Model layer ids (+ registration)
 │   └── ModRenderers.java                   Entity type → renderer
@@ -445,7 +472,7 @@ src/main/resources/
 └── data/                                   Recipes, loot tables, tags
 
 tools/textures/, tools/previews/            Scripts that paint textures and render README images
-docs/design/                                Specification and evolution design
+docs/design/                                Specification, evolution and journal design
 docs/dev/                                   Developer docs: setup and commands, project structure
 dev.cmd / dev.ps1                           One-command launcher (client, server, multiplayer)
 ```
