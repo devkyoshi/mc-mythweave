@@ -5,7 +5,8 @@
 	"name": "Mythweave",
 	"description": "Discover, bond with, and raise original magical creatures called Mythlings.",
 	"authors": [
-		"ashi"
+		"ashi",
+    "silverviles"
 	],
 	"contact": {
 		"homepage": "https://github.com/devkyoshi/mc-mythweave",

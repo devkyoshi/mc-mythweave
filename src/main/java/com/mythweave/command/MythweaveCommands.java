@@ -1,6 +1,7 @@
 package com.mythweave.command;
 
 import com.mythweave.entity.base.MythlingEntity;
+import com.mythweave.network.OpenJournalPayload;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -8,16 +9,21 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 /**
- * Testing and admin commands, for operators only (same permission as /kill):
+ * The journal command for everyone, plus testing/admin commands for operators only
+ * (same permission as /kill):
  *
  * <pre>
+ * /mythweave journal
  * /mythweave kindle get &lt;mythling&gt;
  * /mythweave kindle add &lt;mythlings&gt; &lt;amount&gt;
  * </pre>
@@ -32,14 +38,26 @@ public final class MythweaveCommands {
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(
 				Commands.literal("mythweave")
-						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.then(Commands.literal("journal")
+								.executes(MythweaveCommands::journal))
 						.then(Commands.literal("kindle")
+								.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 								.then(Commands.literal("get")
 										.then(Commands.argument("target", EntityArgument.entity())
 												.executes(MythweaveCommands::get)))
 								.then(Commands.literal("add")
 										.then(Commands.argument("targets", EntityArgument.entities())
 												.then(addAmount())))));
+	}
+
+	private static int journal(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		ServerPlayer player = context.getSource().getPlayerOrException();
+		if (!ServerPlayNetworking.canSend(player, OpenJournalPayload.TYPE)) {
+			context.getSource().sendFailure(Component.translatable("commands.mythweave.journal.client_only"));
+			return 0;
+		}
+		ServerPlayNetworking.send(player, OpenJournalPayload.INSTANCE);
+		return 1;
 	}
 
 	private static ArgumentBuilder<CommandSourceStack, ?> addAmount() {

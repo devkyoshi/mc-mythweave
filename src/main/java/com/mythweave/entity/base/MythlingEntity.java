@@ -3,6 +3,7 @@ package com.mythweave.entity.base;
 import com.mythweave.evolution.Evolution;
 import com.mythweave.evolution.EvolutionRules;
 import com.mythweave.evolution.Kindle;
+import com.mythweave.journal.MythlingJournalService;
 
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -416,6 +417,7 @@ public abstract class MythlingEntity extends TamableAnimal implements Mythling {
 			this.kindle.markBiomeVisited(this, serverLevel); // its home biome doesn't pay out
 			this.onBonded(serverLevel, player);
 		}
+		MythlingJournalService.onBonded(this, player);
 		player.sendOverlayMessage(Component.translatable("message.mythweave.mythling.bonded", this.getDisplayName()));
 	}
 

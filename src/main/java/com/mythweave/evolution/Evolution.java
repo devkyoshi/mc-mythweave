@@ -2,6 +2,7 @@ package com.mythweave.evolution;
 
 import com.mythweave.Mythweave;
 import com.mythweave.entity.base.MythlingEntity;
+import com.mythweave.journal.MythlingJournalService;
 import com.mythweave.registry.ModEntities;
 
 import net.minecraft.core.particles.ParticleTypes;
@@ -197,5 +198,6 @@ public final class Evolution {
 		to.setYRot(from.getYRot());
 		to.setYBodyRot(from.getYRot());
 		to.setYHeadRot(from.getYRot());
+		MythlingJournalService.onEvolved(from, to);
 	}
 }

@@ -99,6 +99,16 @@ Package root `com.mythweave` (written `…` below).
 │   │                                  the new size), the entity swap
 │   ├── Kindle.java                    One Mythling's evolution progress: earning, saving, copying, status
 │   └── KindleEvents.java              Kindle from the world: hostile mobs dying nearby, survived hits
+├── journal/
+│   ├── JournalData.java               One player's journal: discovered form ids + tamed snapshots (immutable)
+│   ├── TamedMythling.java             Last-known snapshot of one bonded Mythling (name, form, Kindle, health)
+│   ├── JournalAttachments.java        Registers the player attachment: persistent, copy-on-death, owner-only sync
+│   ├── MythlingJournalService.java    Server-side discovery scan, tamed refresh, bond/evolve/death updates
+│   ├── JournalEvents.java             Wires the service into server ticks, deaths and player join
+│   ├── MythlingCatalog.java           Every form in journal order: icons, element, rarity, habitat, lore, abilities
+│   └── MythlingProfile.java           Static journal information for one form
+├── network/
+│   └── OpenJournalPayload.java        S2C packet with no body: asks the client to open the journal screen
 ├── ability/
 │   ├── Ability.java                   Interface: id, cooldown, trigger item, use(mythling, cooldown, ...) (server)
 │   ├── AbilityCooldown.java           One ability's cooldown on one creature: tick, save, load
@@ -108,9 +118,9 @@ Package root `com.mythweave` (written `…` below).
 ├── block/
 │   └── EmberBrazierBlock.java         Ember Brazier: LIT state, shape, empty-hand extinguish, particles
 ├── command/
-│   └── MythweaveCommands.java         /mythweave kindle get|add (operators; for testing)
+│   └── MythweaveCommands.java         /mythweave journal (everyone); /mythweave kindle get|add (operators)
 └── event/
-    └── ModEvents.java                 Hooks into the game: registers KindleEvents and the commands
+    └── ModEvents.java                 Hooks into the game: registers KindleEvents, JournalEvents and the commands
 ```
 
 The mixin package `…/mixin/` is declared in `mythweave.mixins.json` but empty for now; add
@@ -122,7 +132,10 @@ Package root `com.mythweave.client`.
 
 ```text
 client/
-├── MythweaveClient.java               Client entry point (fabric.mod.json "client"). Calls the client registries.
+├── MythweaveClient.java               Client entry point (fabric.mod.json "client"). Calls the client registries,
+│                                      registers the J keybind and the open-journal packet receiver.
+├── journal/
+│   └── MythlingJournalScreen.java     The journal UI: Tamed / Mythlings tabs, cards, 3D preview, evolution page
 ├── registry/
 │   ├── ModModelLayers.java            Model layer ids (CINDERCUB, EMBERLYNX, ASHENOX = mythweave:<name>#main)
 │   ├── ModRenderers.java              Entity type → renderer (every entity type needs one)
@@ -202,7 +215,8 @@ tools/
 
 docs/
 ├── design/specification.md            The original design document: pillars, phases, rules
-├── design/evolution.md                Evolution design: Kindle, forms, phases E1–E5
+├── design/evolution.md                Evolution design: Kindle, forms, branch, phases E1–E5
+├── design/journal.md                  Creature journal design: tabs, discovery, data flow, evolution details
 ├── dev/README.md                      Index of developer docs
 ├── dev/setup-and-commands.md          Setup, run commands, tasks, troubleshooting
 ├── dev/project-structure.md           This file
@@ -215,13 +229,22 @@ docs/
 **Startup (both sides), from `Mythweave.onInitialize()`:**
 1. `ModSounds`, `ModParticles`, then `ModEntities`, `ModBlocks`, `ModItems`, `ModCreativeTabs`. Order matters:
    items refer to entity types and blocks.
-2. `ModEvents.register()`, which hooks the Kindle listeners (Fabric `ServerLivingEntityEvents`)
-   and the `/mythweave` command (Fabric `CommandRegistrationCallback`).
+2. `JournalAttachments.initialize()` registers the player's journal attachment, and the
+   `OpenJournalPayload` type is registered on the clientbound play channel.
+3. `ModEvents.register()`, which hooks the Kindle and journal listeners (Fabric
+   `ServerLivingEntityEvents`, `ServerTickEvents`, `ServerPlayConnectionEvents`) and the
+   `/mythweave` commands (Fabric `CommandRegistrationCallback`).
 
 **Startup (client only), from `MythweaveClient.onInitializeClient()`:**
 1. `ModModelLayers.register()`: model cube layouts.
 2. `ModRenderers.register()`: renderers, which bake those layers.
 3. `ModParticleProviders.register()`: how Mythweave particles look.
+4. Registers the **J** keybind (category "Mythweave") and the `OpenJournalPayload` receiver.
+
+**The journal (once a second, server):** `MythlingJournalService` unlocks forms within 24
+blocks, refreshes snapshots of loaded bonded Mythlings, and writes the result to the player's
+`JournalData` attachment. Fabric syncs that attachment only to its owner. The client screen
+reads it from the local player; `/mythweave journal` (or **J**) just opens the screen.
 
 **A right-click on a Mythling** (`MythlingEntity.mobInteract`, run on both sides; only the
 server changes anything):
@@ -259,6 +282,8 @@ These are in players' worlds and resource packs. **Never rename them**; add new 
 | Sounds | `mythweave:entity.<cindercub/emberlynx/ashenox>.ambient`, `.hurt`, `.death` |
 | Model layers | `mythweave:cindercub#main`, `mythweave:emberlynx#main`, `mythweave:ashenox#main` |
 | Entity save data | `Owner`, `Sitting` (vanilla), `EmberCooldown`, `EvolvingTicks` (only mid-transformation), `Kindle` → `Points`, `Combat`, `Exploration`, `TicksWithOwner`, `BlocksTravelled`, `Biomes` |
+| Player attachment | `mythweave:journal` (discovered form ids + tamed snapshots; persistent, owner-only sync) |
+| Packets | `mythweave:open_journal` (S2C, no body) |
 
 **Translation key namespaces** (`lang/en_us.json`):
 
@@ -270,6 +295,11 @@ These are in players' worlds and resource packs. **Never rename them**; add new 
 | `message.mythweave.mythling.*` | Messages shared by every creature (bonded, sitting, not yours, …; `%s` = its name) |
 | `message.mythweave.<creature>.*` | Creature-specific messages (e.g. Ember Spark) |
 | `message.mythweave.kindle.*` | Kindle status and events |
+| `message.mythweave.journal.*` | Journal discovery messages |
+| `screen.mythweave.journal.*` | Journal screen labels, cards, stages and evolution lines |
+| `mythling.mythweave.<form>.*` | Journal lore: rarity, habitat, description, ability names |
+| `mythling.mythweave.element.*` | Shared element names (`fire`, `earth`, `light`) reused by journal entries and filters |
+| `key.category.mythweave.*`, `key.mythweave.*` | Keybind category and key names |
 | `commands.mythweave.*` | Command feedback |
 
 ## Where do I put…?
@@ -286,6 +316,9 @@ These are in players' worlds and resource packs. **Never rename them**; add new 
 | An event listener | the feature's own class (e.g. `KindleEvents`) | `event/ModEvents.register()` |
 | A command | `command/` | `event/ModEvents.register()` |
 | A Kindle source | `EvolutionRules.KindleSource` | report it with `kindle().gain(...)` |
+| A per-player persistent value | `journal/` (or a new attachment class) | `JournalAttachments` / `Mythweave.onInitialize()` |
+| A client screen | `client/<feature>/` | open it from a keybind or packet receiver in `MythweaveClient` |
+| A journal form entry | `journal/MythlingCatalog` | add its lore keys to `lang/en_us.json` |
 | Text a player sees | `lang/en_us.json` | use `Component.translatable(key)` |
 
 Full step-by-step versions of these are in [CONTRIBUTING.md](../../CONTRIBUTING.md).
